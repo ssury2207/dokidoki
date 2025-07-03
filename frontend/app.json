@@ -8,6 +8,7 @@
     "scheme": "frontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "entryPoint": "./index.tsx",
     "ios": {
       "supportsTablet": true
     },
