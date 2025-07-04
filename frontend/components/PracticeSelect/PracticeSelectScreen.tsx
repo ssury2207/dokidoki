@@ -1,10 +1,14 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text,Button, StyleSheet } from 'react-native';
 
-export default function PracticeSelectScreen() {
+export default function PracticeSelectScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Hello World from Practice Select Screen!</Text>
+      <Button
+              title="Mains"
+              onPress={() => navigation.navigate('MainsScreen')}
+        />
     </View>
   );
 }
