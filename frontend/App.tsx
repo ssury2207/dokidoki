@@ -10,10 +10,21 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Dashboard">
+      <Stack.Navigator initialRouteName="Dashboard" screenOptions={{
+    headerStyle: {
+      backgroundColor: '#FFFF', // Header background color
+    },
+    headerTintColor: 'black', // Header text and back button color
+    headerTitleStyle: {
+      fontWeight: 'normal',
+      fontSize: 16,
+      color:'black'
+    },
+    headerTitleAlign: 'left', // Title alignment
+  }}>
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
-        <Stack.Screen name="PracticeSelect" component={PracticeSelectScreen} />
-        <Stack.Screen name="MainsScreen" component={MainsScreen} />
+        <Stack.Screen name="PracticeSelect"  component={PracticeSelectScreen} />
+        <Stack.Screen name="MainsScreen"   options={{ title: 'Main\'s Question Set' }} component={MainsScreen} />
         {/* Add more screens as needed */}
       </Stack.Navigator>
     </NavigationContainer>

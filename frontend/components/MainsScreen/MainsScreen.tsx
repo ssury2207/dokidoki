@@ -18,9 +18,9 @@ const Data = {
 
 const MainsScreen = ({ navigation }) => {
   const [answer,setAnswer] = useState('');
-  const [showSubmitButton,setShowSubmitButton] = useState(true);
+  const [buttonActive,setButtonActive] = useState(true);
   const submitHandler=()=>{
-      // setShowSubmitButton(false)
+      setButtonActive(false)
       setAnswer(Data.answer)
   }
   return (
@@ -30,28 +30,28 @@ const MainsScreen = ({ navigation }) => {
                 <TouchableOpacity>
                 {/* <IconSymbol color="black" size={20} name='chevron.right' /> */}
                 </TouchableOpacity>
-                <Text>Daily Streak Mains Question</Text>
+                <View style={{width:'100%',marginVertical:18,padding:10}}>
+                  <Text style={{fontSize:18,fontWeight:'600',textAlign:'center'}}>Daily Streak - Mains Question</Text>
+                  <Text style={{fontSize:14,fontWeight:'400',textAlign:'center',color:'#090F4773'}}>Upload your handwritten answer to keep the streak alive!</Text>
+                </View>
             </View>
+
             <MainsQuestionCard fakeData={Data} />
             <AddPhotosComponents />
 
             {
                 answer===''?<></>:
 
-    <View style={{borderWidth:1,padding:4,    marginVertical:15, borderStyle:"dashed",flexDirection:'column'}} >
+            <View style={{borderWidth:1,padding:4,    marginVertical:15, borderStyle:"dashed",flexDirection:'column'}} >
                <Text>
                {Data.answer}
                </Text>
             </View>
             }
 
-            {
-                showSubmitButton ?
-                 <PrimaryButton isActive={false} submitHandler={submitHandler} title="Submit" />
-              :
-                <>
-                </>
-            }
+            
+            <PrimaryButton isActive={buttonActive} submitHandler={submitHandler} title="Submit" />
+              
                 
        </ScrollView>
     </View>
@@ -59,7 +59,7 @@ const MainsScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: { flex: 1,backgroundColor:'#FFF',paddingBottom:18, justifyContent: 'center', alignItems: 'center' },
   text: { fontSize: 20, marginBottom: 20 },
 });
 

@@ -1,30 +1,41 @@
 import { StyleSheet, TouchableOpacity, View, Text,FlatList, Animated } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 // import { IconSymbol } from "@/components/ui/IconSymbol";
 
 type Props = {};
 
+
 const AddPhotosComponents: React.FC<Props> = (props) => {
 
     const [photosData, setPhotosData] = useState<number[]>([]);
+    const[id,setId] = useState(0)
+    const [data, setData] = useState([])
+   
+    const addPhotoHandler=()=>{
+      setId(id=>id+1);
+      const newData = {id: id  };
+      setData( [...data, newData] );
+    }
+    const deletePhotoHandler=(id:number)=>{
+       setData(prevData => prevData.filter(item => item.id !== id));
 
-    const addButtonHandler=()=>{
-        const newVal = photosData.length+1;
-        setPhotosData([...photosData, newVal]);
     }
 
   return (
     <View style={styles.viewContainer}>
-            <TouchableOpacity style={styles.addPhotoContainer}>
+            <TouchableOpacity onPress={addPhotoHandler} style={styles.addPhotoContainer}>
                 <Text style={styles.addPhotoText}>+ Add Photo</Text>
             </TouchableOpacity>
-        <View style={styles.fileItem}>
-          <Text style={styles.fileText}>filename.jpg</Text>
-          <TouchableOpacity>
-            <Text>TrashBtn</Text>
-            {/* <IconSymbol color="#FF5A5A" size={20} name="paperplane.fill" /> */}
-          </TouchableOpacity>
-        </View>
+        
+        {data.map(item => 
+           <View key={item.id} style={styles.fileItem}>
+              <Text style={styles.fileText}>{item.id}.jpg</Text>
+              <TouchableOpacity onPress={()=> deletePhotoHandler(item.id)}>
+                <Text style={{}}>X</Text>
+              </TouchableOpacity>
+         </View>
+        ) 
+        }
     </View>
   );
 };
