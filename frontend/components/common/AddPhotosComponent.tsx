@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, View, Text,FlatList, Animated } from 'react-native';
 import React, { useState } from 'react';
-import { IconSymbol } from "@/components/ui/IconSymbol";
+// import { IconSymbol } from "@/components/ui/IconSymbol";
 
 type Props = {};
 
@@ -21,7 +21,8 @@ const AddPhotosComponents: React.FC<Props> = (props) => {
         <View style={styles.fileItem}>
           <Text style={styles.fileText}>filename.jpg</Text>
           <TouchableOpacity>
-            <IconSymbol color="#FF5A5A" size={20} name="paperplane.fill" />
+            <Text>TrashBtn</Text>
+            {/* <IconSymbol color="#FF5A5A" size={20} name="paperplane.fill" /> */}
           </TouchableOpacity>
         </View>
     </View>
