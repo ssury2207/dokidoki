@@ -10,7 +10,7 @@ type QuestionCardProps = {
 
 export default function QuestionCard(data: QuestionCardProps) {
   return (
-    <View style={{borderColor: "Black", borderWidth: 2, borderRadius:2, marginHorizontal:15, marginTop:10}}>
+    <View style={{borderColor: "Black", borderWidth: 1, borderRadius:10, marginHorizontal:15, marginTop:10, padding:10}}>
       <Text numberOfLines={2} ellipsizeMode='tail' style={{marginBottom: 10}}>{data.question}</Text>
       
       <Text>Year:{data.year} Paper:{data.paper} Marks:{data.marks}</Text>
