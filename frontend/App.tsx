@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import DashboardScreen from './components/Dashboard/DashboardScreen';
 import PracticeSelectScreen from './components/PracticeSelect/PracticeSelectScreen';
 import MainsScreen from './components/MainsScreen/MainsScreen';
+import PractisedQuestionsScreen from './components/PractisedQuestions/PractisedQuestionsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,7 @@ export default function App() {
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
         <Stack.Screen name="PracticeSelect"  component={PracticeSelectScreen} />
         <Stack.Screen name="MainsScreen"   options={{ title: 'Main\'s Question Set' }} component={MainsScreen} />
+        <Stack.Screen name="PractisedQuestions"  component={PractisedQuestionsScreen} />
         {/* Add more screens as needed */}
       </Stack.Navigator>
     </NavigationContainer>

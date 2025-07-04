@@ -1,4 +1,4 @@
-import { StyleSheet, TouchableOpacity, View, Text, Animated } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Text, Animated, Button } from 'react-native';
 import React from 'react';
 
 type Props = {
@@ -9,9 +9,13 @@ type Props = {
 
 const PrimaryButton: React.FC<Props> = ({ title,isActive, submitHandler }) => {
   return (
-    <TouchableOpacity style={[styles.button, {backgroundColor:isActive ? '#108174' : 'grey' }]} disabled={!isActive} onPress={submitHandler}>
-      <Text style={styles.buttonText}>{title}</Text>
-    </TouchableOpacity>
+    <View>
+      <TouchableOpacity style={[styles.button, {backgroundColor:isActive ? '#108174' : 'grey' }]} disabled={!isActive} onPress={submitHandler}>
+        <Text style={styles.buttonText}>{title}</Text>
+      </TouchableOpacity>
+    </View>
+
+    
   );
 };
 
