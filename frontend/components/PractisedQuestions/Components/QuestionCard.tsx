@@ -1,10 +1,19 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-export default function QuestionCard() {
+type QuestionCardProps = {
+    question: string,
+    year: number,
+    paper: string,
+    marks: number
+}
+
+export default function QuestionCard(data: QuestionCardProps) {
   return (
-    <View>
+    <View style={{borderColor: "Black", borderWidth: 2, borderRadius:2, marginHorizontal:15, marginTop:10}}>
+      <Text numberOfLines={2} ellipsizeMode='tail' style={{marginBottom: 10}}>{data.question}</Text>
       
+      <Text>Year:{data.year} Paper:{data.paper} Marks:{data.marks}</Text>
     </View>
   )
 }
