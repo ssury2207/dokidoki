@@ -12,19 +12,19 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Dashboard" screenOptions={{
-    headerStyle: {
-      backgroundColor: '#FFFF', // Header background color
-    },
-    headerTintColor: 'black', // Header text and back button color
-    headerTitleStyle: {
-      fontWeight: 'normal',
-      fontSize: 16,
-      color:'black'
-    },
-    headerTitleAlign: 'left', // Title alignment
-  }}>
+          headerStyle: {
+            backgroundColor: '#FFFF', // Header background color
+          },
+          headerTintColor: 'black', // Header text and back button color
+          headerTitleStyle: {
+            fontWeight: 'normal',
+            fontSize: 16,
+            color:'black'
+          },
+          headerTitleAlign: 'left', // Title alignment
+        }}>
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
-        <Stack.Screen name="PracticeSelect"  component={PracticeSelectScreen} />
+        <Stack.Screen name="PracticeSelect" options={{ headerTitle:'' }} component={PracticeSelectScreen} />
         <Stack.Screen name="MainsScreen"   options={{ title: 'Main\'s Question Set' }} component={MainsScreen} />
         <Stack.Screen name="PractisedQuestions"  component={PractisedQuestionsScreen} />
         {/* Add more screens as needed */}

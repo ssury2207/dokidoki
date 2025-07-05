@@ -14,8 +14,6 @@ const PrimaryButton: React.FC<Props> = ({ title,isActive, submitHandler }) => {
         <Text style={styles.buttonText}>{title}</Text>
       </TouchableOpacity>
     </View>
-
-    
   );
 };
 
