@@ -9,12 +9,18 @@ import FooterText from '../atoms/FooterText';
 import PracticeButton from '../common/PracticeButton';
 
 
-export default function PracticeSelectScreen({ navigation }) {
+import type { StackNavigationProp } from '@react-navigation/stack';
+
+type PracticeSelectScreenProps = {
+  navigation: StackNavigationProp<any, any>;
+};
+
+export default function PracticeSelectScreen({ navigation }: PracticeSelectScreenProps) {
   const mainsButtonHandler=()=>{
     navigation.navigate('MainsScreen')
   }
   const prelimsButtonHandler=()=>{
-    alert('Must Navigate to Prelims question set')
+    navigation.navigate('PrelimsScreen')
   }
   const reviseButtonHandler=()=>{
     alert('Must Navigate to revise old question set')

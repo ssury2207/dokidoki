@@ -1,17 +1,31 @@
 import { StyleSheet, TouchableOpacity, View, Text, Animated } from 'react-native';
 import React from 'react';
 
-type Props = {
+type MainsQuestionsProps = {
   fakeData: {
     que_type: string;
-    year: string;
+    year: number;
     paper: string;
     marks: number;
     question: string;
     answer: string;
     show_answer: boolean;
   };
-};
+}
+
+type PrelimsQuestionsProps = {
+  fakeData: {
+    que_type: string;
+    year: number;
+    paper: string;
+    question: string;
+    options: string[];
+    answer: string;
+    show_answer: boolean;
+  };
+}
+
+type Props = MainsQuestionsProps | PrelimsQuestionsProps;
 
 const MainsQuestionCard: React.FC<Props> = ({ fakeData }) => {
   return (
@@ -26,10 +40,12 @@ const MainsQuestionCard: React.FC<Props> = ({ fakeData }) => {
         <Text style={styles.label}>{fakeData.paper}</Text>
       </View>
 
-      <View style={styles.row}>
-        <Text style={styles.label}>Marks :</Text>
-        <Text style={styles.label}>{fakeData.marks}</Text>
-      </View>
+      {'marks' in fakeData && (
+        <View style={styles.row}>
+          <Text style={styles.label}>Marks :</Text>
+          <Text style={styles.label}>{fakeData.marks}</Text>
+        </View>
+      )}
 
       <View style={styles.questionContainer}>
         <Text style={styles.questionText}>"{fakeData.question}"</Text>
