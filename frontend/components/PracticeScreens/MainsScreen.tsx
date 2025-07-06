@@ -6,17 +6,17 @@ import AddPhotosComponents from '../common/AddPhotosComponent';
 import PrimaryButton from '../atoms/PrimaryButton';
 
 const Data = {
-  "type":'mains-que',
+  "que_type":'mains-que',
   "year": 2020, 
   "paper": "GS Paper III",
   "marks": 15,
   "question": "Explain the meaning of investment in an economy and the effect of interest rate on it. Also, explain the role of the public investment in crowding-in private investment.",
   "answer": "Investment refers to capital formation in an economy. Lower interest rates encourage private investment. Public investment improves infrastructure and confidence, thereby crowding-in private investment through complementary and multiplier effects.",
-  "showAnswer": false
+  "show_answer": false
 }
 
 
-const MainsScreen = ({ navigation }) => {
+const MainsScreen = () => {
   const [answer,setAnswer] = useState('');
   const [buttonActive,setButtonActive] = useState(true);
   const submitHandler=()=>{
