@@ -1,5 +1,7 @@
 import { StyleSheet, TouchableOpacity, View, Text, Animated } from 'react-native';
 import React from 'react';
+import TextLabel from '../atoms/TextLabel';
+import NormalText from '../atoms/NormalText';
 
 type MainsQuestionsProps = {
   fakeData: {
@@ -31,24 +33,24 @@ const MainsQuestionCard: React.FC<Props> = ({ fakeData }) => {
   return (
     <View style={styles.cardContainer}>
       <View style={styles.row}>
-        <Text style={styles.label}>Year :</Text>
-        <Text style={styles.label}>{fakeData.year}</Text>
+        <NormalText text='Year :' />
+        <NormalText text= {fakeData.year} />
       </View>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Paper :</Text>
-        <Text style={styles.label}>{fakeData.paper}</Text>
+      <NormalText text='Paper :' />
+      <NormalText text= {fakeData.paper} />
       </View>
 
       {'marks' in fakeData && (
         <View style={styles.row}>
-          <Text style={styles.label}>Marks :</Text>
-          <Text style={styles.label}>{fakeData.marks}</Text>
+          <NormalText text='Marks :' />
+          <NormalText text= {fakeData.marks} />
         </View>
       )}
 
       <View style={styles.questionContainer}>
-        <Text style={styles.questionText}>"{fakeData.question}"</Text>
+        <NormalText text= {fakeData.question} />
       </View>
     </View>
   );
@@ -56,12 +58,8 @@ const MainsQuestionCard: React.FC<Props> = ({ fakeData }) => {
 
 const styles = StyleSheet.create({
   cardContainer: {
-    borderWidth: 1,
-    paddingHorizontal: 15,
-    borderStyle: 'dotted',
     flexDirection: 'column',
     marginVertical:20,
-    borderRadius:20
   },
   row: {
     flexDirection: 'row',

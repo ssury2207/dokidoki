@@ -19,8 +19,6 @@ const TitleAndSubtitleCard: React.FC<Props> = (props) => {
             :<></>
         }
     </Card>
-        
-     
   );
 };
  
