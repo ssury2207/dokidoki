@@ -2,7 +2,7 @@ import { StyleSheet,Text,  View,  } from 'react-native';
 import React from 'react';
 
 type Props = {
-  text: string,
+  text: string|number,
 };
 
 const TextLabel: React.FC<Props> = ({text}) => {
