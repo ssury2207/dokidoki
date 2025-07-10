@@ -1,37 +1,69 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import MainsQuestionCard from '../common/MainsQuestionCard'
-import OptionsCard from '../common/OptionsCard'
-import PrimaryButton from '../atoms/PrimaryButton'
-
-
-
+import { StyleSheet, ScrollView, View, Text, FlatList } from "react-native";
+import React, { useEffect, useState } from "react";
+import PrimaryButton from "../atoms/PrimaryButton";
+import TitleAndSubtitleCard from "../common/TitleAndSubtitleCard";
+import UserStats from "../common/UserStats";
+import Card from "../atoms/Card";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Data from "../../fakeData/data";
+import ExpectedPrelimsAnswer from "./components/ExpectedPrelimsAnswer";
+import PrelimsQuestionSection from "./components/PrelimsQuestionSection";
 export default function PrelimsScreen() {
+  const [buttonActive, setButtonActive] = useState(true);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [data, setData] = useState([]);
 
-    const Data = {
-        "que_type":'prelims-que',
-        "year": 2020, 
-        "paper": "GS-I",
-        "question": "Explain the meaning of investment in an economy and the effect of interest rate on it. Also, explain the role of the public investment in crowding-in private investment.",
-        "options": ["abc", "def", "ghi", "jkl"],
-        "answer": "Investment refers to capital formation in an economy. Lower interest rates encourage private investment. Public investment improves infrastructure and confidence, thereby crowding-in private investment through complementary and multiplier effects.",
-        "show_answer": false
-    }
-
+  useEffect(() => {
+    setData(Data[0][0]);
+  }, []);
+  const submitHandler = () => {
+    setButtonActive(false);
+    setShowAnswer(true);
+  };
 
   return (
-    <View>
-        <View style={styles.mainContainerStyle}>
-            <MainsQuestionCard fakeData={Data} />
-            <OptionsCard options={Data.options}/>
-            <PrimaryButton isActive={true} submitHandler={()=>{}} title="Submit" />
-        </View>
-    </View>
-  )
+    <SafeAreaView style={styles.body}>
+      <ScrollView style={styles.scroll}>
+        <TitleAndSubtitleCard
+          title="PRELIMS QUESTION"
+          subtite="Select one correct option to keep streak alive and earn points!"
+        />
+
+        <UserStats streak="5" points="100" />
+        <Card>
+          <PrelimsQuestionSection
+            year={data.year}
+            paper={data.paper}
+            question={data.question}
+            options={data.options}
+          />
+          <PrimaryButton
+            isActive={true}
+            submitHandler={submitHandler}
+            title="Submit"
+          />
+          {showAnswer ? (
+            <ExpectedPrelimsAnswer
+              actualOption={"A"}
+              expectedOption={data.correctOption}
+              expectedAnswer={data.answer}
+            />
+          ) : (
+            <></>
+          )}
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    mainContainerStyle : {
-        paddingHorizontal: 10
-    }
-})
+  body: {
+    flex: 1,
+    backgroundColor: "#F0F3F6",
+  },
+  scroll: {
+    paddingBottom: 40,
+    paddingHorizontal: 24,
+  },
+});

@@ -5,6 +5,7 @@ const data = [
             year: 2020,
             marks: 2,
             subject: 'Environment & Ecology',
+            paper: 'GS Paper III',
             question:
               "With reference to the 'New York Declaration on Forests', which of the following statements are correct?\n\n1. It was first endorsed at the United Nations Climate Summit in 2014.\n2. It endorses a global timeline to end the loss of forests.\n3. It is a legally binding international declaration.\n4. It is endorsed by governments, big companies, and indigenous communities.\n\nSelect the correct answer using the code given below:",
             options: [
@@ -27,7 +28,7 @@ const data = [
             ],
             correctOption: 'A',
             answer:
-              'Statement 1 is correct: The declaration was first endorsed at the 2014 UN Climate Summit. Statement 2 is correct: It aims to halve deforestation by 2020 and end it by 2030. Statement 3 is incorrect: The declaration is not legally binding. Statement 4 is correct: It is endorsed by governments, corporations, and indigenous communities.',
+              'Statement 1 is correct: The declaration was first endorsed at the 2014 UN Climate Summit.\n\n Statement 2 is correct: It aims to halve deforestation by 2020 and end it by 2030.\n\n Statement 3 is incorrect: The declaration is not legally binding.\n\n Statement 4 is correct: It is endorsed by governments, corporations, and indigenous communities. ',
             show_answer: false,
           }, 
     ],
