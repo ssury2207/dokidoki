@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import NormalText from "@/components/atoms/NormalText";
 import AnswerItem from "./AnswerItem";
@@ -11,7 +11,14 @@ type Props = {
 };
 
 const PrelimsQuestionSection: React.FC<Props> = (props) => {
-  const [selectedItem, setSelectedItem] = useState();
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
+    null
+  );
+  const [isSelected, setIsSelected] = useState(false);
+  const buttonItemSelector = (index: number) => {
+    setSelectedItemIndex(index);
+    setIsSelected((isactive) => !isactive);
+  };
 
   return (
     <View style={styles.cardContainer}>
@@ -31,7 +38,18 @@ const PrelimsQuestionSection: React.FC<Props> = (props) => {
       {props.options &&
         props.options.map((item, index) => {
           return (
-            <AnswerItem key={index} option={item.option} text={item.text} />
+            <TouchableOpacity
+              key={index}
+              onPress={() => buttonItemSelector(index)}
+              style={[
+                styles.section,
+                selectedItemIndex === index
+                  ? styles.selected
+                  : styles.unselected,
+              ]}
+            >
+              <AnswerItem option={item.option} text={item.text} />
+            </TouchableOpacity>
           );
         })}
     </View>
@@ -39,11 +57,6 @@ const PrelimsQuestionSection: React.FC<Props> = (props) => {
 };
 
 const styles = StyleSheet.create({
-  section: {
-    padding: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
   cardContainer: {
     flexDirection: "column",
     marginVertical: 20,
@@ -63,6 +76,26 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     fontStyle: "italic",
     fontSize: 16,
+  },
+
+  section: {
+    borderRadius: 10,
+    borderWidth: 1,
+    margin: 4,
+    flexDirection: "row",
+    justifyContent: "flex-start",
+  },
+  selected: {
+    backgroundColor: "#CBDFE1",
+    borderColor: "#37B9C5",
+  },
+  incorrect: {
+    backgroundColor: "#E8D8D8",
+    borderColor: "#FF5A5A",
+  },
+  unselected: {
+    backgroundColor: "#F0F3F6",
+    borderColor: "#50555C",
   },
 });
 

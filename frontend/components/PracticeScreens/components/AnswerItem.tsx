@@ -8,37 +8,19 @@ type Props = {
 };
 
 const AnswerItem: React.FC<Props> = (props) => {
-  const [isSelected, setIsSelected] = useState(false);
-  const buttonItemSelector = (isactive: boolean) => {
-    setIsSelected((isactive) => !isactive);
-  };
   return (
-    <TouchableOpacity
-      onPress={() => buttonItemSelector(isSelected)}
-      style={[styles.section, isSelected ? styles.selected : styles.unselected]}
-    >
+    <View style={styles.section}>
       <NormalText text={props.option} />
       <NormalText text={props.text} />
-    </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   section: {
     padding: 4,
-    borderRadius: 10,
-    borderWidth: 1,
     flexDirection: "row",
     justifyContent: "flex-start",
-    margin: 4,
-  },
-  selected: {
-    backgroundColor: "#CBDFE1",
-    borderColor: "#37B9C5",
-  },
-  unselected: {
-    backgroundColor: "#F0F3F6",
-    borderColor: "#50555C",
   },
 });
 

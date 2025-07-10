@@ -44,7 +44,7 @@ export default function PrelimsScreen() {
           />
           {showAnswer ? (
             <ExpectedPrelimsAnswer
-              actualOption=""
+              actualOption={"A"}
               expectedOption={data.correctOption}
               expectedAnswer={data.answer}
             />
