@@ -18,6 +18,8 @@ import PrelimsQuestionSection from './components/PrelimsQuestionSection';
 import { Button } from '@react-navigation/elements';
 export default function PrelimsScreen({ navigation }) {
   const [showAnswer, setShowAnswer] = useState(false);
+  const [buttonActive, setButtonActive] = useState(false);
+
   const [data, setData] = useState([]);
 
   useEffect(() => {
