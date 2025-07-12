@@ -3,7 +3,7 @@ import React from 'react';
  
 const PaperPlaneIcon=()=> {
   return (
-       <Image style={styles.image} source={require('../../assets/paperplane.png')} />
+       <Image style={styles.image} source={require('../../../assets/paperplane.png')} />
   );
 };
 

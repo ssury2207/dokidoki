@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
-import TextLabel from "@/components/atoms/TextLabel";
-import NormalText from "@/components/atoms/NormalText";
+import TextLabel from "@/src/components/atoms/TextLabel";
+import NormalText from "@/src/components/atoms/NormalText";
 
 type Props = {
   actualOption: string;

@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
-import NormalText from "@/components/atoms/NormalText";
+import NormalText from "@/src/components/atoms/NormalText";
 
 type Props = {
   option: string;

@@ -4,8 +4,12 @@ import type { StackNavigationProp } from '@react-navigation/stack';
 import PrimaryButton from '../atoms/PrimaryButton';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-const streakBlack = require('../../assets/streak-Black.png');
-const streakLight = require('../../assets/streak-Light.png');
+const streakBlack = require('../../../assets/streak-Black.png');
+const streakLight = require('../../../assets/streak-Light.png');
+import { signOut } from 'firebase/auth';
+import { auth } from '@/src/firebaseConfig';
+const streakBlack = require('../../../assets/streak-Black.png');
+const streakLight = require('../../../assets/streak-Light.png');
 
 type RootStackParamList = {
   Dashboard: undefined;
@@ -41,6 +45,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         </View>
         <View style={styles.button}>
           <PrimaryButton title="Practise Today" isActive={true} submitHandler={() => navigation.navigate('PracticeSelect')} />
+        </View>
+        <View style={styles.button}>
+          <PrimaryButton title="LOGOUT" isActive={true} submitHandler={() => signOut(auth)} />
         </View>
       </View>
     </View>
