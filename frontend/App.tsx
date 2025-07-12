@@ -7,6 +7,7 @@ import MainsScreen from './components/PracticeScreens/MainsScreen';
 import PractisedQuestionsScreen from './components/PractisedQuestions/PractisedQuestionsScreen';
 import PrelimsScreen from './components/PracticeScreens/PrelimsScreen';
 import VerdictOverlay from './components/PracticeScreens/VerdictOverlay';
+import MainsVerdictOverlay from './components/PracticeScreens/MainsVerdictOverlay';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -45,6 +46,15 @@ export default function App() {
         <Stack.Screen
           name="Overlay"
           component={VerdictOverlay}
+          options={{
+            presentation: 'transparentModal', // or 'modal' on iOS
+            animation: 'fade',
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="MainsOverlay"
+          component={MainsVerdictOverlay}
           options={{
             presentation: 'transparentModal', // or 'modal' on iOS
             animation: 'fade',
