@@ -10,12 +10,15 @@ import PracticeButton from '../common/PracticeButton';
 
 
 import type { StackNavigationProp } from '@react-navigation/stack';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 type PracticeSelectScreenProps = {
   navigation: StackNavigationProp<any, any>;
 };
 
 export default function PracticeSelectScreen({ navigation }: PracticeSelectScreenProps) {
+
   const mainsButtonHandler=()=>{
     navigation.navigate('MainsScreen')
   }
@@ -30,7 +33,7 @@ export default function PracticeSelectScreen({ navigation }: PracticeSelectScree
      
       <TitleAndSubtitleCard title='STAY ON TRACK' subtite= "Answer today's question to keep your streak and earn points." />
      
-      <UserStats streak='5' points='100'/>
+      <UserStats />
      
       <Card>
           <TextLabel text='Todays Question'   />

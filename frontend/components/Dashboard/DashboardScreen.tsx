@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, Image } from 'react-native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import PrimaryButton from '../atoms/PrimaryButton';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 const streakBlack = require('../../assets/streak-Black.png');
 const streakLight = require('../../assets/streak-Light.png');
 
@@ -17,7 +19,9 @@ type DashboardScreenProps = {
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 
-  const [streakCount, setStreakCount] = useState(1);
+  // const [streakCount, setStreakCount] = useState(1);
+  const streakCount = useSelector((state: RootState) => state.userProgress.streak);
+  const pointsCount = useSelector((state: RootState) => state.userProgress.totalPoints);
 
   return (
 

@@ -10,6 +10,8 @@ import UserStats from '../common/UserStats';
 import Card from '../atoms/Card';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NormalText from '../atoms/NormalText';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 const MainsScreen = () => {
   const [data, setData] = useState({});
   const [showAnswer,setShowAnswer] = useState(false);
@@ -32,7 +34,7 @@ const MainsScreen = () => {
       <ScrollView style={styles.scroll}>
       
       <TitleAndSubtitleCard title='MAINS QUESTION' subtite= "Upload your handwritten answer to keep the streak alive!" />
-      <UserStats streak='5' points='100'/>
+      <UserStats />
       <Card>
          <MainsQuestionCard fakeData={data} />
 
