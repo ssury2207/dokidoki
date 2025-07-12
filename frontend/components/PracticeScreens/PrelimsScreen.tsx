@@ -20,6 +20,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 export default function PrelimsScreen({ navigation }) {
   const [showAnswer, setShowAnswer] = useState(false);
+  const [buttonActive, setButtonActive] = useState(false);
+
   const [data, setData] = useState([]);
 
   useEffect(() => {
