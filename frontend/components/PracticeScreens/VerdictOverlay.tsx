@@ -1,16 +1,17 @@
 // OverlayScreen.tsx
 import { View, Text, StyleSheet } from 'react-native';
 import CorrectVerdict from './components/CorrectVerdict';
+import InCorrectVerdict from './components/IncorrectVerdict';
 
 type Props = {
   verdict: boolean;
 };
 
 const VerdictOverlay: React.FC<Props> = ({}) => {
-  const verdict = true;
+  const verdict = false;
   return (
     <View style={styles.overlay}>
-      <CorrectVerdict />
+      {verdict ? <CorrectVerdict /> : <InCorrectVerdict />}
     </View>
   );
 };
