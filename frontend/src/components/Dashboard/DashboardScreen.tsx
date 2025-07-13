@@ -8,8 +8,6 @@ const streakBlack = require('../../../assets/streak-Black.png');
 const streakLight = require('../../../assets/streak-Light.png');
 import { signOut } from 'firebase/auth';
 import { auth } from '@/src/firebaseConfig';
-const streakBlack = require('../../../assets/streak-Black.png');
-const streakLight = require('../../../assets/streak-Light.png');
 
 type RootStackParamList = {
   Dashboard: undefined;
