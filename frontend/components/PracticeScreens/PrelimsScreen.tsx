@@ -8,6 +8,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Data from "../../fakeData/data";
 import ExpectedPrelimsAnswer from "./components/ExpectedPrelimsAnswer";
 import PrelimsQuestionSection from "./components/PrelimsQuestionSection";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 export default function PrelimsScreen() {
   const [buttonActive, setButtonActive] = useState(true);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -29,7 +31,7 @@ export default function PrelimsScreen() {
           subtite="Select one correct option to keep streak alive and earn points!"
         />
 
-        <UserStats streak="5" points="100" />
+        <UserStats />
         <Card>
           <PrelimsQuestionSection
             year={data.year}
