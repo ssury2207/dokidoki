@@ -4,7 +4,7 @@ import { useState } from "react";
 import MainsQuestionCard from '../common/MainsQuestionCard';
 import AddPhotosComponents from '../common/AddPhotosComponent';
 import PrimaryButton from '../atoms/PrimaryButton';
-import Data from '../../fakeData/data';
+import Data from '../../../fakeData/data';
 import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
 import UserStats from '../common/UserStats';
 import Card from '../atoms/Card';

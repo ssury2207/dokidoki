@@ -5,7 +5,7 @@ import TitleAndSubtitleCard from "../common/TitleAndSubtitleCard";
 import UserStats from "../common/UserStats";
 import Card from "../atoms/Card";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Data from "../../fakeData/data";
+import Data from "../../../fakeData/data";
 import ExpectedPrelimsAnswer from "./components/ExpectedPrelimsAnswer";
 import PrelimsQuestionSection from "./components/PrelimsQuestionSection";
 import { useSelector } from "react-redux";
