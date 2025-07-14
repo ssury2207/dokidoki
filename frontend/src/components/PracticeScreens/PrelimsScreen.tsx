@@ -10,7 +10,7 @@ import ExpectedPrelimsAnswer from "./components/ExpectedPrelimsAnswer";
 import PrelimsQuestionSection from "./components/PrelimsQuestionSection";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-export default function PrelimsScreen() {
+export default function PrelimsScreen({ navigation }) {
   const [buttonActive, setButtonActive] = useState(true);
   const [showAnswer, setShowAnswer] = useState(false);
   const [data, setData] = useState([]);
@@ -19,6 +19,7 @@ export default function PrelimsScreen() {
     setData(Data[0][0]);
   }, []);
   const submitHandler = () => {
+    navigation.navigate("Overlay");
     setButtonActive(false);
     setShowAnswer(true);
   };
