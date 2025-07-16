@@ -1,27 +1,50 @@
-import { StyleSheet, ScrollView, View, Text, FlatList } from "react-native";
-import React, { useEffect, useState } from "react";
-import PrimaryButton from "../atoms/PrimaryButton";
-import TitleAndSubtitleCard from "../common/TitleAndSubtitleCard";
-import UserStats from "../common/UserStats";
-import Card from "../atoms/Card";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Data from "../../../fakeData/data";
-import ExpectedPrelimsAnswer from "./components/ExpectedPrelimsAnswer";
-import PrelimsQuestionSection from "./components/PrelimsQuestionSection";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
-export default function PrelimsScreen({ navigation }) {
-  const [buttonActive, setButtonActive] = useState(true);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [data, setData] = useState([]);
+import { StyleSheet, ScrollView, View, Text, FlatList } from 'react-native';
+import React, { act, useEffect, useState } from 'react';
+import PrimaryButton from '../atoms/PrimaryButton';
+import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
+import UserStats from '../common/UserStats';
+import Card from '../atoms/Card';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Data from '../../../fakeData/data';
+import ExpectedPrelimsAnswer from './components/ExpectedPrelimsAnswer';
+import PrelimsQuestionSection from './components/PrelimsQuestionSection';
 
-  useEffect(() => {
-    setData(Data[0][0]);
-  }, []);
+import { RootState } from '@/store/store';
+import { useSelector } from 'react-redux';
+import {
+  setActualOption,
+  setIsAttempted,
+} from '@/store/slices/prelimsQuestionSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/store/store';
+
+export default function PrelimsScreen({ navigation }) {
+  const [showAnswer, setShowAnswer] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const answer = useSelector(
+    (state: RootState) => state.prelimsQuestion.answer
+  );
+  const actualOption = useSelector(
+    (state: RootState) => state.prelimsQuestion.actualOption
+  );
+  const expectedOption = useSelector(
+    (state: RootState) => state.prelimsQuestion.expectedOption
+  );
+  const isAttempted = useSelector(
+    (state: RootState) => state.prelimsQuestion.isAttempted
+  );
+  const [buttonActive, setButtonActive] = useState(
+    !isAttempted && actualOption === ''
+  );
+
   const submitHandler = () => {
-    navigation.navigate("Overlay");
-    setButtonActive(false);
+    //compare the result
+    const result = actualOption === expectedOption;
+
+    dispatch(setIsAttempted(true));
     setShowAnswer(true);
+    // navigation.navigate('Overlay');
+    setButtonActive(false);
   };
 
   return (
@@ -34,22 +57,17 @@ export default function PrelimsScreen({ navigation }) {
 
         <UserStats />
         <Card>
-          <PrelimsQuestionSection
-            year={data.year}
-            paper={data.paper}
-            question={data.question}
-            options={data.options}
-          />
+          <PrelimsQuestionSection />
           <PrimaryButton
-            isActive={true}
+            isActive={buttonActive}
             submitHandler={submitHandler}
             title="Submit"
           />
-          {showAnswer ? (
+          {isAttempted ? (
             <ExpectedPrelimsAnswer
-              actualOption={"A"}
-              expectedOption={data.correctOption}
-              expectedAnswer={data.answer}
+              actualOption={actualOption}
+              expectedOption={expectedOption}
+              expectedAnswer={answer}
             />
           ) : (
             <></>
@@ -63,7 +81,7 @@ export default function PrelimsScreen({ navigation }) {
 const styles = StyleSheet.create({
   body: {
     flex: 1,
-    backgroundColor: "#F0F3F6",
+    backgroundColor: '#F0F3F6',
   },
   scroll: {
     paddingBottom: 40,
