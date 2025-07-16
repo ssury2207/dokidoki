@@ -15,7 +15,7 @@ const initialState: prelimsQuestionState = {
 };
 
 const prelimsQuestionSlice = createSlice({
-  name: 'prelimsQuestionSlice',
+  name: 'prelimsQuestion',
   initialState,
   reducers: {
     setQuestion(state, action: PayloadAction<string>) {
