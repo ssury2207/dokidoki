@@ -1,5 +1,5 @@
 import { StyleSheet, ScrollView, View, Text, FlatList } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { act, useEffect, useState } from 'react';
 import PrimaryButton from '../atoms/PrimaryButton';
 import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
 import UserStats from '../common/UserStats';
@@ -11,9 +11,16 @@ import PrelimsQuestionSection from './components/PrelimsQuestionSection';
 
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
+import {
+  setActualOption,
+  setIsAttempted,
+} from '@/store/slices/prelimsQuestionSlice';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '@/store/store';
+
 export default function PrelimsScreen({ navigation }) {
-  const [buttonActive, setButtonActive] = useState(true);
   const [showAnswer, setShowAnswer] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
   const answer = useSelector(
     (state: RootState) => state.prelimsQuestion.answer
   );
@@ -23,10 +30,21 @@ export default function PrelimsScreen({ navigation }) {
   const expectedOption = useSelector(
     (state: RootState) => state.prelimsQuestion.expectedOption
   );
+  const isAttempted = useSelector(
+    (state: RootState) => state.prelimsQuestion.isAttempted
+  );
+  const [buttonActive, setButtonActive] = useState(
+    !isAttempted && actualOption === ''
+  );
+
   const submitHandler = () => {
-    navigation.navigate('Overlay');
-    setButtonActive(false);
+    //compare the result
+    const result = actualOption === expectedOption;
+
+    dispatch(setIsAttempted(true));
     setShowAnswer(true);
+    // navigation.navigate('Overlay');
+    setButtonActive(false);
   };
 
   return (
@@ -41,11 +59,11 @@ export default function PrelimsScreen({ navigation }) {
         <Card>
           <PrelimsQuestionSection />
           <PrimaryButton
-            isActive={true}
+            isActive={buttonActive}
             submitHandler={submitHandler}
             title="Submit"
           />
-          {showAnswer ? (
+          {isAttempted ? (
             <ExpectedPrelimsAnswer
               actualOption={actualOption}
               expectedOption={expectedOption}

@@ -7,6 +7,8 @@ import { AppDispatch } from '@/store/store';
 import {
   setActualOption,
   setExpectedOption,
+  setIsAttempted,
+  setOptionSelected,
 } from '@/store/slices/prelimsQuestionSlice';
 import { store } from '@/store/store';
 
@@ -20,8 +22,11 @@ const PrelimsQuestionSection = () => {
   const options = useSelector(
     (state: RootState) => state.prelimsQuestion.options
   );
-  const answer = useSelector(
-    (state: RootState) => state.prelimsQuestion.answer
+  const optionSelected = useSelector(
+    (state: RootState) => state.prelimsQuestion.optionSelected
+  );
+  const isAttempted = useSelector(
+    (state: RootState) => state.prelimsQuestion.isAttempted
   );
   const paper = useSelector((state: RootState) => state.prelimsQuestion.paper);
   const year = useSelector((state: RootState) => state.prelimsQuestion.year);
@@ -36,7 +41,7 @@ const PrelimsQuestionSection = () => {
     setSelectedItemIndex(index);
     setIsSelected((isactive) => !isactive);
     dispatch(setActualOption(options[index].option));
-    console.log(store.getState().prelimsQuestion.actualOption);
+    dispatch(setOptionSelected(true));
   };
 
   return (
