@@ -1,13 +1,16 @@
-import { View } from "react-native";
-import Title from "../../atoms/Title";
-import NormalText from "../../atoms/NormalText";
-import PrimaryButton from "../../atoms/PrimaryButton";
-import { useNavigation } from "@react-navigation/native";
-import { StyleSheet } from "react-native";
+import { View } from 'react-native';
+import Title from '../../atoms/Title';
+import NormalText from '../../atoms/NormalText';
+import PrimaryButton from '../../atoms/PrimaryButton';
+import { useNavigation } from '@react-navigation/native';
+import { StyleSheet } from 'react-native';
+import { RootState } from '@/store/store';
+import { useSelector } from 'react-redux';
 // import RedCrossIcon from "../../atoms/RedCrossIcon";
 
 const InCorrectVerdict = () => {
   const navigation = useNavigation();
+  const streak = useSelector((state: RootState) => state.userProgress.streak);
 
   const overlayButtonHandler = () => {
     navigation.goBack();
@@ -26,7 +29,7 @@ const InCorrectVerdict = () => {
       </View>
 
       <View style={styles.row}>
-        <NormalText text={`Current Streak ${2} Days `} />
+        <NormalText text={`Current Streak ${streak} Days `} />
       </View>
       <PrimaryButton
         isActive={true}
@@ -39,15 +42,15 @@ const InCorrectVerdict = () => {
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     padding: 20,
     borderRadius: 12,
-    width: "80%",
+    width: '80%',
   },
   row: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
   },
 });
 
