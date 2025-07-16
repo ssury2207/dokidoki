@@ -13,6 +13,9 @@ import { useSelector } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { useDispatch } from 'react-redux';
 import {
+  setYear,
+  setPaper,
+  setAnswer,
   setQuestion,
   setOptions,
   setExpectedOption,
@@ -35,12 +38,18 @@ export default function PracticeSelectScreen({
     dispatch(setQuestion(dataItem.question));
     dispatch(setOptions(dataItem.options));
     dispatch(setExpectedOption(dataItem.correctOption));
+    dispatch(setAnswer(dataItem.answer));
+    dispatch(setPaper(dataItem.paper));
+    dispatch(setYear(dataItem.year));
 
     // console.log('Question \n', store.getState().prelimsQuestion);
     // console.log('\n Options \n ', store.getState().options);
     console.log('@@@', store.getState().prelimsQuestion.question);
     console.log('@@@', store.getState().prelimsQuestion.expectedOption);
     console.log('@@@', store.getState().prelimsQuestion.options);
+    console.log('@@@', store.getState().prelimsQuestion.paper);
+    console.log('@@@', store.getState().prelimsQuestion.year);
+    console.log('@@@', store.getState().prelimsQuestion.answer);
   }, []);
   const mainsButtonHandler = () => {
     navigation.navigate('MainsScreen');
