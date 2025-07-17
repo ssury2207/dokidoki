@@ -8,7 +8,6 @@ import {
   setActualOption,
   setExpectedOption,
   setIsAttempted,
-  setOptionSelected,
 } from '@/store/slices/prelimsQuestionSlice';
 import { store } from '@/store/store';
 
@@ -21,9 +20,6 @@ const PrelimsQuestionSection = () => {
   );
   const options = useSelector(
     (state: RootState) => state.prelimsQuestion.options
-  );
-  const optionSelected = useSelector(
-    (state: RootState) => state.prelimsQuestion.optionSelected
   );
   const isAttempted = useSelector(
     (state: RootState) => state.prelimsQuestion.isAttempted
@@ -41,7 +37,6 @@ const PrelimsQuestionSection = () => {
     setSelectedItemIndex(index);
     setIsSelected((isactive) => !isactive);
     dispatch(setActualOption(options[index].option));
-    dispatch(setOptionSelected(true));
   };
 
   return (
@@ -63,6 +58,7 @@ const PrelimsQuestionSection = () => {
         options.map((item, index) => {
           return (
             <TouchableOpacity
+              disabled={isAttempted}
               key={index}
               onPress={() => buttonItemSelector(index)}
               style={[

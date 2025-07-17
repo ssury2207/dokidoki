@@ -10,7 +10,6 @@ interface prelimsQuestionState {
   actualOption: string;
   expectedOption: string;
   isAttempted: boolean;
-  optionSelected: boolean;
 }
 
 const initialState: prelimsQuestionState = {
@@ -22,7 +21,6 @@ const initialState: prelimsQuestionState = {
   actualOption: '',
   expectedOption: '',
   isAttempted: false,
-  optionSelected: false,
 };
 
 const prelimsQuestionSlice = createSlice({
@@ -53,9 +51,6 @@ const prelimsQuestionSlice = createSlice({
     setIsAttempted(state, action: PayloadAction<boolean>) {
       state.isAttempted = action.payload;
     },
-    setOptionSelected(state, action: PayloadAction<boolean>) {
-      state.optionSelected = action.payload;
-    },
   },
 });
 
@@ -68,6 +63,5 @@ export const {
   setActualOption,
   setExpectedOption,
   setIsAttempted,
-  setOptionSelected,
 } = prelimsQuestionSlice.actions;
 export default prelimsQuestionSlice.reducer;

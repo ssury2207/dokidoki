@@ -15,6 +15,7 @@ import {
   setActualOption,
   setIsAttempted,
 } from '@/store/slices/prelimsQuestionSlice';
+import { addPoints, resetStreak, setStreak } from '@/store/userProgressSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 
@@ -33,6 +34,9 @@ export default function PrelimsScreen({ navigation }) {
   const isAttempted = useSelector(
     (state: RootState) => state.prelimsQuestion.isAttempted
   );
+  const points = useSelector(
+    (state: RootState) => state.userProgress.totalPoints
+  );
   const [buttonActive, setButtonActive] = useState(
     !isAttempted && actualOption === ''
   );
@@ -40,7 +44,11 @@ export default function PrelimsScreen({ navigation }) {
   const submitHandler = () => {
     //compare the result
     const result = actualOption === expectedOption;
-
+    dispatch(setStreak());
+    if (result) {
+      dispatch(addPoints(points + 2));
+    }
+    navigation.navigate('Overlay', result);
     dispatch(setIsAttempted(true));
     setShowAnswer(true);
     // navigation.navigate('Overlay');

@@ -19,7 +19,6 @@ import {
   setQuestion,
   setOptions,
   setExpectedOption,
-  setOptionSelected,
   setActualOption,
 } from '@/store/slices/prelimsQuestionSlice';
 import { store } from '@/store/store';
@@ -43,9 +42,7 @@ export default function PracticeSelectScreen({
     dispatch(setAnswer(dataItem.answer));
     dispatch(setPaper(dataItem.paper));
     dispatch(setYear(dataItem.year));
-    dispatch(setOptionSelected(false));
-    dispatch(setActualOption(''));
-  });
+  }, [Data]);
   const mainsButtonHandler = () => {
     navigation.navigate('MainsScreen');
   };
