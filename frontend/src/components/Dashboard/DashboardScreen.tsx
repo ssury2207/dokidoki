@@ -33,10 +33,12 @@ type DashboardScreenProps = {
 };
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
-  const streakCount =
-    useSelector((state: RootState) => state.userProgress.streak) + 1;
-  const pointsCount =
-    useSelector((state: RootState) => state.userProgress.totalPoints) + 1;
+  const streakCount = useSelector(
+    (state: RootState) => state.userProgress.streak
+  );
+  const pointsCount = useSelector(
+    (state: RootState) => state.userProgress.totalPoints
+  );
   const user = 'Maya';
   const questionSolved = '10';
 
@@ -56,21 +58,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
               alignItems: 'center',
             }}
           >
-            {/* <Image source={require('../../../assets/bell.png')} /> */}
-            <View
+            <TouchableOpacity
               style={{
-                backgroundColor: '#151718',
-                padding: 20,
                 justifyContent: 'space-around',
                 alignItems: 'center',
-                borderRadius: 50,
               }}
             >
               <Image
                 style={{ width: 25, height: 25 }}
-                source={require('../../../assets/logout.png')}
+                source={require('../../../assets/logout-white.png')}
               />
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -145,13 +143,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
               START CHALLENGE
             </Text>
           </TouchableOpacity>
-          {/* <View style={styles.button}>
-            <PrimaryButton
-              title="Start Challenge"
-              isActive={true}
-              submitHandler={() => navigation.navigate('PracticeSelect')}
-            />
-          </View> */}
         </View>
 
         {/* Progress */}
@@ -167,7 +158,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             >
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <GreenCheckIcon />
-                <NormalText text={`Total Questions: ${questionSolved}`} />
+                <NormalText text={`Solved Questions: ${questionSolved}`} />
               </View>
               <TouchableOpacity
                 style={{
@@ -227,7 +218,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#222831',
   },
   scroll: {
-    paddingBottom: 40,
+    paddingVertical: 40,
     paddingHorizontal: 24,
   },
   userCard: {
@@ -252,7 +243,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
-    shadowColor: '#0000',
+    shadowColor: '#FFFFFF',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
     shadowRadius: 16,
@@ -270,11 +261,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
+    // backgroundColor: 'red',
+    justifyContent: 'flex-start',
   },
   streakIconSmall: {
     width: 50,
     height: 50,
-    marginRight: 12,
   },
   pointsIcon: {
     width: 40,
