@@ -59,6 +59,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             }}
           >
             <TouchableOpacity
+              onPress={() => signOut(auth)}
               style={{
                 justifyContent: 'space-around',
                 alignItems: 'center',
@@ -146,7 +147,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         </View>
 
         {/* Progress */}
-        <View style={[styles.card, { backgroundColor: '#efe7bc' }]}>
+        <View style={[styles.card, { backgroundColor: '#EEEEEE' }]}>
           <View style={styles.sectionFullWidth}>
             <TextLabel text="PROGRESS" />
 
@@ -261,7 +262,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-    // backgroundColor: 'red',
     justifyContent: 'flex-start',
   },
   streakIconSmall: {
