@@ -46,7 +46,7 @@ export default function PrelimsScreen({ navigation }) {
     const result = actualOption === expectedOption;
     dispatch(setStreak());
     if (result) {
-      dispatch(addPoints(points + 2));
+      dispatch(addPoints(2));
     }
     navigation.navigate('Overlay', result);
     dispatch(setIsAttempted(true));

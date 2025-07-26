@@ -1,14 +1,14 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import DashboardScreen from "../components/Dashboard/DashboardScreen";
-import PracticeSelectScreen from "../components/PracticeSelect/PracticeSelectScreen";
-import MainsScreen from "../components/PracticeScreens/MainsScreen";
-import PractisedQuestionsScreen from "../components/PractisedQuestions/PractisedQuestionsScreen";
-import PrelimsScreen from "../components/PracticeScreens/PrelimsScreen";
-import { Provider } from "react-redux";
-import { store } from "@/store/store";
-import VerdictOverlay from "../components/PracticeScreens/VerdictOverlay";
-import MainsVerdictOverlay from "../components/PracticeScreens/MainsVerdictOverlay";
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import DashboardScreen from '../components/Dashboard/DashboardScreen';
+import PracticeSelectScreen from '../components/PracticeSelect/PracticeSelectScreen';
+import MainsScreen from '../components/PracticeScreens/MainsScreen';
+import PractisedQuestionsScreen from '../components/PractisedQuestions/PractisedQuestionsScreen';
+import PrelimsScreen from '../components/PracticeScreens/PrelimsScreen';
+import { Provider } from 'react-redux';
+import { store } from '@/store/store';
+import VerdictOverlay from '../components/PracticeScreens/VerdictOverlay';
+import MainsVerdictOverlay from '../components/PracticeScreens/MainsVerdictOverlay';
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -18,21 +18,25 @@ export default function AppNavigator() {
         initialRouteName="Dashboard"
         screenOptions={{
           headerStyle: {
-            backgroundColor: "#FFFF", // Header background color
+            backgroundColor: '#FFFF', // Header background color
           },
-          headerTintColor: "black", // Header text and back button color
+          headerTintColor: 'black', // Header text and back button color
           headerTitleStyle: {
-            fontWeight: "normal",
+            fontWeight: 'normal',
             fontSize: 16,
-            color: "black",
+            color: 'black',
           },
-          headerTitleAlign: "left", // Title alignment
+          headerTitleAlign: 'left', // Title alignment
         }}
       >
-        <Stack.Screen name="Dashboard" component={DashboardScreen} />
+        <Stack.Screen
+          name="Dashboard"
+          options={{ headerShown: false }}
+          component={DashboardScreen}
+        />
         <Stack.Screen
           name="PracticeSelect"
-          options={{ headerTitle: "" }}
+          options={{ headerTitle: '' }}
           component={PracticeSelectScreen}
         />
         <Stack.Screen
@@ -49,8 +53,8 @@ export default function AppNavigator() {
           name="Overlay"
           component={VerdictOverlay}
           options={{
-            presentation: "transparentModal", // or 'modal' on iOS
-            animation: "fade",
+            presentation: 'transparentModal', // or 'modal' on iOS
+            animation: 'fade',
             headerShown: false,
           }}
         />
@@ -58,8 +62,8 @@ export default function AppNavigator() {
           name="MainsVerdictOverlay"
           component={MainsVerdictOverlay}
           options={{
-            presentation: "transparentModal", // or 'modal' on iOS
-            animation: "fade",
+            presentation: 'transparentModal', // or 'modal' on iOS
+            animation: 'fade',
             headerShown: false,
           }}
         />

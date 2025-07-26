@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
 import userProgressReducer from './userProgressSlice';
 import prelimsQuestionSlice from './slices/prelimsQuestionSlice';
+import themeSlice from './slices/themeSlice';
 
 export const store = configureStore({
   reducer: {
     userProgress: userProgressReducer,
     prelimsQuestion: prelimsQuestionSlice,
+    theme: themeSlice,
   },
 });
 

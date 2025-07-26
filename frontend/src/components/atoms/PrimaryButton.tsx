@@ -1,28 +1,46 @@
-import { StyleSheet, TouchableOpacity, View, Text, Animated, Button } from 'react-native';
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Text,
+  Animated,
+  Button,
+} from 'react-native';
 import React from 'react';
+import { RootState } from '@/store/store';
+import { useSelector } from 'react-redux';
 
 type Props = {
   title: string;
-  isActive:boolean
+  isActive: boolean;
   submitHandler: () => void;
 };
 
-const PrimaryButton: React.FC<Props> = ({ title,isActive, submitHandler }) => {
+const PrimaryButton: React.FC<Props> = ({ title, isActive, submitHandler }) => {
+  const theme = useSelector((state: RootState) => state.theme.isLight);
+
   return (
-    <View>
-      <TouchableOpacity style={[styles.button, {backgroundColor:isActive ? '#108174' : 'grey' }]} disabled={!isActive} onPress={submitHandler}>
-        <Text style={styles.buttonText}>{title}</Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity
+      style={[
+        styles.button,
+        {
+          backgroundColor: isActive ? (theme ? '#00ADB5' : '#108174') : 'grey',
+        },
+      ]}
+      disabled={!isActive}
+      onPress={submitHandler}
+    >
+      <Text style={styles.buttonText}>{title}</Text>
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
   button: {
-    padding: 10,
+    paddingVertical: 14,
     borderRadius: 10,
     width: '100%',
-    marginVertical:15
+    marginVertical: 15,
   },
   buttonText: {
     color: 'white',
