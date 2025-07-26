@@ -8,19 +8,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { signOut } from 'firebase/auth';
-
-import PrimaryButton from '../atoms/PrimaryButton';
-import { RootState } from '@/store/store';
-import { auth } from '@/src/firebaseConfig';
-import TextLabel from '../atoms/TextLabel';
-import NormalText from '../atoms/NormalText';
-import GreenCheckIcon from '../atoms/GreenCheckIcon';
-
-const streakBlack = require('../../../assets/streak-Black.png');
-const streakLight = require('../../../assets/streak-Light.png');
+import DashboardHeader from './Components/DashboardHeader';
+import DailyChallengeCard from './Components/DailyChallengeCard';
+import ProgressCard from './Components/ProgressCard';
+import { RootState, AppDispatch } from '@/store/store';
+import { setTheme } from '@/store/slices/themeSlice';
 
 type RootStackParamList = {
   Dashboard: undefined;
@@ -33,170 +27,27 @@ type DashboardScreenProps = {
 };
 
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
-  const streakCount = useSelector(
-    (state: RootState) => state.userProgress.streak
-  );
-  const pointsCount = useSelector(
-    (state: RootState) => state.userProgress.totalPoints
-  );
-  const user = 'Maya';
-  const questionSolved = '10';
+  const dispatch = useDispatch<AppDispatch>();
+  const theme = useSelector((state: RootState) => state.theme.isLight);
+
+  const themeBtnHandler = () => {
+    dispatch(setTheme(!theme));
+  };
 
   return (
-    <SafeAreaView style={styles.body}>
+    <SafeAreaView style={theme ? styles.bodyDark : styles.bodyLight}>
       <ScrollView style={styles.scroll}>
-        <View style={styles.userCard}>
-          <View>
-            <Text style={styles.userText}>Hi, {user} 👋</Text>
-            <Text style={styles.userTextDesc}>Let's, start Learning</Text>
-          </View>
+        <DashboardHeader />
+        <DailyChallengeCard />
+        <ProgressCard />
 
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => signOut(auth)}
-              style={{
-                justifyContent: 'space-around',
-                alignItems: 'center',
-              }}
-            >
-              <Image
-                style={{ width: 25, height: 25 }}
-                source={require('../../../assets/logout-white.png')}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
+        <TouchableOpacity
+          style={styles.themeToggleButton}
+          onPress={themeBtnHandler}
+        >
+          <Text style={styles.themeToggleText}>{theme ? 'Dark' : 'Light'}</Text>
+        </TouchableOpacity>
 
-        {/* Daily Challenge */}
-        <View style={styles.card}>
-          <View style={styles.sectionFullWidth}>
-            <Text
-              style={{
-                color: '#EEEEEE',
-                fontSize: 16,
-                fontWeight: 'bold',
-                marginVertical: 8,
-              }}
-            >
-              DAILY CHALLENGE
-            </Text>
-          </View>
-
-          <View style={styles.rowCenter}>
-            <Image
-              source={streakCount ? streakLight : streakBlack}
-              style={styles.streakIconSmall}
-            />
-            <Text
-              style={{
-                color: '#FFFFFF',
-                fontSize: 16,
-                fontWeight: 'normal',
-                marginVertical: 8,
-              }}
-            >
-              {streakCount
-                ? streakCount > 1
-                  ? `${streakCount} days : Keep it Up`
-                  : `${streakCount} day : Keep it Up`
-                : 'Let’s start today'}
-            </Text>
-          </View>
-
-          <View style={styles.rowCenter}>
-            <Image
-              source={require('../../../assets/points.png')}
-              style={styles.pointsIcon}
-            />
-
-            <Text
-              style={{
-                color: '#FFFFFF',
-                fontSize: 16,
-                fontWeight: 'normal',
-                marginVertical: 8,
-              }}
-            >
-              {pointsCount === 0
-                ? 'Ready to earn points?'
-                : `${pointsCount} pts : Earn More`}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            style={{
-              width: '100%',
-              backgroundColor: '#00ADB5',
-              padding: 16,
-              justifyContent: 'space-around',
-              alignItems: 'center',
-              borderRadius: 20,
-            }}
-            onPress={() => navigation.navigate('PracticeSelect')}
-          >
-            <Text style={{ color: '#EEEEEE', fontWeight: 'bold' }}>
-              START CHALLENGE
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Progress */}
-        <View style={[styles.card, { backgroundColor: '#EEEEEE' }]}>
-          <View style={styles.sectionFullWidth}>
-            <TextLabel text="PROGRESS" />
-
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}
-            >
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <GreenCheckIcon />
-                <NormalText text={`Solved Questions: ${questionSolved}`} />
-              </View>
-              <TouchableOpacity
-                style={{
-                  backgroundColor: '#00ADB5',
-                  padding: 16,
-                  justifyContent: 'space-around',
-                  alignItems: 'center',
-                  borderRadius: 10,
-                }}
-                onPress={() => navigation.navigate('PractisedQuestions')}
-              >
-                <Text style={{ color: '#EEEEEE', fontWeight: 'bold' }}>
-                  SEE ALL
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.rowCenter}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  width: '100%',
-                  alignItems: 'flex-end',
-                }}
-              >
-                {/* <PrimaryButton
-                  title="See all"
-                  isActive={true}
-                  submitHandler={() =>
-                    navigation.navigate('PractisedQuestions')
-                  }
-                /> */}
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with</Text>
           <Image
@@ -204,7 +55,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             style={styles.footerIcon}
           />
           <Text style={styles.footerText}>
-            {' '}
             by <Text style={styles.footerTeam}>dokidoki</Text> Team
           </Text>
         </View>
@@ -214,70 +64,28 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  body: {
+  bodyDark: {
     flex: 1,
     backgroundColor: '#222831',
+  },
+  bodyLight: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
   },
   scroll: {
     paddingVertical: 40,
     paddingHorizontal: 24,
   },
-  userCard: {
-    marginBottom: 10,
-    justifyContent: 'space-between',
-    flexDirection: 'row',
+  themeToggleButton: {
+    backgroundColor: '#00ADB5',
+    padding: 16,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    borderRadius: 10,
   },
-  userText: {
-    fontSize: 24,
-    fontWeight: '600',
+  themeToggleText: {
     color: '#EEEEEE',
-    paddingBottom: 10,
-  },
-  userTextDesc: {
-    fontSize: 22,
-    fontWeight: '500',
-    color: '#CCCCCC',
-  },
-  card: {
-    backgroundColor: '#393E46',
-    borderRadius: 24,
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    shadowColor: '#FFFFFF',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
-    width: '100%',
-    maxWidth: 350,
-    marginTop: 16,
-    marginBottom: 16,
-  },
-  sectionFullWidth: {
-    width: '100%',
-  },
-  rowCenter: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    justifyContent: 'flex-start',
-  },
-  streakIconSmall: {
-    width: 50,
-    height: 50,
-  },
-  pointsIcon: {
-    width: 40,
-    height: 40,
-    marginRight: 12,
-  },
-  button: {
-    width: '100%',
-    marginVertical: 10,
-    borderRadius: 12,
-    overflow: 'hidden',
+    fontWeight: 'bold',
   },
   footer: {
     flexDirection: 'row',
