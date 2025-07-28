@@ -1,56 +1,40 @@
-import { StyleSheet, TouchableOpacity, View, Text, Animated } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import React from 'react';
-import TextLabel from '../atoms/TextLabel';
 import NormalText from '../atoms/NormalText';
 
 type MainsQuestionsProps = {
   fakeData: {
-    que_type: string;
-    year: number;
-    paper: string;
-    marks: number;
-    question: string;
-    answer: string;
-    show_answer: boolean;
+    Year: number;
+    Paper: string;
+    Marks: number;
+    Question: string;
   };
 }
 
-type PrelimsQuestionsProps = {
-  fakeData: {
-    que_type: string;
-    year: number;
-    paper: string;
-    question: string;
-    options: string[];
-    answer: string;
-    show_answer: boolean;
-  };
-}
-
-type Props = MainsQuestionsProps | PrelimsQuestionsProps;
+type Props = MainsQuestionsProps;
 
 const MainsQuestionCard: React.FC<Props> = ({ fakeData }) => {
   return (
     <View style={styles.cardContainer}>
       <View style={styles.row}>
         <NormalText text='Year :' />
-        <NormalText text= {fakeData.year} />
+        <NormalText text={fakeData.Year.toString()} />
       </View>
 
       <View style={styles.row}>
       <NormalText text='Paper :' />
-      <NormalText text= {fakeData.paper} />
+      <NormalText text= {fakeData.Paper} />
       </View>
 
-      {'marks' in fakeData && (
+      {'Marks' in fakeData && (
         <View style={styles.row}>
           <NormalText text='Marks :' />
-          <NormalText text= {fakeData.marks} />
+          <NormalText text={fakeData.Marks.toString()} />
         </View>
       )}
 
       <View style={styles.questionContainer}>
-        <NormalText text= {fakeData.question} />
+        <NormalText text= {fakeData.Question} />
       </View>
     </View>
   );

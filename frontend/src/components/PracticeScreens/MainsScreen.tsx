@@ -1,37 +1,42 @@
 import React, { useEffect } from "react";
 import {
-  View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useState } from "react";
 import MainsQuestionCard from "../common/MainsQuestionCard";
 import AddPhotosComponents from "../common/AddPhotosComponent";
 import PrimaryButton from "../atoms/PrimaryButton";
-import Data from "../../../fakeData/data";
 import TitleAndSubtitleCard from "../common/TitleAndSubtitleCard";
 import UserStats from "../common/UserStats";
 import Card from "../atoms/Card";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NormalText from "../atoms/NormalText";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
+import { fetchTodaysQuestion } from "@/src/api/dailyMainsQuestion";
+
+
 const MainsScreen = ({ navigation }) => {
-  const [data, setData] = useState({});
+  const [data, setData] = useState<{ id: string } | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
   const [buttonActive, setButtonActive] = useState(true);
-
-  useEffect(() => {
-    Data[1].map((data) => setData(data));
-  }, [data]);
+  const [loading, setLoading] = useState(true);
 
   const submitHandler = () => {
     navigation.navigate("MainsVerdictOverlay");
     setButtonActive(false);
     setShowAnswer(true);
   };
+
+  useEffect(() => {
+    fetchTodaysQuestion()
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <ActivityIndicator />;
+  if (!data) return <Text>No question found for today.</Text>;
 
   return (
     <SafeAreaView style={styles.body}>
@@ -45,7 +50,7 @@ const MainsScreen = ({ navigation }) => {
           <MainsQuestionCard fakeData={data} />
 
           <AddPhotosComponents />
-          {showAnswer ? <NormalText text={data.answer} /> : <></>}
+          {showAnswer ? <NormalText text={"Thank you for writing an answer today"} /> : <></>}
           <PrimaryButton
             isActive={buttonActive}
             submitHandler={submitHandler}
