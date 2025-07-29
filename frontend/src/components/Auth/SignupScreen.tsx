@@ -1,31 +1,80 @@
-import { auth } from "@/src/firebaseConfig";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useState } from "react";
-import { View, Button, Text, TextInput, StyleSheet } from "react-native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { auth, firestore } from '../../firebaseConfig';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useState, useEffect } from 'react';
+import { View, Button, Text, TextInput, StyleSheet } from 'react-native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
 };
 
 export default function SignupScreen({ navigation }: Props) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUserName] = useState('');
+  const [phonenumber, setPhonenumber] = useState('');
+  const [disabled, setDisabled] = useState(true);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const allFilled =
+      email.trim() !== '' &&
+      password.trim() !== '' &&
+      username.trim() !== '' &&
+      phonenumber.trim() !== '';
+
+    setDisabled(!allFilled);
+  }, [email, password, username, phonenumber]);
 
   const handleSignup = async () => {
+    if (loading) return;
+    setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      navigation.replace("Login");
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user_id = userCred.user.uid;
+      const userData = {
+        username: username,
+        phoneNumber: phonenumber,
+        streak: {
+          longest_streak: 0,
+          current_streak: 0,
+          last_active_date: null,
+          dates_active: {},
+        },
+        createdAt: serverTimestamp(),
+      };
+      await setDoc(doc(firestore, 'users', user_id), userData);
     } catch (e) {
-      setError("Signup failed. Try a different email");
+      setError(`Error:- ${e}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.form}>
+        <TextInput
+          style={styles.input}
+          placeholder="User Name"
+          value={username}
+          onChangeText={setUserName}
+          autoCapitalize="none"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Phone Number"
+          maxLength={13}
+          value={phonenumber}
+          keyboardType="numeric"
+          onChangeText={setPhonenumber}
+        />
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -42,7 +91,11 @@ export default function SignupScreen({ navigation }: Props) {
           secureTextEntry
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <Button title="Sign Up" onPress={handleSignup} />
+        <Button
+          disabled={disabled || loading}
+          title="Sign Up"
+          onPress={handleSignup}
+        />
         <Button title="Back to Login" onPress={() => navigation.goBack()} />
       </View>
     </SafeAreaView>
@@ -52,27 +105,27 @@ export default function SignupScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center", // Vertical centering
-    alignItems: "center", // Horizontal centering
-    backgroundColor: "#f0f0f0", // Optional: subtle background
+    justifyContent: 'center', // Vertical centering
+    alignItems: 'center', // Horizontal centering
+    backgroundColor: '#f0f0f0', // Optional: subtle background
   },
   form: {
-    width: "80%",
-    alignItems: "center",
+    width: '80%',
+    alignItems: 'center',
   },
   input: {
-    width: "100%",
+    width: '100%',
     height: 48,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 16,
     paddingHorizontal: 12,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     fontSize: 16,
   },
   error: {
-    color: "red",
+    color: 'red',
     marginBottom: 16,
   },
 });
