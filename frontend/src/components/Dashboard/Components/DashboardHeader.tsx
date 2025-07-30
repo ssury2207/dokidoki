@@ -6,7 +6,10 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 
 const DashboardHeader = () => {
-  const user = 'Maya';
+  const userName = useSelector(
+    (state: RootState) => state.userProgress.userName
+  );
+  const user = userName;
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
   const signOutButtonHandler = () => {

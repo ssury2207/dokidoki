@@ -18,6 +18,7 @@ import { setTheme } from '@/store/slices/themeSlice';
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore, auth } from '../../firebaseConfig';
+import { setPoints, setUserName } from '@/store/userProgressSlice';
 
 type RootStackParamList = {
   Dashboard: undefined;
@@ -28,7 +29,7 @@ type RootStackParamList = {
 interface UserData {
   username: string;
   points: number;
-  streak: number;
+  streak: object;
   total_solved: number;
 }
 
@@ -58,9 +59,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           setUserData({
             username: data.username,
             points: data.points.total_points,
-            streak: data.streak.current_streak,
+            streak: data.streak,
             total_solved: data.submissions.total_solved,
           });
+          dispatch(setUserName(data?.username));
+          dispatch(setPoints(data?.points.total_points));
         }
       } catch (error) {
         console.log('Error occurred while fetching user data:', error);
@@ -76,14 +79,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <DashboardHeader />
         <DailyChallengeCard />
         <ProgressCard />
-        {userData ? (
-          <Text>
-            {userData.username} {userData.points} {userData.streak}{' '}
-            {userData.total_solved}
-          </Text>
-        ) : (
-          <></>
-        )}
+
         <TouchableOpacity
           style={styles.themeToggleButton}
           onPress={themeBtnHandler}
