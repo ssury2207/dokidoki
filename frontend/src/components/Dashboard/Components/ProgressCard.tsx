@@ -1,30 +1,47 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from 'expo-router';
 import TextLabel from '../../atoms/TextLabel';
 import NormalText from '../../atoms/NormalText';
 import GreenCheckIcon from '../../atoms/GreenCheckIcon';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '@/store/store';
+import { fetchArchivedQuestions, selectArchivedQuestions, selectArchivedQuestionsError, selectArchivedQuestionsLoading } from '@/store/slices/archivedQuestionsSlice';
+import { getArchiveQuestions } from '@/src/api/fetchArchiveQuestions';
+
+
 const ProgressCard = () => {
   const navigation = useNavigation();
   const questionSolved = '10';
   const theme = useSelector((state: RootState) => state.theme.isLight);
+
+  const dispatch = useDispatch<AppDispatch>();
+  const data = useSelector(selectArchivedQuestions);
+  const isLoading = useSelector(selectArchivedQuestionsLoading);
+  const error = useSelector(selectArchivedQuestionsError);
+
+  useEffect(() => {
+    dispatch(fetchArchivedQuestions());
+  }, [dispatch]);
+
+  if (isLoading) return <ActivityIndicator />;
+  if (error) return <Text>Error fetching questions</Text>;
+  
   return (
     <View
       style={[styles.card, { backgroundColor: theme ? '#EEEEEE' : '#FFFFFF' }]}
     >
       <View style={styles.sectionFullWidth}>
-        <TextLabel text="PROGRESS" />
+        <TextLabel text="PREVIOUS QUESTIONS" />
 
         <View style={styles.rowBetween}>
           <View style={styles.rowLeft}>
             <GreenCheckIcon />
-            <NormalText text={` Solved Questions: ${questionSolved}`} />
+            <NormalText text={` All Questions: ${data.length}`} />
           </View>
           <TouchableOpacity
             style={styles.seeAllButton}
-            onPress={() => navigation.navigate('PractisedQuestions')}
+            onPress={() => (navigation as any).navigate('PractisedQuestions', { data })}
           >
             <Text style={styles.seeAllButtonText}>SEE ALL</Text>
           </TouchableOpacity>

@@ -5,7 +5,8 @@ type QuestionCardProps = {
     question: string,
     year: number,
     paper: string,
-    marks: number
+    marks: number,
+    date: string
 }
 
 export default function QuestionCard(data: QuestionCardProps) {
@@ -13,7 +14,7 @@ export default function QuestionCard(data: QuestionCardProps) {
     <View style={{borderColor: "Black", borderWidth: 1, borderRadius:10, marginHorizontal:15, marginTop:10, padding:10}}>
       <Text numberOfLines={2} ellipsizeMode='tail' style={{marginBottom: 10}}>{data.question}</Text>
       
-      <Text>Year:{data.year} Paper:{data.paper} Marks:{data.marks}</Text>
+      <Text>Year:{data.year} Paper:{data.paper} Marks:{data.marks} Date:{data.date}</Text>
     </View>
   )
 }
