@@ -1,11 +1,4 @@
-import {
-  Text,
-  View,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/src/firebaseConfig';
 import LogoutIcon from '../../atoms/LogoutIcon';

@@ -15,12 +15,22 @@ import DailyChallengeCard from './Components/DailyChallengeCard';
 import ProgressCard from './Components/ProgressCard';
 import { RootState, AppDispatch } from '@/store/store';
 import { setTheme } from '@/store/slices/themeSlice';
+import { useState, useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { firestore, auth } from '../../firebaseConfig';
 
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
   PractisedQuestions: undefined;
 };
+
+interface UserData {
+  username: string;
+  points: number;
+  streak: number;
+  total_solved: number;
+}
 
 type DashboardScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Dashboard'>;
@@ -33,6 +43,32 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const themeBtnHandler = () => {
     dispatch(setTheme(!theme));
   };
+  const [userData, setUserData] = useState<UserData | null>(null);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+
+      try {
+        const docRef = doc(firestore, 'users', uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUserData({
+            username: data.username,
+            points: data.points.total_points,
+            streak: data.streak.current_streak,
+            total_solved: data.submissions.total_solved,
+          });
+        }
+      } catch (error) {
+        console.log('Error occurred while fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []); // run only on mount
 
   return (
     <SafeAreaView style={theme ? styles.bodyDark : styles.bodyLight}>
@@ -40,7 +76,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <DashboardHeader />
         <DailyChallengeCard />
         <ProgressCard />
-
+        {userData ? (
+          <Text>
+            {userData.username} {userData.points} {userData.streak}{' '}
+            {userData.total_solved}
+          </Text>
+        ) : (
+          <></>
+        )}
         <TouchableOpacity
           style={styles.themeToggleButton}
           onPress={themeBtnHandler}
