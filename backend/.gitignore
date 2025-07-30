@@ -1,3 +1,4 @@
 node_modules/
+Data/PrelimsData/*
 .env
 config/config.json
