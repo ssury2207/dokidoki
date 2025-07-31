@@ -18,20 +18,21 @@ import { setTheme } from '@/store/slices/themeSlice';
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore, auth } from '../../firebaseConfig';
-import { setPoints, setUserName } from '@/store/userProgressSlice';
+import {
+  setCurrentStreak,
+  setLastActiveDate,
+  setLongestStreak,
+  setPoints,
+  setUserName,
+  resetStreak,
+} from '@/store/userProgressSlice';
+import getDateDiffInDays from '@/src/utils/dateDifference';
 
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
   PractisedQuestions: undefined;
 };
-
-interface UserData {
-  username: string;
-  points: number;
-  streak: object;
-  total_solved: number;
-}
 
 type DashboardScreenProps = {
   navigation: StackNavigationProp<RootStackParamList, 'Dashboard'>;
@@ -44,7 +45,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const themeBtnHandler = () => {
     dispatch(setTheme(!theme));
   };
-  const [userData, setUserData] = useState<UserData | null>(null);
   useEffect(() => {
     const fetchUserData = async () => {
       const uid = auth.currentUser?.uid;
@@ -56,14 +56,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setUserData({
-            username: data.username,
-            points: data.points.total_points,
-            streak: data.streak,
-            total_solved: data.submissions.total_solved,
-          });
           dispatch(setUserName(data?.username));
           dispatch(setPoints(data?.points.total_points));
+          dispatch(setCurrentStreak(data?.streak.current_streak));
+          dispatch(setLongestStreak(data?.streak.longest_streak));
+          dispatch(setLastActiveDate(data?.streak.last_active_date));
+          const last_active_date = data?.streak?.last_active_date;
+          const todays_date = new Date().toLocaleDateString('en-CA');
+          if (last_active_date) {
+            const diff = getDateDiffInDays(last_active_date, todays_date);
+            if (diff > 1) {
+              dispatch(resetStreak());
+            }
+          }
         }
       } catch (error) {
         console.log('Error occurred while fetching user data:', error);
@@ -80,12 +85,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <DailyChallengeCard />
         <ProgressCard />
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.themeToggleButton}
           onPress={themeBtnHandler}
         >
           <Text style={styles.themeToggleText}>{theme ? 'Dark' : 'Light'}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with</Text>

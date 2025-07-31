@@ -1,13 +1,10 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { signOut } from 'firebase/auth';
-import { auth } from '@/src/firebaseConfig';
+import { Text, View, Image, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useNavigation } from 'expo-router';
 import PointsIcon from '../../atoms/PointsIcon';
 import NoPointsIcon from '../../atoms/NoPointsIcon';
 import PrimaryButton from '../../atoms/PrimaryButton';
-import { Background } from '@react-navigation/elements';
 
 const streakBlack = require('../../../../assets/streak-Black.png');
 const streakLight = require('../../../../assets/streak-Light.png');
@@ -16,7 +13,7 @@ const DailyChallengeCard = () => {
   const navigation = useNavigation();
   const theme = useSelector((state: RootState) => state.theme.isLight);
   const streakCount = useSelector(
-    (state: RootState) => state.userProgress.streak
+    (state: RootState) => state.userProgress.current_streak
   );
   const pointsCount = useSelector(
     (state: RootState) => state.userProgress.totalPoints
