@@ -12,7 +12,6 @@ import { getArchiveQuestions } from '@/src/api/fetchArchiveQuestions';
 
 const ProgressCard = () => {
   const navigation = useNavigation();
-  const questionSolved = '10';
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
   const dispatch = useDispatch<AppDispatch>();

@@ -9,19 +9,8 @@ import FooterText from '../atoms/FooterText';
 import PracticeButton from '../common/PracticeButton';
 import Data from '@/fakeData/data';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { useSelector } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { useDispatch } from 'react-redux';
-import {
-  setYear,
-  setPaper,
-  setAnswer,
-  setQuestion,
-  setOptions,
-  setExpectedOption,
-  setActualOption,
-} from '@/store/slices/prelimsQuestionSlice';
-import { store } from '@/store/store';
 
 type PracticeSelectScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -30,19 +19,8 @@ type PracticeSelectScreenProps = {
 export default function PracticeSelectScreen({
   navigation,
 }: PracticeSelectScreenProps) {
-  const [data, setData] = useState([]);
-  const dispatch = useDispatch<AppDispatch>();
 
-  useEffect(() => {
-    const dataItem = Data[0][0];
-    setData(dataItem);
-    dispatch(setQuestion(dataItem.question));
-    dispatch(setOptions(dataItem.options));
-    dispatch(setExpectedOption(dataItem.correctOption));
-    dispatch(setAnswer(dataItem.answer));
-    dispatch(setPaper(dataItem.paper));
-    dispatch(setYear(dataItem.year));
-  }, [Data]);
+  
   const mainsButtonHandler = () => {
     navigation.navigate('MainsScreen');
   };
