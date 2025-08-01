@@ -1,21 +1,24 @@
-import {
-  Text,
-  View,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { Text, View, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/src/firebaseConfig';
 import LogoutIcon from '../../atoms/LogoutIcon';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
+import { RootState, AppDispatch } from '@/store/store';
+import MoonIcon from '../../atoms/Moon';
+import { useDispatch } from 'react-redux';
+import { setTheme } from '@/store/slices/themeSlice';
+import SunIcon from '../../atoms/SunIcon';
 
 const DashboardHeader = () => {
-  const user = 'Maya';
+  const userName = useSelector(
+    (state: RootState) => state.userProgress.userName
+  );
+  const user = userName;
+  const dispatch = useDispatch<AppDispatch>();
+  const themeBtnHandler = () => {
+    dispatch(setTheme(!theme));
+  };
   const theme = useSelector((state: RootState) => state.theme.isLight);
-
   const signOutButtonHandler = () => {
     Alert.alert('Log Out', 'You will be logged out', [
       {
@@ -48,6 +51,9 @@ const DashboardHeader = () => {
           alignItems: 'center',
         }}
       >
+        <TouchableOpacity onPress={themeBtnHandler}>
+          {theme ? <SunIcon /> : <MoonIcon />}
+        </TouchableOpacity>
         <TouchableOpacity onPress={signOutButtonHandler} style={styles.button}>
           <LogoutIcon />
         </TouchableOpacity>

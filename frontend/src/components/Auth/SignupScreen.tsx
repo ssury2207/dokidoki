@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { View, Button, Text, TextInput, StyleSheet } from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { setDoc, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
@@ -47,8 +47,30 @@ export default function SignupScreen({ navigation }: Props) {
           last_active_date: null,
           dates_active: {},
         },
+        submissions: {
+          total_solved: 0,
+          pre: {},
+          mains: {},
+        },
+        points: {
+          total_points: 0,
+          today: {
+            pre: {
+              amount: 0,
+              timestamp: null,
+            },
+            mains: {
+              amount: 0,
+              timestamp: null,
+            },
+          },
+          history: {
+            // Later populated as: "2025-07-29": { pre: 2, mains: 3 }
+          },
+        },
         createdAt: serverTimestamp(),
       };
+
       await setDoc(doc(firestore, 'users', user_id), userData);
     } catch (e) {
       setError(`Error:- ${e}`);
@@ -64,6 +86,7 @@ export default function SignupScreen({ navigation }: Props) {
           style={styles.input}
           placeholder="User Name"
           value={username}
+          maxLength={10}
           onChangeText={setUserName}
           autoCapitalize="none"
         />

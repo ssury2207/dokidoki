@@ -1,31 +1,56 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface UserProgressState {
-    streak: number;
-    totalPoints: number;
+  userName: string | null;
+  longest_streak: number;
+  current_streak: number;
+  last_active_date: string;
+  totalPoints: number;
 }
 
-
 const initialState: UserProgressState = {
-    streak: 0,
-    totalPoints: 0
+  userName: '',
+  longest_streak: 0,
+  current_streak: 0,
+  last_active_date: '',
+  totalPoints: 0,
 };
 
 const userProgressSlice = createSlice({
-    name: 'userProgress',
-    initialState,
-    reducers: {
-        setStreak(state){
-            state.streak += 1;
-        },
-        addPoints(state, action: PayloadAction<number>){
-            state.totalPoints += action.payload;
-        },
-        resetStreak(state){
-            state.streak = 0;
-        },
+  name: 'userProgress',
+  initialState,
+  reducers: {
+    setUserName(state, action: PayloadAction<string>) {
+      state.userName = action.payload;
     },
+    setCurrentStreak(state, action: PayloadAction<number>) {
+      state.current_streak = action.payload;
+    },
+    setLongestStreak(state) {
+      state.longest_streak += 1;
+    },
+    setLastActiveDate(state, action: PayloadAction<string>) {
+      state.last_active_date = action.payload;
+    },
+    resetStreak(state) {
+      state.current_streak = 0;
+    },
+    setPoints(state, action: PayloadAction<number>) {
+      state.totalPoints = action.payload;
+    },
+    addPoints(state, action: PayloadAction<number>) {
+      state.totalPoints += action.payload;
+    },
+  },
 });
 
-export const { setStreak, addPoints, resetStreak } = userProgressSlice.actions;
+export const {
+  setCurrentStreak,
+  setLongestStreak,
+  setLastActiveDate,
+  addPoints,
+  setUserName,
+  setPoints,
+  resetStreak,
+} = userProgressSlice.actions;
 export default userProgressSlice.reducer;

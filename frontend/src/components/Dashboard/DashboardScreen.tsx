@@ -15,6 +15,18 @@ import DailyChallengeCard from './Components/DailyChallengeCard';
 import ProgressCard from './Components/ProgressCard';
 import { RootState, AppDispatch } from '@/store/store';
 import { setTheme } from '@/store/slices/themeSlice';
+import { useState, useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { firestore, auth } from '../../firebaseConfig';
+import {
+  setCurrentStreak,
+  setLastActiveDate,
+  setLongestStreak,
+  setPoints,
+  setUserName,
+  resetStreak,
+} from '@/store/userProgressSlice';
+import getDateDiffInDays from '@/src/utils/dateDifference';
 
 type RootStackParamList = {
   Dashboard: undefined;
@@ -33,6 +45,38 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const themeBtnHandler = () => {
     dispatch(setTheme(!theme));
   };
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
+
+      try {
+        const docRef = doc(firestore, 'users', uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          dispatch(setUserName(data?.username));
+          dispatch(setPoints(data?.points.total_points));
+          dispatch(setCurrentStreak(data?.streak.current_streak));
+          dispatch(setLongestStreak(data?.streak.longest_streak));
+          dispatch(setLastActiveDate(data?.streak.last_active_date));
+          const last_active_date = data?.streak?.last_active_date;
+          const todays_date = new Date().toLocaleDateString('en-CA');
+          if (last_active_date) {
+            const diff = getDateDiffInDays(last_active_date, todays_date);
+            if (diff > 1) {
+              dispatch(resetStreak());
+            }
+          }
+        }
+      } catch (error) {
+        console.log('Error occurred while fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []); // run only on mount
 
   return (
     <SafeAreaView style={theme ? styles.bodyDark : styles.bodyLight}>
@@ -41,12 +85,12 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <DailyChallengeCard />
         <ProgressCard />
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.themeToggleButton}
           onPress={themeBtnHandler}
         >
           <Text style={styles.themeToggleText}>{theme ? 'Dark' : 'Light'}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with</Text>
