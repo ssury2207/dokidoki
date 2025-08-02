@@ -1,64 +1,57 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import NormalText from '@/src/components/atoms/NormalText';
 import AnswerItem from './AnswerItem';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
-import {
-  setActualOption,
-  setExpectedOption,
-  setIsAttempted,
-} from '@/store/slices/prelimsQuestionSlice';
-import { store } from '@/store/store';
-
-import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
+import { fetchDailyPrelimsQuestion, selectDailyPrelimsQuestion, selectDailyPrelimsQuestionError, selectDailyPrelimsQuestionLoading } from '@/store/slices/prelimsQuestionSlice';
+import Table from '../../atoms/Table';
 
 const PrelimsQuestionSection = () => {
-  const question = useSelector(
-    (state: RootState) => state.prelimsQuestion.question
-  );
-  const options = useSelector(
-    (state: RootState) => state.prelimsQuestion.options
-  );
-  const isAttempted = useSelector(
-    (state: RootState) => state.prelimsQuestion.isAttempted
-  );
-  const paper = useSelector((state: RootState) => state.prelimsQuestion.paper);
-  const year = useSelector((state: RootState) => state.prelimsQuestion.year);
 
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
     null
   );
-  const dispatch = useDispatch<AppDispatch>();
-
   const [isSelected, setIsSelected] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const data = useSelector(selectDailyPrelimsQuestion);
+  const isLoading = useSelector(selectDailyPrelimsQuestionLoading);
+  const error = useSelector(selectDailyPrelimsQuestionError);
+
+  useEffect(() => {
+    dispatch(fetchDailyPrelimsQuestion());
+  }, [dispatch]);
+
+  if (isLoading) return <ActivityIndicator />;
+  if (error) return <Text>Error fetching questions</Text>;
+  if (!data) return <Text>Loading question data...</Text>;
+
+  
   const buttonItemSelector = (index: number) => {
     setSelectedItemIndex(index);
     setIsSelected((isactive) => !isactive);
-    dispatch(setActualOption(options[index].option));
+    // dispatch(setActualOption(options[index].option));
   };
 
   return (
     <View style={styles.cardContainer}>
       <View style={styles.row}>
         <NormalText text="Year :" />
-        <NormalText text={year} />
-      </View>
-
-      <View style={styles.row}>
-        <NormalText text="Paper :" />
-        <NormalText text={paper} />
+        <NormalText text={data.Year} />
       </View>
 
       <View style={styles.questionContainer}>
-        <NormalText text={question} />
+        <NormalText text={data.Question} />
       </View>
-      {options &&
-        options.map((item, index) => {
+      <View style={styles.questionContainer}>
+        <Table table={data.Table}/>
+      </View>
+      {data.Options &&
+        data.Options.map((item, index) => {
           return (
             <TouchableOpacity
-              disabled={isAttempted}
+              disabled={false}
               key={index}
               onPress={() => buttonItemSelector(index)}
               style={[
@@ -68,7 +61,7 @@ const PrelimsQuestionSection = () => {
                   : styles.unselected,
               ]}
             >
-              <AnswerItem option={item.option} text={item.text} />
+              <AnswerItem text={item} />
             </TouchableOpacity>
           );
         })}

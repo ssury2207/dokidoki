@@ -1,21 +1,16 @@
-import { StyleSheet, ScrollView, View, Text, FlatList } from 'react-native';
-import React, { act, useEffect, useState } from 'react';
+import { StyleSheet, ScrollView } from 'react-native';
+import React, { useState } from 'react';
 import PrimaryButton from '../atoms/PrimaryButton';
 import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
 import UserStats from '../common/UserStats';
 import Card from '../atoms/Card';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Data from '../../../fakeData/data';
 import ExpectedPrelimsAnswer from './components/ExpectedPrelimsAnswer';
 import PrelimsQuestionSection from './components/PrelimsQuestionSection';
 
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
-import {
-  setActualOption,
-  setIsAttempted,
-} from '@/store/slices/prelimsQuestionSlice';
-import { addPoints, resetStreak, setStreak } from '@/store/userProgressSlice';
+import { addPoints, setStreak } from '@/store/userProgressSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 

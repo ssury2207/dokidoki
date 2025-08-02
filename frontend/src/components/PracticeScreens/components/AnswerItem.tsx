@@ -3,14 +3,12 @@ import React, { useState } from "react";
 import NormalText from "@/src/components/atoms/NormalText";
 
 type Props = {
-  option: string;
   text: string;
 };
 
 const AnswerItem: React.FC<Props> = (props) => {
   return (
     <View style={styles.section}>
-      <NormalText text={props.option} />
       <NormalText text={props.text} />
     </View>
   );
