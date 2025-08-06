@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { act } from 'react';
 
 interface themeState {
   isLight: boolean;

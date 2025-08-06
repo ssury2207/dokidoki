@@ -1,15 +1,25 @@
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import NormalText from '@/src/components/atoms/NormalText';
 import AnswerItem from './AnswerItem';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { useSelector } from 'react-redux';
-import { fetchDailyPrelimsQuestion, selectDailyPrelimsQuestion, selectDailyPrelimsQuestionError, selectDailyPrelimsQuestionLoading } from '@/store/slices/prelimsQuestionSlice';
+import {
+  fetchDailyPrelimsQuestion,
+  selectDailyPrelimsQuestion,
+  selectDailyPrelimsQuestionError,
+  selectDailyPrelimsQuestionLoading,
+} from '@/store/slices/prelimsQuestionSlice';
 import Table from '../../atoms/Table';
-
+import { setSelectedOption } from '@/store/slices/optionSelectorSlice';
 const PrelimsQuestionSection = () => {
-
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
     null
   );
@@ -27,11 +37,10 @@ const PrelimsQuestionSection = () => {
   if (error) return <Text>Error fetching questions</Text>;
   if (!data) return <Text>Loading question data...</Text>;
 
-  
   const buttonItemSelector = (index: number) => {
     setSelectedItemIndex(index);
     setIsSelected((isactive) => !isactive);
-    // dispatch(setActualOption(options[index].option));
+    dispatch(setSelectedOption(index));
   };
 
   return (
@@ -45,7 +54,7 @@ const PrelimsQuestionSection = () => {
         <NormalText text={data.Question} />
       </View>
       <View style={styles.questionContainer}>
-        <Table table={data.Table}/>
+        <Table table={data.Table} />
       </View>
       {data.Options &&
         data.Options.map((item, index) => {

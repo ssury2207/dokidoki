@@ -58,16 +58,6 @@ export default function SignupScreen({ navigation }: Props) {
         },
         points: {
           total_points: 0,
-          today: {
-            pre: {
-              amount: 0,
-              timestamp: null,
-            },
-            mains: {
-              amount: 0,
-              timestamp: null,
-            },
-          },
           history: {
             // Later populated as: "2025-07-29": { pre: 2, mains: 3 }
           },
