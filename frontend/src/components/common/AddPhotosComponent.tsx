@@ -15,16 +15,35 @@ import PrimaryButton from "../atoms/PrimaryButton";
 import Modal from "react-native-modal";
 import * as ImagePicker from "expo-image-picker";
 import AddPhotoModal from "../atoms/AddPhotoModal";
+import { auth } from '../../firebaseConfig';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirestore, updateDoc, doc, Firestore, getDoc } from "firebase/firestore";
+
 
 interface ImageData {
   id: number;
   uri: string;
 }
 
-const AddPhotosComponents = () => {
+interface AddPhotosComponentsProps {
+  isAnswerUploaded: boolean;
+  uploadCopies: ImageData[];
+  setUploadCopies: React.Dispatch<React.SetStateAction<ImageData[]>>;
+}
+
+const AddPhotosComponents = ({ isAnswerUploaded, uploadCopies, setUploadCopies }: AddPhotosComponentsProps) => {
   const [id, setId] = useState(0); // This will have to be set to persist the images uploaded
   const [data, setData] = useState<{ id: number; uri: string }[]>([]);
   const [isShowModal, setIsShowModal] = useState(false);
+  
+
+  
+  const db = getFirestore();
+  const today = new Date().toISOString().substring(0, 10);
+  const uid = auth.currentUser?.uid;
+  
+
+  
 
   const requestCameraPermissionBeforeUpload = async () => {
     try {
@@ -63,7 +82,7 @@ const AddPhotosComponents = () => {
     try {
       setIsShowModal(false);
       setId((id) => id + 1);
-      setData((prevData: ImageData[]) => [...prevData, { id: id, uri: image }]);
+      setUploadCopies((prevData: ImageData[]) => [...prevData, { id: id, uri: image }]);
     } catch (error) {
       console.log("Error in Saving Image", error);
     }
@@ -109,24 +128,39 @@ const AddPhotosComponents = () => {
     }
   };
 
+  
+
+  
+
+
   const addPhotoHandler = () => {
     setIsShowModal(true);
   };
 
   const deletePhotoHandler = (id: number) => {
-    setData((prevData) => prevData.filter((item) => item.id !== id));
+    setUploadCopies((prevData) => prevData.filter((item) => item.id !== id));
   };
+
+  
 
   return (
     <View style={styles.viewContainer}>
       <TouchableOpacity
         onPress={addPhotoHandler}
         style={styles.addPhotoContainer}
+        disabled={isAnswerUploaded}
       >
-        <Text style={styles.addPhotoText}>+ Add Photo</Text>
+        <Text
+          style={[
+            styles.addPhotoText,
+            isAnswerUploaded ? { color: "#B0B0B0" } : null // Change color when disabled
+          ]}
+        >
+          + Add Photo
+        </Text>
       </TouchableOpacity>
 
-      {data.map((item) => (
+      {!isAnswerUploaded && uploadCopies.map((item) => (
         <View key={item.id} style={styles.fileItem}>
           <Text style={styles.fileText}>{item.id}.jpg</Text>
           <Image source={{ uri: item.uri }} style={{ height: 50, width: 50 }} />
