@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   Image,
   View,
-  Alert,
 } from "react-native";
 import { useState } from "react";
 import MainsQuestionCard from "../common/MainsQuestionCard";
@@ -20,14 +19,10 @@ import NormalText from "../atoms/NormalText";
 import { fetchTodaysQuestion } from "@/src/api/dailyMainsQuestion";
 import { doc, Firestore, getDoc, getFirestore, updateDoc } from "firebase/firestore";
 import { auth } from "@/src/firebaseConfig";
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
-import { uploadImageToCloudinary } from "@/src/api/uploadImageToCloudinary";
 
 
-const MainsScreen = () => {
+const MainsScreen = ({ navigation }) => {
   const [data, setData] = useState<{ id: string } | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [buttonActive, setButtonActive] = useState(true);
   const [loading, setLoading] = useState(true);
   const [isAnswerCopiesDateExists, setIsAnswerCopiesDateExists] = useState<boolean>(false);
   const [todaysAnswerCopies, setTodaysAnswerCopies] = useState<string[]>([])
@@ -36,7 +31,6 @@ const MainsScreen = () => {
   const db = getFirestore();
   const today = new Date().toISOString().substring(0, 10);
   const uid = auth.currentUser?.uid;
-  const storage = getStorage();
 
   useEffect(() => {
     fetchTodaysQuestion()
@@ -63,26 +57,10 @@ const MainsScreen = () => {
   }, [uid, db, today]);
 
 
-  async function uploadImagesArrayParallel(userId: string, images:{ id: number; uri: string }[]) {
-    const uploadPromises = images.map(img => uploadImageToCloudinary(img.uri));
-    const downloadURLs = await Promise.all(uploadPromises);
-
-    await updateDoc(doc(db, "users", userId), {
-      [`submissions.mains.answerCopies.${today}`]: downloadURLs,
-    });
-  }
+  
 
   const submitHandler = async () => {
-    if (!uid) return;
-
-    try {
-      await uploadImagesArrayParallel(uid, uploadCopies);
-      setButtonActive(false);
-      setShowAnswer(true);
-    } catch (error) {
-      alert("Upload Failed");
-      console.error("Upload failed", error);
-    }
+    navigation.navigate("MainsVerdictOverlay", { uid, uploadCopies})
   };
 
 
@@ -120,9 +98,9 @@ const MainsScreen = () => {
                     <Image source={{ uri: url }} style={{ height: 50, width: 50 }} />
                   </View>
                 ))}
-          {(showAnswer || isAnswerCopiesDateExists) ? <NormalText text={"Thank you for writing an answer today"} /> : <></>}
+          {(isAnswerCopiesDateExists) ? <NormalText text={"Thank you for writing an answer today"} /> : <></>}
           <PrimaryButton
-            isActive={buttonActive && !isAnswerCopiesDateExists}
+            isActive={!isAnswerCopiesDateExists}
             submitHandler={submitHandler}
             title="Submit"
           />
