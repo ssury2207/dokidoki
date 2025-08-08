@@ -19,11 +19,13 @@ import NormalText from "../atoms/NormalText";
 import { fetchTodaysQuestion } from "@/src/api/dailyMainsQuestion";
 import { doc, Firestore, getDoc, getFirestore, updateDoc } from "firebase/firestore";
 import { auth } from "@/src/firebaseConfig";
+import FullScreenLoader from "../common/FullScreenLoader";
 
 
 const MainsScreen = ({ navigation }) => {
   const [data, setData] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loaderVisible, setLoaderVisible] = useState(false);
   const [isAnswerCopiesDateExists, setIsAnswerCopiesDateExists] = useState<boolean>(false);
   const [todaysAnswerCopies, setTodaysAnswerCopies] = useState<string[]>([])
   const [uploadCopies, setUploadCopies] = useState<{ id: number; uri: string }[]>([]);
@@ -41,6 +43,7 @@ const MainsScreen = ({ navigation }) => {
   useEffect(() => {
     const checkDate = async () => {
       if (!uid) return;
+      setLoaderVisible(true);
 
       const answerCopies = await getAnswerCopies(db, uid);
 
@@ -51,6 +54,7 @@ const MainsScreen = ({ navigation }) => {
         setIsAnswerCopiesDateExists(true);
         setTodaysAnswerCopies(answerCopies[today]);
       }
+      setLoaderVisible(false);
     };
 
     checkDate();
@@ -76,8 +80,6 @@ const MainsScreen = ({ navigation }) => {
     return answerCopies || null;
   }
 
-
-  if (loading) return <ActivityIndicator />;
   if (!data) return <Text>No question found for today.</Text>;
 
   return (
@@ -117,6 +119,7 @@ const MainsScreen = ({ navigation }) => {
           />
         </Card>
       </ScrollView>
+      <FullScreenLoader visible={loaderVisible || loading} />
     </SafeAreaView>
   );
 };
