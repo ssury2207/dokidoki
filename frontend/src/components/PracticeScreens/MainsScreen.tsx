@@ -3,9 +3,9 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
   Image,
   View,
+  TouchableOpacity,
 } from "react-native";
 import { useState } from "react";
 import MainsQuestionCard from "../common/MainsQuestionCard";
@@ -91,11 +91,22 @@ const MainsScreen = ({ navigation }) => {
         <Card>
           <MainsQuestionCard fakeData={data} />
 
-          <AddPhotosComponents isAnswerUploaded={isAnswerCopiesDateExists} uploadCopies={uploadCopies} setUploadCopies={setUploadCopies}/>
+          <AddPhotosComponents
+            isAnswerUploaded={isAnswerCopiesDateExists}
+            uploadCopies={uploadCopies}
+            setUploadCopies={setUploadCopies}
+            navigation={navigation}
+          />
           {isAnswerCopiesDateExists && todaysAnswerCopies.map((url, idx) => (
                   <View key={idx} style={styles.fileItem}>
                     <Text style={styles.fileText}>{idx}.jpg</Text>
-                    <Image source={{ uri: url }} style={{ height: 50, width: 50 }} />
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("FullScreenImageViewer", { imageUrl: url })
+                      }
+                    >
+                      <Image source={{ uri: url }} style={{ height: 50, width: 50 }} />
+                    </TouchableOpacity>
                   </View>
                 ))}
           {(isAnswerCopiesDateExists) ? <NormalText text={"Thank you for writing an answer today"} /> : <></>}
