@@ -51,13 +51,13 @@ export default function PrelimsScreen({ navigation }) {
         ? parseInt(selectedOption, 10)
         : selectedOption;
     //date Guard
-    // if (todays_date != data.date) {
-    //   alert(
-    //     'opps to late for the submission, solve recently updated question to maintain streak'
-    //   );
-    //   // navigation.navigate('Dashboard');
-    //   return;
-    // }
+    if (todays_date != data.date) {
+      alert(
+        'opps to late for the submission, solve recently updated question to maintain streak'
+      );
+      // navigation.navigate('Dashboard');
+      return;
+    }
     // Grade
     const expectedOptionIDX =
       data.Answer.toLowerCase().charCodeAt(0) - 'a'.charCodeAt(0);
