@@ -15,7 +15,7 @@ export default function AppNavigator() {
   return (
     <Provider store={store}>
       <Stack.Navigator
-        initialRouteName="Dashboard"
+        initialRouteName="PrelimsScreen"
         screenOptions={{
           headerStyle: {
             backgroundColor: '#FFFF', // Header background color
