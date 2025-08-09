@@ -4,6 +4,8 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Image,
+  View,
 } from "react-native";
 import { useState } from "react";
 import MainsQuestionCard from "../common/MainsQuestionCard";
@@ -15,25 +17,65 @@ import Card from "../atoms/Card";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NormalText from "../atoms/NormalText";
 import { fetchTodaysQuestion } from "@/src/api/dailyMainsQuestion";
+import { doc, Firestore, getDoc, getFirestore, updateDoc } from "firebase/firestore";
+import { auth } from "@/src/firebaseConfig";
 
 
 const MainsScreen = ({ navigation }) => {
   const [data, setData] = useState<{ id: string } | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [buttonActive, setButtonActive] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [isAnswerCopiesDateExists, setIsAnswerCopiesDateExists] = useState<boolean>(false);
+  const [todaysAnswerCopies, setTodaysAnswerCopies] = useState<string[]>([])
+  const [uploadCopies, setUploadCopies] = useState<{ id: number; uri: string }[]>([]);
 
-  const submitHandler = () => {
-    navigation.navigate("MainsVerdictOverlay");
-    setButtonActive(false);
-    setShowAnswer(true);
-  };
+  const db = getFirestore();
+  const today = new Date().toISOString().substring(0, 10);
+  const uid = auth.currentUser?.uid;
 
   useEffect(() => {
     fetchTodaysQuestion()
       .then(setData)
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    const checkDate = async () => {
+      if (!uid) return;
+
+      const answerCopies = await getAnswerCopies(db, uid);
+
+      if (!answerCopies || !answerCopies[today]) {
+        setIsAnswerCopiesDateExists(false);
+        setTodaysAnswerCopies([]);
+      } else {
+        setIsAnswerCopiesDateExists(true);
+        setTodaysAnswerCopies(answerCopies[today]);
+      }
+    };
+
+    checkDate();
+  }, [uid, db, today]);
+
+
+  
+
+  const submitHandler = async () => {
+    navigation.navigate("MainsVerdictOverlay", { uid, uploadCopies})
+  };
+
+
+  async function getAnswerCopies(db: Firestore, userId: string) {
+    const userDocRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userDocRef);
+
+    if (!userSnap.exists()) return null;
+
+    const userData = userSnap.data();
+    const answerCopies = userData?.submissions?.mains?.answerCopies;
+
+    return answerCopies || null;
+  }
+
 
   if (loading) return <ActivityIndicator />;
   if (!data) return <Text>No question found for today.</Text>;
@@ -49,10 +91,16 @@ const MainsScreen = ({ navigation }) => {
         <Card>
           <MainsQuestionCard fakeData={data} />
 
-          <AddPhotosComponents />
-          {showAnswer ? <NormalText text={"Thank you for writing an answer today"} /> : <></>}
+          <AddPhotosComponents isAnswerUploaded={isAnswerCopiesDateExists} uploadCopies={uploadCopies} setUploadCopies={setUploadCopies}/>
+          {isAnswerCopiesDateExists && todaysAnswerCopies.map((url, idx) => (
+                  <View key={idx} style={styles.fileItem}>
+                    <Text style={styles.fileText}>{idx}.jpg</Text>
+                    <Image source={{ uri: url }} style={{ height: 50, width: 50 }} />
+                  </View>
+                ))}
+          {(isAnswerCopiesDateExists) ? <NormalText text={"Thank you for writing an answer today"} /> : <></>}
           <PrimaryButton
-            isActive={buttonActive}
+            isActive={!isAnswerCopiesDateExists}
             submitHandler={submitHandler}
             title="Submit"
           />
@@ -70,6 +118,21 @@ const styles = StyleSheet.create({
   scroll: {
     paddingBottom: 40,
     paddingHorizontal: 24,
+  },
+  fileItem: {
+    borderColor: "#FFC618",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    marginBottom: 5,
+  },
+  fileText: {
+    color: "#37B9C5",
+    fontWeight: "700",
+    fontStyle: "italic",
   },
 });
 

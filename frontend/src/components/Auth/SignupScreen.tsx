@@ -50,7 +50,11 @@ export default function SignupScreen({ navigation }: Props) {
         submissions: {
           total_solved: 0,
           pre: {},
-          mains: {},
+          mains: {
+            answerCopies: {
+              
+            }
+          },
         },
         points: {
           total_points: 0,
