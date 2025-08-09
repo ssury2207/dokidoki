@@ -1,12 +1,12 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
-import TextLabel from "@/src/components/atoms/TextLabel";
-import NormalText from "@/src/components/atoms/NormalText";
+import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import TextLabel from '@/src/components/atoms/TextLabel';
+import NormalText from '@/src/components/atoms/NormalText';
 
 type Props = {
   actualOption: string;
   expectedOption: string;
-  expectedAnswer: string;
+  explainatation: string;
 };
 
 const ExpectedPrelimsAnswer: React.FC<Props> = (props) => {
@@ -14,7 +14,7 @@ const ExpectedPrelimsAnswer: React.FC<Props> = (props) => {
     <View style={styles.section}>
       <TextLabel text={`Your Option: ${props.actualOption}`} />
       <TextLabel text={`Correct Option: ${props.expectedOption}`} />
-      <NormalText text={props.expectedAnswer} />
+      <NormalText text={props.explainatation} />
     </View>
   );
 };
