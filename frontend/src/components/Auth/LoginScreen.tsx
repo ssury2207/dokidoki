@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, Text, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  TextInput,
+  Button,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebaseConfig';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import TypewriterText from '../common/TypewriterText';
 
 type AuthStackParamList = {
   Login: undefined;
@@ -23,32 +31,82 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-    } catch (e) {
+    } catch {
       setError('Login failed. Check your credentials.');
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.form}>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Image
+            source={require('../../../assets/dokidoki.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <View style={styles.cardContainer}>
+            <TypewriterText
+              text={`In which year was the first Lok Sabha constituted? (2016)`}
+              speed={40}
+            />
+          </View>
+        </View>
+
         <TextInput
           style={styles.input}
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
-          autoCapitalize='none'
+          autoCapitalize="none"
         />
         <TextInput
           style={styles.input}
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
-          autoCapitalize='none'
+          autoCapitalize="none"
           secureTextEntry
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <Button title="Login" onPress={handleLogin} />
-        <Button title="Sign Up" onPress={() => navigation.navigate('Signup')} />
+        <TouchableOpacity
+          onPress={handleLogin}
+          style={[
+            styles.button,
+            {
+              backgroundColor: true ? '#00ADB5' : '#108174',
+            },
+          ]}
+        >
+          <Text style={styles.buttonText}>LOGIN</Text>
+        </TouchableOpacity>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            alignItems: 'center',
+          }}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              { color: 'black', fontWeight: 'semibold' },
+            ]}
+          >
+            Create an Account
+          </Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+            <Text
+              style={[
+                styles.buttonText,
+                { color: '#2650BB', fontWeight: 'light' },
+              ]}
+            >
+              {' '}
+              Sign Up
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -57,13 +115,56 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',    // Vertical centering
-    alignItems: 'center',        // Horizontal centering
-    backgroundColor: '#f0f0f0',  // Optional: subtle background
-  },
-  form: {
-    width: '80%',
+    justifyContent: 'space-around',
     alignItems: 'center',
+    backgroundColor: '#FEF9ED',
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+  },
+  content: {
+    width: '100%',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  header: {
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  button: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    width: '50%',
+    marginVertical: 15,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 14,
+  },
+  cardContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 8,
+    width: '100%',
+    marginBottom: 24,
+    borderRadius: 20,
+  },
+  typewriterText: {
+    fontSize: 16,
+    fontFamily: 'monospace',
+    padding: 10,
   },
   input: {
     width: '100%',

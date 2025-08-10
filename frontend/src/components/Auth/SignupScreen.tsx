@@ -1,11 +1,19 @@
 import { auth, firestore } from '../../firebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useState, useEffect } from 'react';
-import { View, Button, Text, TextInput, StyleSheet } from 'react-native';
+import {
+  View,
+  Image,
+  Button,
+  Text,
+  TextInput,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { setDoc, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
-
+import TypewriterText from '../common/TypewriterText';
 type Props = {
   navigation: NativeStackNavigationProp<any>;
 };
@@ -51,9 +59,7 @@ export default function SignupScreen({ navigation }: Props) {
           total_solved: 0,
           pre: {},
           mains: {
-            answerCopies: {
-              
-            }
+            answerCopies: {},
           },
         },
         points: {
@@ -75,7 +81,21 @@ export default function SignupScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.form}>
+      <View style={styles.content}>
+        <View style={styles.header}>
+          <Image
+            source={require('../../../assets/dokidoki.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <View style={styles.cardContainer}>
+            <TypewriterText
+              text={`In which year was the first Lok Sabha constituted? (2016)`}
+              speed={40}
+            />
+          </View>
+        </View>
+
         <TextInput
           style={styles.input}
           placeholder="User Name"
@@ -108,12 +128,44 @@ export default function SignupScreen({ navigation }: Props) {
           secureTextEntry
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        <Button
-          disabled={disabled || loading}
-          title="Sign Up"
+        <TouchableOpacity
           onPress={handleSignup}
-        />
-        <Button title="Back to Login" onPress={() => navigation.goBack()} />
+          style={[
+            styles.button,
+            {
+              backgroundColor: true ? '#00ADB5' : '#108174',
+            },
+          ]}
+        >
+          <Text style={styles.buttonText}>SIGN UP</Text>
+        </TouchableOpacity>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            alignItems: 'center',
+          }}
+        >
+          <Text
+            style={[
+              styles.buttonText,
+              { color: 'black', fontWeight: 'semibold' },
+            ]}
+          >
+            Have an account?
+          </Text>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text
+              style={[
+                styles.buttonText,
+                { color: '#2650BB', fontWeight: 'light' },
+              ]}
+            >
+              {' '}
+              Login
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -122,13 +174,56 @@ export default function SignupScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center', // Vertical centering
-    alignItems: 'center', // Horizontal centering
-    backgroundColor: '#f0f0f0', // Optional: subtle background
-  },
-  form: {
-    width: '80%',
+    justifyContent: 'space-around',
     alignItems: 'center',
+    backgroundColor: '#FEF9ED',
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+  },
+  content: {
+    width: '100%',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  header: {
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  button: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    width: '50%',
+    marginVertical: 15,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 14,
+  },
+  cardContainer: {
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 8,
+    width: '100%',
+    marginBottom: 24,
+    borderRadius: 20,
+  },
+  typewriterText: {
+    fontSize: 16,
+    fontFamily: 'monospace',
+    padding: 10,
   },
   input: {
     width: '100%',
