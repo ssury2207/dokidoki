@@ -19,11 +19,11 @@ import {
 } from '@/store/slices/prelimsQuestionSlice';
 import Table from '../../atoms/Table';
 import { setSelectedOption } from '@/store/slices/optionSelectorSlice';
-const PrelimsQuestionSection = () => {
+
+const PrelimsQuestionSection = ({ isLocked, initialSelection }) => {
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
     null
   );
-  const [isSelected, setIsSelected] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const data = useSelector(selectDailyPrelimsQuestion);
   const isLoading = useSelector(selectDailyPrelimsQuestionLoading);
@@ -33,15 +33,23 @@ const PrelimsQuestionSection = () => {
     dispatch(fetchDailyPrelimsQuestion());
   }, [dispatch]);
 
+  // Set pre-selected index from saved submission
+  useEffect(() => {
+    if (typeof initialSelection === 'number') {
+      setSelectedItemIndex(initialSelection);
+      dispatch(setSelectedOption(initialSelection));
+    }
+  }, [initialSelection, dispatch]);
+
+  const buttonItemSelector = (index: number) => {
+    if (isLocked) return; // prevent selection if locked
+    setSelectedItemIndex(index);
+    dispatch(setSelectedOption(index));
+  };
+
   if (isLoading) return <ActivityIndicator />;
   if (error) return <Text>Error fetching questions</Text>;
   if (!data) return <Text>Loading question data...</Text>;
-
-  const buttonItemSelector = (index: number) => {
-    setSelectedItemIndex(index);
-    setIsSelected((isactive) => !isactive);
-    dispatch(setSelectedOption(index));
-  };
 
   return (
     <View style={styles.cardContainer}>
@@ -60,7 +68,7 @@ const PrelimsQuestionSection = () => {
         data.Options.map((item, index) => {
           return (
             <TouchableOpacity
-              disabled={false}
+              disabled={isLocked}
               key={index}
               onPress={() => buttonItemSelector(index)}
               style={[
@@ -68,6 +76,7 @@ const PrelimsQuestionSection = () => {
                 selectedItemIndex === index
                   ? styles.selected
                   : styles.unselected,
+                isLocked && { opacity: 0.6 }, // dim if locked
               ]}
             >
               <AnswerItem text={item} />

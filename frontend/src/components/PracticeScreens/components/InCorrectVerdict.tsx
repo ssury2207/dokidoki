@@ -10,7 +10,9 @@ import { useSelector } from 'react-redux';
 
 const InCorrectVerdict = () => {
   const navigation = useNavigation();
-  const streak = useSelector((state: RootState) => state.userProgress.streak);
+  const streak = useSelector(
+    (state: RootState) => state.userProgress.current_streak
+  );
 
   const overlayButtonHandler = () => {
     navigation.goBack();

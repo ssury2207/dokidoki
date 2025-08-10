@@ -7,12 +7,15 @@ type Props = {
   actualOption: string;
   expectedOption: string;
   explainatation: string;
+  verdict: string;
 };
 
 const ExpectedPrelimsAnswer: React.FC<Props> = (props) => {
   return (
     <View style={styles.section}>
-      <TextLabel text={`Your Option: ${props.actualOption}`} />
+      <TextLabel
+        text={`Your Option: ${props.actualOption} is ${props.verdict}`}
+      />
       <TextLabel text={`Correct Option: ${props.expectedOption}`} />
       <NormalText text={props.explainatation} />
     </View>
