@@ -17,6 +17,7 @@ import submitData from '@/src/utils/submitPreData';
 import { auth } from '@/src/firebaseConfig';
 import { fetchPrelimsSubmission } from '@/src/api/fetchPrelimsSubmission';
 import FullScreenLoader from '../common/FullScreenLoader';
+import { resetSelectedOption } from '@/store/slices/optionSelectorSlice';
 
 export default function PrelimsScreen({ navigation }) {
   const [submissionData, setSubmissionData] = useState<{ id: string } | null>(
@@ -81,6 +82,7 @@ export default function PrelimsScreen({ navigation }) {
           // no prior submission
           setButtonActive(true);
           setShowAnswer(false);
+          dispatch(resetSelectedOption());
         }
       } catch (e) {
         if (cancelled) return;
@@ -88,6 +90,7 @@ export default function PrelimsScreen({ navigation }) {
         setSubmissionData(null);
         setButtonActive(true);
         setShowAnswer(false);
+        dispatch(resetSelectedOption());
         console.log('GET prelims failed:', e);
       } finally {
         if (!cancelled) {
@@ -135,23 +138,23 @@ export default function PrelimsScreen({ navigation }) {
     try {
       if (!prelims_solved && !mains_solved) {
         // Case 1: no pre, no mains -> streak + points
-        // await submitData({
-        //   uid,
-        //   todays_date,
-        //   user_selection: String(selectedIndex),
-        //   verdict: isCorrect,
-        //   total_points: isCorrect ? points + 2 : points,
-        //   points_awarded: isCorrect ? 2 : 0,
-        //   current_streak: curr_streak + 1,
-        //   longest_streak,
-        //   question_date: data.date,
-        //   questionId: data.questionId,
-        //   Question: data.Question,
-        //   Answer: data.Answer,
-        //   Table: data.Table ?? [],
-        //   Options: data.Options,
-        //   Explanation: data.Explanation,
-        // });
+        await submitData({
+          uid,
+          todays_date,
+          user_selection: String(selectedIndex),
+          verdict: isCorrect,
+          total_points: isCorrect ? points + 2 : points,
+          points_awarded: isCorrect ? 2 : 0,
+          current_streak: curr_streak + 1,
+          longest_streak,
+          question_date: data.date,
+          questionId: data.questionId,
+          Question: data.Question,
+          Answer: data.Answer,
+          Table: data.Table ?? [],
+          Options: data.Options,
+          Explanation: data.Explanation,
+        });
 
         dispatch(setCurrentStreak(curr_streak + 1));
         dispatch(setPoints(isCorrect ? points + 2 : points));
@@ -163,23 +166,23 @@ export default function PrelimsScreen({ navigation }) {
 
       if (!prelims_solved && mains_solved) {
         // Case 3: mains exists, pre does not -> points only
-        // await submitData({
-        //   uid,
-        //   todays_date,
-        //   user_selection: String(selectedIndex),
-        //   verdict: isCorrect,
-        //   total_points: isCorrect ? points + 2 : points,
-        //   points_awarded: isCorrect ? 2 : 0,
-        //   current_streak: curr_streak, // streak unchanged
-        //   longest_streak,
-        //   question_date: data.date,
-        //   questionId: data.questionId,
-        //   Question: data.Question,
-        //   Answer: data.Answer,
-        //   Table: data.Table ?? [],
-        //   Options: data.Options,
-        //   Explanation: data.Explanation,
-        // });
+        await submitData({
+          uid,
+          todays_date,
+          user_selection: String(selectedIndex),
+          verdict: isCorrect,
+          total_points: isCorrect ? points + 2 : points,
+          points_awarded: isCorrect ? 2 : 0,
+          current_streak: curr_streak, // streak unchanged
+          longest_streak,
+          question_date: data.date,
+          questionId: data.questionId,
+          Question: data.Question,
+          Answer: data.Answer,
+          Table: data.Table ?? [],
+          Options: data.Options,
+          Explanation: data.Explanation,
+        });
 
         dispatch(setPoints(isCorrect ? points + 2 : points));
         setShowAnswer(true);
@@ -225,11 +228,6 @@ export default function PrelimsScreen({ navigation }) {
             }
             isLocked={showAnswer}
           />
-          {selectedOption != null && selectedOption != undefined ? (
-            <Text>{selectedOption}</Text>
-          ) : (
-            <></>
-          )}
 
           <PrimaryButton
             isActive={buttonActive}
