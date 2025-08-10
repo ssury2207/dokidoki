@@ -9,6 +9,7 @@ import { Provider } from 'react-redux';
 import { store } from '@/store/store';
 import VerdictOverlay from '../components/PracticeScreens/VerdictOverlay';
 import MainsVerdictOverlay from '../components/PracticeScreens/MainsVerdictOverlay';
+import FullScreenImageViewer from '../components/common/FullScreenImageViewer';
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -66,6 +67,10 @@ export default function AppNavigator() {
             animation: 'fade',
             headerShown: false,
           }}
+        />
+        <Stack.Screen
+          name="FullScreenImageViewer"
+          component={FullScreenImageViewer}
         />
         {/* Add more screens as needed */}
       </Stack.Navigator>

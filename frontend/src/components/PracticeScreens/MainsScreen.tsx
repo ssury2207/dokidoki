@@ -3,9 +3,9 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  ActivityIndicator,
   Image,
   View,
+  TouchableOpacity,
 } from "react-native";
 import { useState } from "react";
 import MainsQuestionCard from "../common/MainsQuestionCard";
@@ -19,11 +19,13 @@ import NormalText from "../atoms/NormalText";
 import { fetchTodaysQuestion } from "@/src/api/dailyMainsQuestion";
 import { doc, Firestore, getDoc, getFirestore, updateDoc } from "firebase/firestore";
 import { auth } from "@/src/firebaseConfig";
+import FullScreenLoader from "../common/FullScreenLoader";
 
 
 const MainsScreen = ({ navigation }) => {
   const [data, setData] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loaderVisible, setLoaderVisible] = useState(false);
   const [isAnswerCopiesDateExists, setIsAnswerCopiesDateExists] = useState<boolean>(false);
   const [todaysAnswerCopies, setTodaysAnswerCopies] = useState<string[]>([])
   const [uploadCopies, setUploadCopies] = useState<{ id: number; uri: string }[]>([]);
@@ -41,6 +43,7 @@ const MainsScreen = ({ navigation }) => {
   useEffect(() => {
     const checkDate = async () => {
       if (!uid) return;
+      setLoaderVisible(true);
 
       const answerCopies = await getAnswerCopies(db, uid);
 
@@ -51,6 +54,7 @@ const MainsScreen = ({ navigation }) => {
         setIsAnswerCopiesDateExists(true);
         setTodaysAnswerCopies(answerCopies[today]);
       }
+      setLoaderVisible(false);
     };
 
     checkDate();
@@ -76,8 +80,6 @@ const MainsScreen = ({ navigation }) => {
     return answerCopies || null;
   }
 
-
-  if (loading) return <ActivityIndicator />;
   if (!data) return <Text>No question found for today.</Text>;
 
   return (
@@ -91,11 +93,22 @@ const MainsScreen = ({ navigation }) => {
         <Card>
           <MainsQuestionCard fakeData={data} />
 
-          <AddPhotosComponents isAnswerUploaded={isAnswerCopiesDateExists} uploadCopies={uploadCopies} setUploadCopies={setUploadCopies}/>
+          <AddPhotosComponents
+            isAnswerUploaded={isAnswerCopiesDateExists}
+            uploadCopies={uploadCopies}
+            setUploadCopies={setUploadCopies}
+            navigation={navigation}
+          />
           {isAnswerCopiesDateExists && todaysAnswerCopies.map((url, idx) => (
                   <View key={idx} style={styles.fileItem}>
                     <Text style={styles.fileText}>{idx}.jpg</Text>
-                    <Image source={{ uri: url }} style={{ height: 50, width: 50 }} />
+                    <TouchableOpacity
+                      onPress={() =>
+                        navigation.navigate("FullScreenImageViewer", { imageUrl: url })
+                      }
+                    >
+                      <Image source={{ uri: url }} style={{ height: 50, width: 50 }} />
+                    </TouchableOpacity>
                   </View>
                 ))}
           {(isAnswerCopiesDateExists) ? <NormalText text={"Thank you for writing an answer today"} /> : <></>}
@@ -106,6 +119,7 @@ const MainsScreen = ({ navigation }) => {
           />
         </Card>
       </ScrollView>
+      <FullScreenLoader visible={loaderVisible || loading} />
     </SafeAreaView>
   );
 };

@@ -5,6 +5,8 @@ import NormalText from "../atoms/NormalText";
 import PrimaryButton from "../atoms/PrimaryButton";
 import { uploadImageToCloudinary } from "@/src/api/uploadImageToCloudinary";
 import { doc, getFirestore, updateDoc } from "firebase/firestore";
+import FullScreenLoader from "../common/FullScreenLoader";
+import { useState } from "react";
 type Props = {
   verdict: boolean;
 };
@@ -15,6 +17,8 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
   const { uid, uploadCopies } = route.params;
   const db = getFirestore();
   const today = new Date().toISOString().substring(0, 10);
+
+  const [loaderVisible, setLoaderVisible] = useState(false);
 
   async function uploadImagesArrayParallel(userId: string, images:{ id: number; uri: string }[]) {
     const uploadPromises = images.map(img => uploadImageToCloudinary(img.uri));
@@ -29,13 +33,16 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
     if (!uid) return;
     
     try {
+      setLoaderVisible(true);
       await uploadImagesArrayParallel(uid, uploadCopies);
       navigation.dispatch(StackActions.pop(2));
     } catch (error) {
       alert("Upload Failed");
       console.error("Upload failed", error);
       navigation.goBack();
-    } 
+    } finally {
+      setLoaderVisible(false);
+    }
   }
 
   const overlayBackButtonHandler = () => {
@@ -62,6 +69,7 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
           title="Back"
         />
       </View>
+      <FullScreenLoader visible={loaderVisible} message="Uploading, please wait..." />
     </View>
   );
 };
