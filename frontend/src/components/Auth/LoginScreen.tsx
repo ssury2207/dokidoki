@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   TextInput,
-  Button,
   Text,
   StyleSheet,
   Image,
@@ -13,7 +12,7 @@ import { auth } from '../../firebaseConfig';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import TypewriterText from '../common/TypewriterText';
-
+import FullScreenLoader from '../common/FullScreenLoader';
 type AuthStackParamList = {
   Login: undefined;
   Signup: undefined;
@@ -22,17 +21,23 @@ type AuthStackParamList = {
 type LoginScreenProps = {
   navigation: NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 };
-
 export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [loaderVisible, setLoaderVisible] = useState(false); // start hidden
 
   const handleLogin = async () => {
+    if (loaderVisible) return; // guard against double taps
+    setError('');
+    setLoaderVisible(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      // success: loader will be hidden in finally; you may navigate on auth state change elsewhere
+    } catch (e: any) {
       setError('Login failed. Check your credentials.');
+    } finally {
+      setLoaderVisible(false);
     }
   };
 
@@ -69,17 +74,23 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           secureTextEntry
         />
         {error ? <Text style={styles.error}>{error}</Text> : null}
+
         <TouchableOpacity
           onPress={handleLogin}
+          disabled={loaderVisible}
           style={[
             styles.button,
             {
-              backgroundColor: true ? '#00ADB5' : '#108174',
+              backgroundColor: loaderVisible ? '#108174' : '#00ADB5',
+              opacity: loaderVisible ? 0.8 : 1,
             },
           ]}
         >
-          <Text style={styles.buttonText}>LOGIN</Text>
+          <Text style={styles.buttonText}>
+            {loaderVisible ? 'Please wait…' : 'LOGIN'}
+          </Text>
         </TouchableOpacity>
+
         <View
           style={{
             flexDirection: 'row',
@@ -88,10 +99,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           }}
         >
           <Text
-            style={[
-              styles.buttonText,
-              { color: 'black', fontWeight: 'semibold' },
-            ]}
+            style={[styles.buttonText, { color: 'black', fontWeight: '600' }]}
           >
             Create an Account
           </Text>
@@ -99,7 +107,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             <Text
               style={[
                 styles.buttonText,
-                { color: '#2650BB', fontWeight: 'light' },
+                { color: '#2650BB', fontWeight: '300' },
               ]}
             >
               {' '}
@@ -108,6 +116,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           </TouchableOpacity>
         </View>
       </View>
+      <FullScreenLoader visible={loaderVisible} />
     </SafeAreaView>
   );
 }

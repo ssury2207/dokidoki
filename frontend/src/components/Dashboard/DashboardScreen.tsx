@@ -14,7 +14,6 @@ import DashboardHeader from './Components/DashboardHeader';
 import DailyChallengeCard from './Components/DailyChallengeCard';
 import ProgressCard from './Components/ProgressCard';
 import { RootState, AppDispatch } from '@/store/store';
-import { setTheme } from '@/store/slices/themeSlice';
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import { firestore, auth } from '../../firebaseConfig';
@@ -27,7 +26,7 @@ import {
   resetStreak,
 } from '@/store/userProgressSlice';
 import getDateDiffInDays from '@/src/utils/dateDifference';
-
+import ShimmerPlaceholder from '../common/ShimmerComponent';
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
@@ -41,10 +40,8 @@ type DashboardScreenProps = {
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const dispatch = useDispatch<AppDispatch>();
   const theme = useSelector((state: RootState) => state.theme.isLight);
+  const isLoading = false;
 
-  const themeBtnHandler = () => {
-    dispatch(setTheme(!theme));
-  };
   useEffect(() => {
     const fetchUserData = async () => {
       const uid = auth.currentUser?.uid;
@@ -84,13 +81,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <DashboardHeader />
         <DailyChallengeCard />
         <ProgressCard />
-
-        {/* <TouchableOpacity
-          style={styles.themeToggleButton}
-          onPress={themeBtnHandler}
-        >
-          <Text style={styles.themeToggleText}>{theme ? 'Dark' : 'Light'}</Text>
-        </TouchableOpacity> */}
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with</Text>
