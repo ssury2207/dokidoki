@@ -10,7 +10,9 @@ import { StyleSheet } from 'react-native';
 
 const CorrectVerdict = () => {
   const navigation = useNavigation();
-  const streak = useSelector((state: RootState) => state.userProgress.streak);
+  const streak = useSelector(
+    (state: RootState) => state.userProgress.current_streak
+  );
   const overlayButtonHandler = () => {
     navigation.goBack();
   };

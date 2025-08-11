@@ -42,18 +42,16 @@ export default async function submitData({
     if (!snap.exists()) throw new Error('User doc missing');
 
     const data = snap.data() as any;
-
     // Block if today's prelims submission already exists
     const alreadyHasPre = !!data?.submissions?.pre?.[todays_date];
-    if (alreadyHasPre) throw new Error('Pre already submitted for today.');
-
+    if (alreadyHasPre) throw new Error('Your submission was already recored.');
     // Build submission snapshot (includes the question snapshot per your args)
     const submissionPayload = {
-      question_id: questionId,
       selected_option: user_selection,
       verdict: verdict ? 'correct' : 'incorrect',
       timestamp: serverTimestamp(),
       question_snapshot: {
+        question_id: questionId,
         Question,
         Answer,
         Options,
@@ -65,18 +63,18 @@ export default async function submitData({
     // Atomic updates
     const updates: Record<string, any> = {
       // Save prelims submission for today
-      [`submissions.pre.${todays_date}`]: submissionPayload,
+      [`submissions.pre.${question_date}`]: submissionPayload,
       'submissions.total_solved': (data?.submissions?.total_solved || 0) + 1,
 
       // Points
       'points.total_points': total_points,
-      [`points.history.${todays_date}`]: points_awarded,
+      [`points.history.${question_date}`]: points_awarded,
 
       // Streaks
       'streak.current_streak': current_streak,
       'streak.longest_streak': Math.max(longest_streak, current_streak),
-      'streak.last_active_date': todays_date,
-      [`streak.dates_active.${todays_date}`]: true,
+      'streak.last_active_date': question_date,
+      [`streak.dates_active.${question_date}`]: true,
     };
 
     tx.update(userRef, updates);
