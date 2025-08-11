@@ -1,13 +1,15 @@
 import { Text, View, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+
 import { signOut } from 'firebase/auth';
 import { auth } from '@/src/firebaseConfig';
 import LogoutIcon from '../../atoms/LogoutIcon';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/store/store';
 import MoonIcon from '../../atoms/Moon';
-import { useDispatch } from 'react-redux';
 import { setTheme } from '@/store/slices/themeSlice';
 import SunIcon from '../../atoms/SunIcon';
+import ShimmerPlaceholder from '../../common/ShimmerComponent';
+import { useState } from 'react';
 
 const DashboardHeader = () => {
   const userName = useSelector(
@@ -15,42 +17,41 @@ const DashboardHeader = () => {
   );
   const user = userName;
   const dispatch = useDispatch<AppDispatch>();
+  const theme = useSelector((state: RootState) => state.theme.isLight);
+  const [colSize, setColSize] = useState({ width: 0, height: 0 });
   const themeBtnHandler = () => {
     dispatch(setTheme(!theme));
   };
-  const theme = useSelector((state: RootState) => state.theme.isLight);
+
   const signOutButtonHandler = () => {
     Alert.alert('Log Out', 'You will be logged out', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'OK',
-        onPress: () => signOut(auth),
-      },
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'OK', onPress: () => signOut(auth) },
     ]);
   };
 
   return (
     <View style={styles.headerCard}>
-      <View>
-        <Text style={theme ? styles.userTextDark : styles.userTextLight}>
-          Hi, {user} 👋
-        </Text>
-        <Text
-          style={theme ? styles.userTextDescDark : styles.userTextDescLight}
+      {/* Column 1: Greeting */}
+
+      <View style={styles.columnLeft}>
+        <ShimmerPlaceholder
+          visible={!!user}
+          containerStyle={styles.greetingShimmer}
         >
-          Let's, start Learning
-        </Text>
+          <Text style={theme ? styles.userTextDark : styles.userTextLight}>
+            Hi, {user}
+          </Text>
+
+          <Text
+            style={theme ? styles.userTextDescDark : styles.userTextDescLight}
+          >
+            Let's, start Learning
+          </Text>
+        </ShimmerPlaceholder>
       </View>
-      <View
-        style={{
-          flexDirection: 'row',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-        }}
-      >
+      {/* Column 2: Theme + Logout */}
+      <View style={styles.columnRight}>
         <TouchableOpacity onPress={themeBtnHandler}>
           {theme ? <SunIcon /> : <MoonIcon />}
         </TouchableOpacity>
@@ -61,11 +62,22 @@ const DashboardHeader = () => {
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   headerCard: {
     marginBottom: 10,
-    justifyContent: 'space-between',
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  columnLeft: {},
+  columnRight: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  greetingShimmer: {
+    // marginBottom: 8,
   },
   userTextDark: {
     fontSize: 24,
@@ -90,8 +102,10 @@ const styles = StyleSheet.create({
     color: '#393E46',
   },
   button: {
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     alignItems: 'center',
+    marginLeft: 12,
   },
 });
+
 export default DashboardHeader;

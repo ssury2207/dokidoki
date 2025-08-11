@@ -92,15 +92,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             by <Text style={styles.footerTeam}>dokidoki</Text> Team
           </Text>
         </View>
-        <View
-          style={{
-            width: '100%',
-            height: 100,
-            borderRadius: 20,
-          }}
-        >
-          <ShimmerPlaceholder />
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
