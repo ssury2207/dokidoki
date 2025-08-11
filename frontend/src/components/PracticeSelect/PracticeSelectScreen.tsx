@@ -19,8 +19,6 @@ type PracticeSelectScreenProps = {
 export default function PracticeSelectScreen({
   navigation,
 }: PracticeSelectScreenProps) {
-
-  
   const mainsButtonHandler = () => {
     navigation.navigate('MainsScreen');
   };
@@ -28,7 +26,8 @@ export default function PracticeSelectScreen({
     navigation.navigate('PrelimsScreen');
   };
   const reviseButtonHandler = () => {
-    alert('Must Navigate to revise old question set');
+    // (navigation as any).navigate('PractisedQuestions', { data });
+    // navigation.navigate('PractisedQuestions');
   };
   return (
     <ScrollView style={styles.body}>
@@ -51,13 +50,13 @@ export default function PracticeSelectScreen({
           questionType="Mains"
           points="3"
         />
-        <TextLabel text="Want to review a past question" />
+        <TextLabel text="Want to know what you missed?" />
         <PrimaryButton
           submitHandler={reviseButtonHandler}
-          title="Revise a Random Question"
+          title="Previous Questions"
           isActive={true}
         />
-        <FooterText text="Both the questions must be attempted to maintain your streak." />
+        <FooterText text="Attempt any one Question to maintain your streak." />
       </Card>
     </ScrollView>
   );

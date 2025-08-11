@@ -1,68 +1,101 @@
-import React, { useRef, useEffect } from 'react';
-import { Animated, View, StyleSheet, Dimensions } from 'react-native';
+// ShimmerWrapper.tsx
+import React, { useRef, useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  Animated,
+  StyleSheet,
+  LayoutChangeEvent,
+  ViewStyle,
+} from 'react-native';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
+type Props = {
+  visible: boolean; // when true, show children; when false, show shimmer
+  borderRadius?: number;
+  containerStyle?: ViewStyle | ViewStyle[];
+  children: React.ReactNode;
+};
 
-const ShimmerPlaceholder = () => {
-  const translateX = useRef(new Animated.Value(-1)).current;
+const ShimmerPlaceholder = ({
+  visible,
+  borderRadius = 8,
+  containerStyle,
+  children,
+}: Props) => {
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  const anim = useRef(new Animated.Value(-1)).current;
+  const loopRef = useRef<Animated.CompositeAnimation | null>(null);
 
   useEffect(() => {
-    Animated.loop(
-      Animated.timing(translateX, {
+    loopRef.current = Animated.loop(
+      Animated.timing(anim, {
         toValue: 1,
         duration: 1200,
         useNativeDriver: true,
       })
-    ).start();
-  }, []);
+    );
+    if (!visible) loopRef.current.start();
+    return () => loopRef.current?.stop?.();
+  }, [anim]);
 
-  const shimmerTranslate = translateX.interpolate({
+  useEffect(() => {
+    // pause animation when visible, resume when not
+    if (visible) loopRef.current?.stop?.();
+    else loopRef.current?.start?.();
+  }, [visible]);
+
+  const onLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    if (!size || size.w !== width || size.h !== height)
+      setSize({ w: width, h: height });
+  };
+
+  const bandWidth = Math.min(
+    120,
+    Math.max(60, Math.round((size?.w ?? 160) * 0.5))
+  );
+  const translateX = anim.interpolate({
     inputRange: [-1, 1],
-    outputRange: [-SCREEN_WIDTH, SCREEN_WIDTH],
+    outputRange: [-bandWidth, size?.w ?? 160],
   });
 
   return (
-    <View style={styles.container} pointerEvents="none">
-      {/* Base gray background */}
-      <View style={styles.background} />
-
-      {/* Shimmer animated white-to-transparent band */}
-      <Animated.View
-        style={[
-          styles.shimmer,
-          {
-            transform: [{ translateX: shimmerTranslate }],
-          },
-        ]}
-      >
-        <View style={styles.shimmerGradient} />
-      </Animated.View>
+    <View
+      style={[
+        { borderRadius, overflow: 'hidden' },
+        // When not visible, reserve space using measured size (or a small fallback)
+        !visible && size
+          ? { width: size.w, height: size.h, backgroundColor: '#e0e0e0' }
+          : null,
+        containerStyle,
+      ]}
+    >
+      {!visible && size ? (
+        <>
+          <Animated.View
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { transform: [{ translateX }] }]}
+          >
+            <View
+              style={{
+                width: bandWidth,
+                height: '100%',
+                backgroundColor: 'white',
+                opacity: 0.3,
+              }}
+            />
+          </Animated.View>
+          {/* Keep children mounted but invisible so layout stays identical */}
+          <View style={{ opacity: 0 }} onLayout={onLayout}>
+            {children}
+          </View>
+        </>
+      ) : (
+        // While measuring (first render) or once visible, render children normally but capture size
+        <View onLayout={onLayout}>{children}</View>
+      )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    overflow: 'hidden',
-    backgroundColor: '#e0e0e0',
-  },
-  background: {
-    flex: 1,
-    backgroundColor: '#e0e0e0',
-  },
-  shimmer: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 100, // width of the shimmer band
-  },
-  shimmerGradient: {
-    flex: 1,
-    backgroundColor: 'white',
-    opacity: 0.3,
-    borderRadius: 4,
-  },
-});
 
 export default ShimmerPlaceholder;

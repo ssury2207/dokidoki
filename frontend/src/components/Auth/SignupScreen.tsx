@@ -14,6 +14,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { setDoc, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
 import TypewriterText from '../common/TypewriterText';
+import FullScreenLoader from '../common/FullScreenLoader';
+
 type Props = {
   navigation: NativeStackNavigationProp<any>;
 };
@@ -26,6 +28,7 @@ export default function SignupScreen({ navigation }: Props) {
   const [disabled, setDisabled] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     const allFilled =
       email.trim() !== '' &&
@@ -167,6 +170,7 @@ export default function SignupScreen({ navigation }: Props) {
           </TouchableOpacity>
         </View>
       </View>
+      <FullScreenLoader visible={loading} />
     </SafeAreaView>
   );
 }
