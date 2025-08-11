@@ -14,50 +14,60 @@ import { useDispatch } from 'react-redux';
 
 type PracticeSelectScreenProps = {
   navigation: StackNavigationProp<any, any>;
+  route: {
+    params: {
+      caseType: boolean | null;
+    };
+  };
 };
 
 export default function PracticeSelectScreen({
-  navigation,
+  navigation, route
 }: PracticeSelectScreenProps) {
+
+  const { caseType } = route.params
 
   
   const mainsButtonHandler = () => {
-    navigation.navigate('MainsScreen');
+    caseType ? alert('Show previous mains questions') : navigation.navigate('MainsScreen');
   };
   const prelimsButtonHandler = () => {
-    navigation.navigate('PrelimsScreen');
+    caseType ? alert('Show previous prelims questions') : navigation.navigate('PrelimsScreen');
+    
   };
-  const reviseButtonHandler = () => {
-    alert('Must Navigate to revise old question set');
+  const reviseOrPracticeButtonHandler = () => {
+    caseType ? navigation.navigate('PracticeSelect') : (navigation as any).navigate('PracticeSelect', { caseType : true });
   };
   return (
     <ScrollView style={styles.body}>
       <TitleAndSubtitleCard
-        title="STAY ON TRACK"
-        subtite="Answer today's question to keep your streak and earn points."
+        title={caseType ? "Missed Questions" : "STAY ON TRACK"}
+        subtite={caseType ? "Catch up on questions you skipped in your daily challenges" : "Answer today's question to keep your streak and earn points."}
       />
 
       <UserStats />
 
       <Card>
-        <TextLabel text="Todays Question" />
+        <TextLabel text={caseType ? "Previous Questions" : "Todays Question"} />
         <PracticeButton
           buttonHandler={prelimsButtonHandler}
           questionType="Prelims"
           points="2"
+          context={caseType}
         />
         <PracticeButton
           buttonHandler={mainsButtonHandler}
           questionType="Mains"
           points="3"
+          context={caseType}
         />
-        <TextLabel text="Want to review a past question" />
+        <TextLabel text={caseType ? "Want to attempt Daily Challenge?" : "Want to review a past question?"} />
         <PrimaryButton
-          submitHandler={reviseButtonHandler}
-          title="Revise a Random Question"
+          submitHandler={reviseOrPracticeButtonHandler}
+          title={caseType ? "Start Challenge" : "Revise a Random Question"}
           isActive={true}
         />
-        <FooterText text="Both the questions must be attempted to maintain your streak." />
+        <FooterText text={caseType ? "Revisit missed questions and strengthen your confidence" : "Both the questions must be attempted to maintain your streak."} />
       </Card>
     </ScrollView>
   );
