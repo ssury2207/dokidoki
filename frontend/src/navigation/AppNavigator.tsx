@@ -1,14 +1,14 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import DashboardScreen from '../components/Dashboard/DashboardScreen';
-import PracticeSelectScreen from '../components/PracticeSelect/PracticeSelectScreen';
-import MainsScreen from '../components/PracticeScreens/MainsScreen';
-import PractisedQuestionsScreen from '../components/PractisedQuestions/PractisedQuestionsScreen';
-import PrelimsScreen from '../components/PracticeScreens/PrelimsScreen';
-import { Provider } from 'react-redux';
 import { store } from '@/store/store';
-import VerdictOverlay from '../components/PracticeScreens/VerdictOverlay';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import { Provider } from 'react-redux';
+import DashboardScreen from '../components/Dashboard/DashboardScreen';
+import MainsScreen from '../components/PracticeScreens/MainsScreen';
 import MainsVerdictOverlay from '../components/PracticeScreens/MainsVerdictOverlay';
+import PrelimsScreen from '../components/PracticeScreens/PrelimsScreen';
+import VerdictOverlay from '../components/PracticeScreens/VerdictOverlay';
+import PracticeSelectScreen from '../components/PracticeSelect/PracticeSelectScreen';
+import PractisedQuestionsScreen from '../components/PractisedQuestions/PractisedQuestionsScreen';
 import FullScreenImageViewer from '../components/common/FullScreenImageViewer';
 const Stack = createNativeStackNavigator();
 
@@ -42,14 +42,18 @@ export default function AppNavigator() {
         />
         <Stack.Screen
           name="MainsScreen"
-          options={{ title: "Main's Question Set" }}
+          options={{ title: '' }}
           component={MainsScreen}
         />
         <Stack.Screen
           name="PractisedQuestions"
           component={PractisedQuestionsScreen}
         />
-        <Stack.Screen name="PrelimsScreen" component={PrelimsScreen} />
+        <Stack.Screen
+          name="PrelimsScreen"
+          options={{ title: '' }}
+          component={PrelimsScreen}
+        />
         <Stack.Screen
           name="Overlay"
           component={VerdictOverlay}
