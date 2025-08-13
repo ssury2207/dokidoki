@@ -40,7 +40,7 @@ const ProgressCard = () => {
           </View>
           <TouchableOpacity
             style={styles.seeAllButton}
-            onPress={() => (navigation as any).navigate('PractisedQuestions', { data })}
+            onPress={() => (navigation as any).navigate('PracticeSelect', { caseType : true })}
           >
             <Text style={styles.seeAllButtonText}>SEE ALL</Text>
           </TouchableOpacity>

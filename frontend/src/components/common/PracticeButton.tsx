@@ -5,7 +5,8 @@ import PaperPlaneIcon from '../atoms/PaperPlane';
 type Props = {
     questionType: string,
     points : string,
-    buttonHandler : ()=>void
+    buttonHandler : ()=>void,
+    context ?: boolean | null
 }
 
 const PracticeButton: React.FC<Props> = (props) =>  {
@@ -14,7 +15,8 @@ const PracticeButton: React.FC<Props> = (props) =>  {
       <TouchableOpacity onPress={props.buttonHandler} style={styles.button}>
         <View style={styles.leftSection}>
           <Text style={styles.title}>{props.questionType} Question</Text>
-          <Text style={styles.subtitle}>Earn {props.points} Points</Text>
+          {props?.context === null && <Text style={styles.subtitle}>Earn {props.points} Points</Text>}
+          
         </View>
         <View style={styles.rightSection}>
           <Text style={styles.title}>Attempt Now</Text>

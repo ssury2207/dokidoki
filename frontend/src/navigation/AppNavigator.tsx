@@ -39,6 +39,7 @@ export default function AppNavigator() {
           name="PracticeSelect"
           options={{ headerTitle: '' }}
           component={PracticeSelectScreen}
+          initialParams={{ caseType : null }}
         />
         <Stack.Screen
           name="MainsScreen"
