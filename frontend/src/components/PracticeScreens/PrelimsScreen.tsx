@@ -18,11 +18,15 @@ import { auth } from '@/src/firebaseConfig';
 import { fetchPrelimsSubmission } from '@/src/api/fetchPrelimsSubmission';
 import FullScreenLoader from '../common/FullScreenLoader';
 import { resetSelectedOption } from '@/store/slices/optionSelectorSlice';
+import { checkTodaysSubmissions } from '@/src/api/checkTodaysSubmissions';
 
 export default function PrelimsScreen({ navigation }) {
-  const [submissionData, setSubmissionData] = useState<{ id: string } | null>(
-    null
-  );
+  const [prelimsubmissionData, setPrelimSubmissionData] = useState<{
+    id: string;
+  } | null>(null);
+  const [mainssubmissionData, setMainsSubmissionData] = useState<{
+    id: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [buttonActive, setButtonActive] = useState(false);
@@ -62,19 +66,25 @@ export default function PrelimsScreen({ navigation }) {
         // if no user yet, treat as no submission and wait
         if (!uid) {
           if (!cancelled) {
-            setSubmissionData(null);
+            setPrelimSubmissionData(null);
             setButtonActive(false);
             setShowAnswer(false);
           }
           return;
         }
+        const { pre_submitted_data, mains_submitted_data } =
+          await checkTodaysSubmissions(); // object or null
+        if (mains_submitted_data) {
+          setMainsSubmissionData(mains_submitted_data);
+        }
 
-        const submittedData = await fetchPrelimsSubmission(); // object or null
+        // const pre_submitted_data = await fetchPrelimsSubmission(); // object or null
+
         if (cancelled) return;
 
-        setSubmissionData(submittedData);
+        setPrelimSubmissionData(pre_submitted_data);
 
-        if (submittedData) {
+        if (pre_submitted_data) {
           // prior submission exists
           setButtonActive(false);
           setShowAnswer(true);
@@ -87,7 +97,7 @@ export default function PrelimsScreen({ navigation }) {
       } catch (e) {
         if (cancelled) return;
         // allow user to proceed even if GET failed
-        setSubmissionData(null);
+        setPrelimSubmissionData(null);
         setButtonActive(true);
         setShowAnswer(false);
         dispatch(resetSelectedOption());
@@ -106,7 +116,10 @@ export default function PrelimsScreen({ navigation }) {
     };
   }, [uid, todays_date]);
   const submitHandler = async () => {
-    if (!data) return;
+    if (!data) {
+      alert('Opps, there seems be an issue at the backend');
+      return;
+    }
 
     // Must choose an option
     if (selectedOption == null) {
@@ -128,8 +141,8 @@ export default function PrelimsScreen({ navigation }) {
     else if (!isCorrect) setVerdict('InCorrect');
 
     // These should come from state / GET
-    const prelims_solved = false; // placeholder
-    const mains_solved = false; // placeholder
+    const prelims_solved = prelimsubmissionData != null; // placeholder
+    const mains_solved = mainssubmissionData != null; // placeholder
 
     // Disable button + show loader while submitting
     setButtonActive(false);
@@ -216,14 +229,13 @@ export default function PrelimsScreen({ navigation }) {
           title="PRELIMS QUESTION"
           subtite="Select one correct option to keep streak alive and earn points!"
         />
-
         <UserStats />
 
         <Card>
           <PrelimsQuestionSection
             initialSelection={
-              submissionData
-                ? parseInt(submissionData.selected_option, 10)
+              prelimsubmissionData
+                ? parseInt(prelimsubmissionData.selected_option, 10)
                 : null
             }
             isLocked={showAnswer}
