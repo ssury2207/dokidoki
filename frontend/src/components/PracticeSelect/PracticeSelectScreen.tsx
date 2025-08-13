@@ -26,8 +26,6 @@ export default function PracticeSelectScreen({
 }: PracticeSelectScreenProps) {
 
   const { caseType } = route.params
-
-  
   const mainsButtonHandler = () => {
     caseType ? alert('Show previous mains questions') : navigation.navigate('MainsScreen');
   };
@@ -35,8 +33,10 @@ export default function PracticeSelectScreen({
     caseType ? alert('Show previous prelims questions') : navigation.navigate('PrelimsScreen');
     
   };
+
   const reviseOrPracticeButtonHandler = () => {
     caseType ? navigation.navigate('PracticeSelect') : (navigation as any).navigate('PracticeSelect', { caseType : true });
+
   };
   return (
     <ScrollView style={styles.body}>
@@ -61,6 +61,7 @@ export default function PracticeSelectScreen({
           points="3"
           context={caseType}
         />
+
         <TextLabel text={caseType ? "Want to attempt Daily Challenge?" : "Want to review a past question?"} />
         <PrimaryButton
           submitHandler={reviseOrPracticeButtonHandler}
@@ -68,6 +69,7 @@ export default function PracticeSelectScreen({
           isActive={true}
         />
         <FooterText text={caseType ? "Revisit missed questions and strengthen your confidence" : "Both the questions must be attempted to maintain your streak."} />
+
       </Card>
     </ScrollView>
   );
