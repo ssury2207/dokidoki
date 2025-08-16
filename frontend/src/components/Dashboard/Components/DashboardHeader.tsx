@@ -18,7 +18,7 @@ const DashboardHeader = () => {
   const user = userName;
   const dispatch = useDispatch<AppDispatch>();
   const theme = useSelector((state: RootState) => state.theme.isLight);
-  const [colSize, setColSize] = useState({ width: 0, height: 0 });
+
   const themeBtnHandler = () => {
     dispatch(setTheme(!theme));
   };

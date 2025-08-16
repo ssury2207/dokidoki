@@ -1,14 +1,25 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation } from 'expo-router';
 import TextLabel from '../../atoms/TextLabel';
 import NormalText from '../../atoms/NormalText';
 import GreenCheckIcon from '../../atoms/GreenCheckIcon';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '@/store/store';
-import { fetchArchivedQuestions, selectArchivedQuestions, selectArchivedQuestionsError, selectArchivedQuestionsLoading } from '@/store/slices/archivedQuestionsSlice';
+import {
+  fetchArchivedQuestions,
+  selectArchivedQuestions,
+  selectArchivedQuestionsError,
+  selectArchivedQuestionsLoading,
+} from '@/store/slices/archivedQuestionsSlice';
 import { getArchiveQuestions } from '@/src/api/fetchArchiveQuestions';
-
+import ShimmerPlaceholder from '../../common/ShimmerComponent';
 
 const ProgressCard = () => {
   const navigation = useNavigation();
@@ -23,32 +34,33 @@ const ProgressCard = () => {
     dispatch(fetchArchivedQuestions());
   }, [dispatch]);
 
-  if (isLoading) return <ActivityIndicator />;
+  // if (!isLoading) return <ActivityIndicator />;
   if (error) return <Text>Error fetching questions</Text>;
-  
+
   return (
     <View
-      style={[styles.card, { backgroundColor: theme ? '#EEEEEE' : '#FFFFFF' }]}
+      style={[styles.card, { backgroundColor: theme ? '#393E46' : '#FFFFFF' }]}
     >
       <View style={styles.sectionFullWidth}>
         <TextLabel text="PREVIOUS QUESTIONS" />
-
-        <View style={styles.rowBetween}>
-          <View style={styles.rowLeft}>
-            <GreenCheckIcon />
-            <NormalText text={` All Questions: ${data.length}`} />
+        <ShimmerPlaceholder visible={!isLoading}>
+          <View style={styles.rowBetween}>
+            <View style={styles.rowLeft}>
+              <GreenCheckIcon />
+              <NormalText text={` All Questions: ${data.length}`} />
+            </View>
+            <TouchableOpacity
+              style={styles.seeAllButton}
+              onPress={() =>
+                (navigation as any).navigate('PracticeSelect', {
+                  caseType: true,
+                })
+              }
+            >
+              <Text style={styles.seeAllButtonText}>SEE ALL</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.seeAllButton}
-            onPress={() => (navigation as any).navigate('PracticeSelect', { caseType : true })}
-          >
-            <Text style={styles.seeAllButtonText}>SEE ALL</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.rowCenter}>
-          <View style={styles.emptyRow} />
-        </View>
+        </ShimmerPlaceholder>
       </View>
     </View>
   );

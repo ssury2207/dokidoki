@@ -8,6 +8,7 @@ import PrimaryButton from '../atoms/PrimaryButton';
 import FooterText from '../atoms/FooterText';
 import PracticeButton from '../common/PracticeButton';
 import type { StackNavigationProp } from '@react-navigation/stack';
+import { RootState, AppDispatch } from '@/store/store';
 import { useSelector } from 'react-redux';
 import { selectArchivedQuestions } from '@/store/slices/archivedQuestionsSlice';
 
@@ -21,34 +22,50 @@ type PracticeSelectScreenProps = {
 };
 
 export default function PracticeSelectScreen({
-  navigation, route
+  navigation,
+  route,
 }: PracticeSelectScreenProps) {
+  const theme = useSelector((state: RootState) => state.theme.isLight);
+
 
   const { caseType } = route.params
   const data = useSelector(selectArchivedQuestions);
   const mainsButtonHandler = () => {
     caseType ? (navigation as any).navigate('PractisedQuestions', { data }) : navigation.navigate('MainsScreen');
+
   };
   const prelimsButtonHandler = () => {
-    caseType ? alert('Show previous prelims questions') : navigation.navigate('PrelimsScreen');
-    
+    caseType
+      ? alert('Show previous prelims questions')
+      : navigation.navigate('PrelimsScreen');
   };
 
   const reviseOrPracticeButtonHandler = () => {
-    caseType ? navigation.navigate('PracticeSelect') : (navigation as any).navigate('PracticeSelect', { caseType : true });
-
+    caseType
+      ? navigation.navigate('PracticeSelect')
+      : (navigation as any).navigate('PracticeSelect', { caseType: true });
   };
   return (
-    <ScrollView style={styles.body}>
+    <ScrollView
+      style={[
+        theme
+          ? [styles.bodyBGDark, styles.body]
+          : [styles.bodyBGLight, styles.body],
+      ]}
+    >
       <TitleAndSubtitleCard
-        title={caseType ? "Missed Questions" : "STAY ON TRACK"}
-        subtite={caseType ? "Catch up on questions you skipped in your daily challenges" : "Answer today's question to keep your streak and earn points."}
+        title={caseType ? 'MISSED QUESTIONS' : 'STAY ON TRACK'}
+        subtite={
+          caseType
+            ? 'Catch up on questions you skipped in your daily challenges'
+            : "Answer today's question to keep your streak and earn points."
+        }
       />
 
       <UserStats />
 
       <Card>
-        <TextLabel text={caseType ? "Previous Questions" : "Todays Question"} />
+        <TextLabel text={caseType ? 'Previous Questions' : 'Todays Question'} />
         <PracticeButton
           buttonHandler={prelimsButtonHandler}
           questionType="Prelims"
@@ -62,14 +79,25 @@ export default function PracticeSelectScreen({
           context={caseType}
         />
 
-        <TextLabel text={caseType ? "Want to attempt Daily Challenge?" : "Want to review a past question?"} />
+        <TextLabel
+          text={
+            caseType
+              ? 'Want to attempt Daily Challenge?'
+              : 'Want to review a past question?'
+          }
+        />
         <PrimaryButton
           submitHandler={reviseOrPracticeButtonHandler}
-          title={caseType ? "Start Challenge" : "Revise a Random Question"}
+          title={caseType ? 'Start Challenge' : 'Revise a Random Question'}
           isActive={true}
         />
-        <FooterText text={caseType ? "Revisit missed questions and strengthen your confidence" : "Both the questions must be attempted to maintain your streak."} />
-
+        <FooterText
+          text={
+            caseType
+              ? 'Revisit missed questions and strengthen your confidence'
+              : 'Attempt any question to maintain your current streak.'
+          }
+        />
       </Card>
     </ScrollView>
   );
@@ -77,9 +105,14 @@ export default function PracticeSelectScreen({
 
 const styles = StyleSheet.create({
   body: {
-    backgroundColor: '#F0F3F6',
     paddingHorizontal: 24,
     paddingVertical: 40,
+  },
+  bodyBGDark: {
+    backgroundColor: '#222831',
+  },
+  bodyBGLight: {
+    backgroundColor: '#F5F5F5',
   },
   text: {
     fontSize: 20,
