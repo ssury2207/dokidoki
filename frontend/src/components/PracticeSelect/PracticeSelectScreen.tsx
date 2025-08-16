@@ -94,7 +94,7 @@ export default function PracticeSelectScreen({
           text={
             caseType
               ? 'Revisit missed questions and strengthen your confidence'
-              : 'Both the questions must be attempted to maintain your streak.'
+              : 'Attempt any question to maintain your current streak.'
           }
         />
       </Card>
