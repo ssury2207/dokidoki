@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Button, StyleSheet, ScrollView } from 'react-native';
+import React from 'react';
+import { StyleSheet, ScrollView } from 'react-native';
 import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
 import UserStats from '../common/UserStats';
 import Card from '../atoms/Card';
@@ -7,10 +7,10 @@ import TextLabel from '../atoms/TextLabel';
 import PrimaryButton from '../atoms/PrimaryButton';
 import FooterText from '../atoms/FooterText';
 import PracticeButton from '../common/PracticeButton';
-import Data from '@/fakeData/data';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { RootState, AppDispatch } from '@/store/store';
 import { useSelector } from 'react-redux';
+import { selectArchivedQuestions } from '@/store/slices/archivedQuestionsSlice';
 
 type PracticeSelectScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -27,11 +27,12 @@ export default function PracticeSelectScreen({
 }: PracticeSelectScreenProps) {
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
-  const { caseType } = route.params;
+
+  const { caseType } = route.params
+  const data = useSelector(selectArchivedQuestions);
   const mainsButtonHandler = () => {
-    caseType
-      ? alert('Show previous mains questions')
-      : navigation.navigate('MainsScreen');
+    caseType ? (navigation as any).navigate('PractisedQuestions', { data }) : navigation.navigate('MainsScreen');
+
   };
   const prelimsButtonHandler = () => {
     caseType
