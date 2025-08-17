@@ -1,4 +1,4 @@
-import { View } from 'react-native';
+import { Modal, View } from 'react-native';
 import Title from '../../atoms/Title';
 import NormalText from '../../atoms/NormalText';
 import PrimaryButton from '../../atoms/PrimaryButton';
@@ -13,11 +13,15 @@ const CorrectVerdict = () => {
   const streak = useSelector(
     (state: RootState) => state.userProgress.current_streak
   );
+  const theme = useSelector((state: RootState) => state.theme.isLight);
+
   const overlayButtonHandler = () => {
     navigation.goBack();
   };
   return (
-    <View style={styles.modal}>
+    <View
+      style={[styles.modal, theme ? styles.modalBGDark : styles.modalBGLight]}
+    >
       <Title title="Congratulations!!" />
 
       <View style={styles.row}>
@@ -43,10 +47,15 @@ const CorrectVerdict = () => {
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: 'white',
     padding: 20,
     borderRadius: 12,
     width: '80%',
+  },
+  modalBGLight: {
+    backgroundColor: 'white',
+  },
+  modalBGDark: {
+    backgroundColor: '#222831',
   },
   row: {
     flexDirection: 'row',

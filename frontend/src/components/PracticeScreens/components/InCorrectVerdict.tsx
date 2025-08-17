@@ -13,12 +13,15 @@ const InCorrectVerdict = () => {
   const streak = useSelector(
     (state: RootState) => state.userProgress.current_streak
   );
+  const theme = useSelector((state: RootState) => state.theme.isLight);
 
   const overlayButtonHandler = () => {
     navigation.goBack();
   };
   return (
-    <View style={styles.modal}>
+    <View
+      style={[styles.modal, theme ? styles.modalBGDark : styles.modalBGLight]}
+    >
       <Title title="Opps !!" />
 
       <View style={styles.row}>
@@ -44,10 +47,15 @@ const InCorrectVerdict = () => {
 
 const styles = StyleSheet.create({
   modal: {
-    backgroundColor: 'white',
     padding: 20,
     borderRadius: 12,
     width: '80%',
+  },
+  modalBGLight: {
+    backgroundColor: 'white',
+  },
+  modalBGDark: {
+    backgroundColor: '#222831',
   },
   row: {
     flexDirection: 'row',

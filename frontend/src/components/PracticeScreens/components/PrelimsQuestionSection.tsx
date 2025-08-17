@@ -18,6 +18,7 @@ import {
   selectDailyPrelimsQuestionLoading,
 } from '@/store/slices/prelimsQuestionSlice';
 import Table from '../../atoms/Table';
+import { RootState } from '@/store/store';
 import { setSelectedOption } from '@/store/slices/optionSelectorSlice';
 
 const PrelimsQuestionSection = ({ isLocked, initialSelection }) => {
@@ -28,6 +29,7 @@ const PrelimsQuestionSection = ({ isLocked, initialSelection }) => {
   const data = useSelector(selectDailyPrelimsQuestion);
   const isLoading = useSelector(selectDailyPrelimsQuestionLoading);
   const error = useSelector(selectDailyPrelimsQuestionError);
+  const theme = useSelector((state: RootState) => state.theme.isLight);
 
   useEffect(() => {
     dispatch(fetchDailyPrelimsQuestion());
@@ -74,7 +76,11 @@ const PrelimsQuestionSection = ({ isLocked, initialSelection }) => {
               style={[
                 styles.section,
                 selectedItemIndex === index
-                  ? styles.selected
+                  ? theme
+                    ? styles.selectedDark
+                    : styles.selected
+                  : theme
+                  ? styles.unselectedDark
                   : styles.unselected,
                 isLocked && { opacity: 0.6 }, // dim if locked
               ]}
@@ -127,6 +133,14 @@ const styles = StyleSheet.create({
   unselected: {
     backgroundColor: '#F0F3F6',
     borderColor: '#50555C',
+  },
+  unselectedDark: {
+    backgroundColor: '#393E46',
+    borderColor: '#50555C',
+  },
+  selectedDark: {
+    backgroundColor: '#393E46',
+    borderColor: '#37B9C5',
   },
 });
 
