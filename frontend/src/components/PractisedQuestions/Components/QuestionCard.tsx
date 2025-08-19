@@ -1,22 +1,99 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
+import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
 
 type QuestionCardProps = {
-    question: string,
-    year: number,
-    paper: string,
-    marks: number,
-    date: string
-}
+  question: string;
+  year: number;
+  paper: string | null;
+  marks: number | null;
+  date: string;
+};
 
-export default function QuestionCard(data: QuestionCardProps) {
+export default function QuestionCard(props: QuestionCardProps) {
+  const isLight = useSelector((state: RootState) => state.theme.isLight);
+
   return (
-    <View style={{borderColor: "Black", borderWidth: 1, borderRadius:10, marginHorizontal:15, marginTop:10, padding:10}}>
-      <Text numberOfLines={2} ellipsizeMode='tail' style={{marginBottom: 10}}>{data.question}</Text>
-      
-      <Text>Year:{data.year} Paper:{data.paper} Marks:{data.marks} Date:{data.date}</Text>
-    </View>
-  )
+    <TouchableOpacity
+      onPress={() => {}}
+      style={[
+        styles.container,
+        !isLight ? styles.bgLight : styles.bgDark,
+        !isLight ? styles.borderLight : styles.borderDark,
+      ]}
+      activeOpacity={0.8}
+    >
+      <Text
+        numberOfLines={2}
+        ellipsizeMode="tail"
+        style={!isLight ? styles.titleLight : styles.titleDark}
+      >
+        {props.question}
+      </Text>
+
+      <View style={styles.row}>
+        <Text style={!isLight ? styles.metaLight : styles.metaDark}>
+          Date: {props.date}
+        </Text>
+        <Text style={!isLight ? styles.metaLight : styles.metaDark}>
+          Year: {props.year}
+        </Text>
+      </View>
+      {props.paper && props.marks ? (
+        <View style={styles.row}>
+          <Text style={!isLight ? styles.metaLight : styles.metaDark}>
+            Paper: {props.paper}
+          </Text>
+          <Text style={!isLight ? styles.metaLight : styles.metaDark}>
+            Marks: {props.marks}
+          </Text>
+        </View>
+      ) : (
+        <></>
+      )}
+    </TouchableOpacity>
+  );
 }
 
-const styles = StyleSheet.create({})
+const styles = StyleSheet.create({
+  container: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginVertical: 8,
+  },
+  bgLight: { backgroundColor: '#FFF' },
+  bgDark: { backgroundColor: '#393E46' },
+  borderLight: { borderColor: '#B3B4B7' },
+  borderDark: { borderColor: '#108174' },
+
+  titleLight: {
+    color: '#50555C',
+    fontSize: 18,
+    fontWeight: '400',
+  },
+  titleDark: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '400',
+  },
+
+  metaLight: {
+    color: '#393E46',
+    fontSize: 14,
+    fontWeight: '300',
+  },
+  metaDark: {
+    color: '#CCCCCC',
+    fontSize: 14,
+    fontWeight: '300',
+  },
+
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+});
