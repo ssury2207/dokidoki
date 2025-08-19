@@ -1,4 +1,10 @@
-import { StyleSheet, ScrollView, Text } from 'react-native';
+import {
+  StyleSheet,
+  ScrollView,
+  Text,
+  Touchable,
+  TouchableOpacity,
+} from 'react-native';
 import React, { useEffect, useState } from 'react';
 import PrimaryButton from '../atoms/PrimaryButton';
 import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
@@ -15,7 +21,6 @@ import { AppDispatch } from '@/store/store';
 import { setCurrentStreak, setPoints } from '@/store/userProgressSlice';
 import submitData from '@/src/utils/submitPreData';
 import { auth } from '@/src/firebaseConfig';
-import { fetchPrelimsSubmission } from '@/src/api/fetchPrelimsSubmission';
 import FullScreenLoader from '../common/FullScreenLoader';
 import { resetSelectedOption } from '@/store/slices/optionSelectorSlice';
 import { checkTodaysSubmissions } from '@/src/api/checkTodaysSubmissions';
@@ -27,6 +32,7 @@ export default function PrelimsScreen({ navigation }) {
   const [mainssubmissionData, setMainsSubmissionData] = useState<{
     id: string;
   } | null>(null);
+  const theme = useSelector((state: RootState) => state.theme.isLight);
   const [loading, setLoading] = useState(true);
   const [loaderVisible, setLoaderVisible] = useState(false);
   const [buttonActive, setButtonActive] = useState(false);
@@ -223,7 +229,13 @@ export default function PrelimsScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.body}>
+    <SafeAreaView
+      style={[
+        theme
+          ? [styles.bodyBGDark, styles.body]
+          : [styles.bodyBGLight, styles.body],
+      ]}
+    >
       <ScrollView style={styles.scroll}>
         <TitleAndSubtitleCard
           title="PRELIMS QUESTION"
@@ -266,7 +278,12 @@ export default function PrelimsScreen({ navigation }) {
 const styles = StyleSheet.create({
   body: {
     flex: 1,
-    backgroundColor: '#F0F3F6',
+  },
+  bodyBGDark: {
+    backgroundColor: '#222831',
+  },
+  bodyBGLight: {
+    backgroundColor: '#F5F5F5',
   },
   scroll: {
     paddingBottom: 40,
