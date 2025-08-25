@@ -1,5 +1,16 @@
-import React from "react";
-import { View, Text, FlatList, ScrollView, StyleSheet, Dimensions } from "react-native";
+import React from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
+import NormalText from './NormalText';
+import TextLabel from './TextLabel';
+import { RootState } from '@/store/store';
+import { useSelector } from 'react-redux';
 
 type TableRow = Record<string, string | number | null | undefined>;
 
@@ -13,27 +24,33 @@ const Table: React.FC<TableProps> = ({ table }) => {
   if (!table || table.length === 0) {
     return null;
   }
+  const theme = useSelector((state: RootState) => state.theme.isLight);
 
   const columns = Object.keys(table[0]);
   const numberOfColumns = columns.length;
 
-  const screenWidth = Dimensions.get("window").width;
+  const screenWidth = Dimensions.get('window').width;
   const availableWidth = screenWidth - 48;
-  const responsiveCellWidth = Math.max(MIN_CELL_WIDTH, availableWidth / numberOfColumns);
+  const responsiveCellWidth = Math.max(
+    MIN_CELL_WIDTH,
+    availableWidth / numberOfColumns
+  );
 
   // Header rendering
   const renderHeader = () => (
-    <View style={[styles.row, styles.headerRow]}>
+    <View
+      style={[styles.row, theme ? styles.headerRowDark : styles.headerRowLight]}
+    >
       {columns.map((col, index) => (
         <View
           style={[
             styles.cell,
             { width: responsiveCellWidth },
-            index === columns.length - 1 && { borderRightWidth: 0 }
+            index === columns.length - 1 && { borderRightWidth: 0 },
           ]}
           key={col}
         >
-          <Text style={[styles.headerText, styles.headerCell]}>{col}</Text>
+          <TextLabel text={col} />
         </View>
       ))}
     </View>
@@ -47,13 +64,17 @@ const Table: React.FC<TableProps> = ({ table }) => {
           style={[
             styles.cell,
             { width: responsiveCellWidth },
-            index === columns.length - 1 && { borderRightWidth: 0 }
+            index === columns.length - 1 && { borderRightWidth: 0 },
           ]}
           key={col}
         >
-          <Text>
-            {item[col] !== undefined && item[col] !== null ? item[col]?.toString() : ""}
-          </Text>
+          <NormalText
+            text={
+              item[col] !== undefined && item[col] !== null
+                ? item[col]?.toString()
+                : ''
+            }
+          />
         </View>
       ))}
     </View>
@@ -67,7 +88,7 @@ const Table: React.FC<TableProps> = ({ table }) => {
           data={table}
           renderItem={renderRow}
           keyExtractor={(_, index) => index.toString()}
-          scrollEnabled={false} 
+          scrollEnabled={false}
         />
       </View>
     </ScrollView>
@@ -76,29 +97,32 @@ const Table: React.FC<TableProps> = ({ table }) => {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#ccc',
     minHeight: 40,
-    alignItems: "center",
+    alignItems: 'center',
   },
-  headerRow: {
-    backgroundColor: "#f0f0f0",
+  headerRowLight: {
+    backgroundColor: '#f0f0f0',
+  },
+  headerRowDark: {
+    backgroundColor: '#222831',
   },
   cell: {
     borderRightWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     paddingHorizontal: 8,
     paddingVertical: 10,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerCell: {
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   headerText: {
-    fontWeight: "bold",
-    color: "#222",
+    fontWeight: 'bold',
+    color: '#222',
   },
 });
 
