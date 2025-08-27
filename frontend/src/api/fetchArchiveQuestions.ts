@@ -2,7 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFirestore, collection, getDocs, query, orderBy } from "firebase/firestore";
 
 const db = getFirestore();
-const ARCHIVE_KEY = 'archive_questions';
+const ARCHIVE_MAINS_KEY = 'archive_mains_questions';
+const ARCHIVE_PRELIMS_KEY = 'archive_prelims_questions';
 const ARCHIVE_META = 'archive_questions_meta';
 
 export async function getArchiveQuestions() {
@@ -15,25 +16,44 @@ export async function getArchiveQuestions() {
 
   // If we already checked Firestore today, just use cached questions
   if (meta.lastCheckedDate === today) {
-    const cached = await AsyncStorage.getItem(ARCHIVE_KEY);
-    if (cached) return JSON.parse(cached);
+    const cachedMains = await AsyncStorage.getItem(ARCHIVE_MAINS_KEY);
+    const cachedPrelims = await AsyncStorage.getItem(ARCHIVE_PRELIMS_KEY);
+    if(cachedMains && cachedPrelims){
+      return {
+        mains: JSON.parse(cachedMains),
+        prelims: JSON.parse(cachedPrelims),
+      };
+    }
+    
     // If for some reason cache is missing, fall through to Firestore fetch
   }
 
   // Else, fetch fresh from Firestore
-  const q = query(collection(db, "daily_mains_questions"), orderBy("date", "desc"));
-  const qsnap = await getDocs(q);
-  if (qsnap.empty) return [];
+  // Fetch Mains
+  const mainsQ = query(collection(db, "daily_mains_questions"), orderBy("date", "desc"));
+  const mainsSnap = await getDocs(mainsQ);
+  const mainsResult = mainsSnap.empty ? [] : mainsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const newestMains = mainsSnap.empty ? '' : mainsSnap.docs[0].data().date;
 
-  const newest = qsnap.docs[0].data().date;
-  const result = qsnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  // Fetch Prelims
+  const prelimsQ = query(collection(db, "daily_prelims_questions"), orderBy("date", "desc"));
+  const prelimsSnap = await getDocs(prelimsQ);
+  const prelimsResult = prelimsSnap.empty ? [] : prelimsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const newestPrelims = prelimsSnap.empty ? '' : prelimsSnap.docs[0].data().date;
 
   // Save results and update meta with today's lastCheckedDate
-  await AsyncStorage.setItem(ARCHIVE_KEY, JSON.stringify(result));
+  await AsyncStorage.setItem(ARCHIVE_MAINS_KEY, JSON.stringify(mainsResult));
+  await AsyncStorage.setItem(ARCHIVE_PRELIMS_KEY, JSON.stringify(prelimsResult));
   await AsyncStorage.setItem(ARCHIVE_META, JSON.stringify({
-    maxDate: newest,
+    maxDate: {
+      mains: newestMains,
+      prelims: newestPrelims,
+    },
     lastCheckedDate: today
   }));
 
-  return result;
+  return {
+    mains: mainsResult,
+    prelims: prelimsResult,
+  };
 }
