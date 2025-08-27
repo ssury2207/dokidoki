@@ -31,7 +31,9 @@ export const fetchArchivedQuestions = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const archiveData = await getArchiveQuestions();
-      return archiveData.mains;
+      const today = new Date().toISOString().substring(0, 10);
+      const mainsArchiveData = archiveData.mains.filter((val: ArchivedQuestion) => val.date !== today);
+      return mainsArchiveData;
     } catch (error: any) {
       // Pass error message as reject payload
       return thunkAPI.rejectWithValue(error.message || 'Failed to fetch archive questions');
