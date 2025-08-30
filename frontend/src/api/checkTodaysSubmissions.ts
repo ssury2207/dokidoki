@@ -13,7 +13,7 @@ export async function checkTodaysSubmissions() {
 
     const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
     const prePath = `submissions.pre.${today}`;
-    const mainsPath = `submissions.mains.answerCopies.${today}`;
+    const mainsPath = `submissions.mains.${today}`;
 
     console.log(`Fetching submissions for today: ${today}`);
 

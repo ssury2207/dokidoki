@@ -28,6 +28,7 @@ import { auth } from '@/src/firebaseConfig';
 import FullScreenLoader from '../common/FullScreenLoader';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
+import { checkTodaysSubmissions } from '@/src/api/checkTodaysSubmissions';
 const MainsScreen = ({ navigation }) => {
   const [data, setData] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,12 @@ const MainsScreen = ({ navigation }) => {
   const [uploadCopies, setUploadCopies] = useState<
     { id: number; uri: string }[]
   >([]);
+  const [prelimsubmissionData, setPrelimSubmissionData] = useState<{
+    id: string;
+  } | null>(null);
+  const [mainssubmissionData, setMainsSubmissionData] = useState<{
+    id: string;
+  } | null>(null);
 
   const db = getFirestore();
   const today = new Date().toISOString().substring(0, 10);
@@ -56,15 +63,22 @@ const MainsScreen = ({ navigation }) => {
       if (!uid) return;
       setLoaderVisible(true);
 
-      const answerCopies = await getAnswerCopies(db, uid);
+      const { pre_submitted_data, mains_submitted_data } =
+        await checkTodaysSubmissions(); // object or null
 
-      if (!answerCopies || !answerCopies[today]) {
+      if (pre_submitted_data) {
+        setPrelimSubmissionData(pre_submitted_data);
+      }
+
+      if (mains_submitted_data) {
+        setMainsSubmissionData(mains_submitted_data);
+        setIsAnswerCopiesDateExists(true);
+        setTodaysAnswerCopies(mains_submitted_data[today].submission_uri || []);
+      } else {
         setIsAnswerCopiesDateExists(false);
         setTodaysAnswerCopies([]);
-      } else {
-        setIsAnswerCopiesDateExists(true);
-        setTodaysAnswerCopies(answerCopies[today]);
       }
+
       setLoaderVisible(false);
     };
 
@@ -72,20 +86,17 @@ const MainsScreen = ({ navigation }) => {
   }, [uid, db, today]);
 
   const submitHandler = async () => {
-    navigation.navigate('MainsVerdictOverlay', { uid, uploadCopies });
+    const prelims_solved = prelimsubmissionData != null;
+    const mains_solved = mainssubmissionData != null;
+
+    navigation.navigate('MainsVerdictOverlay', {
+      uid,
+      uploadCopies,
+      prelims_solved,
+      mains_solved,
+      data,
+    });
   };
-
-  async function getAnswerCopies(db: Firestore, userId: string) {
-    const userDocRef = doc(db, 'users', userId);
-    const userSnap = await getDoc(userDocRef);
-
-    if (!userSnap.exists()) return null;
-
-    const userData = userSnap.data();
-    const answerCopies = userData?.submissions?.mains?.answerCopies;
-
-    return answerCopies || null;
-  }
 
   if (!data) return <Text>No question found for today.</Text>;
 
