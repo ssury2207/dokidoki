@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Absolute path to the service account key
-const serviceAccountPath = resolve(__dirname, './config.json');
+const serviceAccountPath = resolve(__dirname, './firebase-key.json');
 
 // Read and parse service account
 const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf-8'));

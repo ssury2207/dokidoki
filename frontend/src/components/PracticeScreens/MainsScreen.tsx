@@ -59,30 +59,61 @@ const MainsScreen = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+
+    setLoaderVisible(true);
+    setLoading(true); // match neutral UI on screen entry
+
     const checkDate = async () => {
-      if (!uid) return;
-      setLoaderVisible(true);
+      try {
+        if (!uid) {
+          if (!cancelled) {
+            setPrelimSubmissionData(null);
+            setMainsSubmissionData(null);
+            setIsAnswerCopiesDateExists(false);
+            setTodaysAnswerCopies([]);
+          }
+          return;
+        }
 
-      const { pre_submitted_data, mains_submitted_data } =
-        await checkTodaysSubmissions(); // object or null
+        const { pre_submitted_data, mains_submitted_data } =
+          await checkTodaysSubmissions();
 
-      if (pre_submitted_data) {
-        setPrelimSubmissionData(pre_submitted_data);
+        if (cancelled) return;
+
+        // handle prelim data
+        setPrelimSubmissionData(pre_submitted_data ?? null);
+
+        // handle mains data and guard access
+        if (mains_submitted_data) {
+          setMainsSubmissionData(mains_submitted_data);
+          setIsAnswerCopiesDateExists(true);
+          setTodaysAnswerCopies(mains_submitted_data.submission_uri || []);
+        } else {
+          setMainsSubmissionData(null);
+          setIsAnswerCopiesDateExists(false);
+          setTodaysAnswerCopies([]);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          console.log('checkTodaysSubmissions failed:', e);
+          setPrelimSubmissionData(null);
+          setMainsSubmissionData(null);
+          setIsAnswerCopiesDateExists(false);
+          setTodaysAnswerCopies([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoaderVisible(false);
+          setLoading(false);
+        }
       }
-
-      if (mains_submitted_data) {
-        setMainsSubmissionData(mains_submitted_data);
-        setIsAnswerCopiesDateExists(true);
-        setTodaysAnswerCopies(mains_submitted_data[today].submission_uri || []);
-      } else {
-        setIsAnswerCopiesDateExists(false);
-        setTodaysAnswerCopies([]);
-      }
-
-      setLoaderVisible(false);
     };
 
     checkDate();
+    return () => {
+      cancelled = true;
+    };
   }, [uid, db, today]);
 
   const submitHandler = async () => {
@@ -97,8 +128,6 @@ const MainsScreen = ({ navigation }) => {
       data,
     });
   };
-
-  if (!data) return <Text>No question found for today.</Text>;
 
   return (
     <SafeAreaView
