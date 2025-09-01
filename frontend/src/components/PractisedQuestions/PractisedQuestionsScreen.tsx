@@ -1,28 +1,32 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import React from 'react';
 import QuestionCard from './Components/QuestionCard';
 import { FlatList } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
-import NormalText from '../atoms/NormalText';
 import PrimaryButton from '../atoms/PrimaryButton';
 import { useNavigation } from 'expo-router';
 import TextLabel from '../atoms/TextLabel';
-import Card from '../atoms/Card';
-import Title from '../atoms/Title';
 import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
 
 type renderItemProps = {
+  questionId: string;
   Question: string;
   Year: number;
   Paper: string;
   Marks: number;
   date: string;
+  questionData: [] | null;
 };
 
 type PractisedQuestionsScreenRouteProp = RouteProp<
-  { params: { data: renderItemProps[] } },
+  {
+    params: {
+      data: renderItemProps[];
+      questionType: 'pre' | 'mains'; // or string if open
+    };
+  },
   'params'
 >;
 
@@ -31,10 +35,10 @@ export default function PractisedQuestionsScreen({
 }: {
   route: PractisedQuestionsScreenRouteProp;
 }) {
-  const { data } = route.params;
+  const { data, questionType } = route.params;
+
   const navigation = useNavigation();
   const theme = useSelector((state: RootState) => state.theme.isLight);
-
   const renderItem = ({ item }: { item: renderItemProps }) => (
     <QuestionCard
       question={item.Question}
@@ -42,6 +46,8 @@ export default function PractisedQuestionsScreen({
       paper={item.Paper}
       marks={item.Marks}
       date={item.date}
+      questionData={data}
+      questionType={questionType}
     />
   );
 
@@ -50,7 +56,7 @@ export default function PractisedQuestionsScreen({
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={(item, idx) => idx.toString()}
+        keyExtractor={(item) => item.questionId}
         ListHeaderComponent={
           <TitleAndSubtitleCard
             title={'MISSED QUESTIONS'}

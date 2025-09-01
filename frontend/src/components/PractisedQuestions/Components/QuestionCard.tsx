@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
+import { useNavigation } from 'expo-router';
 
 type QuestionCardProps = {
   question: string;
@@ -9,14 +10,36 @@ type QuestionCardProps = {
   paper: string | null;
   marks: number | null;
   date: string;
+  questionType: string;
+  questionData: null | [];
 };
 
 export default function QuestionCard(props: QuestionCardProps) {
   const isLight = useSelector((state: RootState) => state.theme.isLight);
+  const questionType = props.questionType;
+  const navigation = useNavigation();
+  const date = props.date;
+  const questionData = props.questionData;
+  const buttonHandler = () => {
+    if (questionType === 'prelims') {
+      const matchedQuestion = questionData?.find((q) => q.date === date);
+
+      if (!matchedQuestion) {
+        alert('No question found for this date');
+        return;
+      }
+
+      navigation.navigate('PrelimsArchived', {
+        question: matchedQuestion,
+      });
+    } else {
+      alert('Mains navigation');
+    }
+  };
 
   return (
     <TouchableOpacity
-      onPress={() => {}}
+      onPress={buttonHandler}
       style={[
         styles.container,
         !isLight ? styles.bgLight : styles.bgDark,

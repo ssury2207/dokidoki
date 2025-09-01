@@ -155,68 +155,41 @@ export default function PrelimsScreen({ navigation }) {
     setLoaderVisible(true);
 
     try {
-      if (!prelims_solved && !mains_solved) {
-        // Case 1: no pre, no mains -> streak + points
-        await submitData({
-          uid,
-          todays_date,
-          user_selection: String(selectedIndex),
-          verdict: isCorrect,
-          total_points: isCorrect ? points + 2 : points,
-          points_awarded: isCorrect ? 2 : 0,
-          current_streak: curr_streak + 1,
-          longest_streak,
-          question_date: data.date,
-          questionId: data.questionId,
-          Question: data.Question,
-          Answer: data.Answer,
-          Table: data.Table ?? [],
-          Options: data.Options,
-          Explanation: data.Explanation,
-        });
-
-        dispatch(setCurrentStreak(curr_streak + 1));
-        dispatch(setPoints(isCorrect ? points + 2 : points));
-        setShowAnswer(true);
-        setButtonActive(false);
-        navigation.navigate('Overlay', isCorrect);
-        return;
-      }
-
-      if (!prelims_solved && mains_solved) {
-        // Case 3: mains exists, pre does not -> points only
-        await submitData({
-          uid,
-          todays_date,
-          user_selection: String(selectedIndex),
-          verdict: isCorrect,
-          total_points: isCorrect ? points + 2 : points,
-          points_awarded: isCorrect ? 2 : 0,
-          current_streak: curr_streak, // streak unchanged
-          longest_streak,
-          question_date: data.date,
-          questionId: data.questionId,
-          Question: data.Question,
-          Answer: data.Answer,
-          Table: data.Table ?? [],
-          Options: data.Options,
-          Explanation: data.Explanation,
-        });
-
-        dispatch(setPoints(isCorrect ? points + 2 : points));
-        setShowAnswer(true);
-        setButtonActive(false);
-        navigation.navigate('Overlay', isCorrect);
-
-        return;
-      }
-
       // Case 4: prelims already submitted
       if (prelims_solved) {
         alert('OOPS your submission was already recorded');
         navigation.navigate('Dashboard');
         return;
       }
+
+      const payload = {
+        uid,
+        todays_date,
+        user_selection: String(selectedIndex),
+        verdict: isCorrect,
+        total_points: isCorrect ? points + 2 : points,
+        points_awarded: isCorrect ? 2 : 0,
+        current_streak: !mains_solved ? curr_streak + 1 : curr_streak,
+        longest_streak,
+        question_date: data.date,
+        questionId: data.questionId,
+        Question: data.Question,
+        Answer: data.Answer,
+        Table: data.Table ?? [],
+        Options: data.Options,
+        Explanation: data.Explanation,
+      };
+
+      await submitData(payload);
+
+      if (!mains_solved) {
+        dispatch(setCurrentStreak(curr_streak + 1));
+      }
+
+      dispatch(setPoints(isCorrect ? points + 2 : points));
+      setShowAnswer(true);
+      setButtonActive(false);
+      navigation.navigate('Overlay', isCorrect);
     } catch (e: any) {
       alert(e?.message || 'Failed to submit.');
       console.log(e?.message);

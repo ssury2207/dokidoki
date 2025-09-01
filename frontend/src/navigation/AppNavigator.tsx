@@ -8,6 +8,7 @@ import PrelimsScreen from '../components/PracticeScreens/PrelimsScreen';
 import VerdictOverlay from '../components/PracticeScreens/VerdictOverlay';
 import MainsVerdictOverlay from '../components/PracticeScreens/MainsVerdictOverlay';
 import FullScreenImageViewer from '../components/common/FullScreenImageViewer';
+import PrelimsArchievedScreen from '../components/archivedScreens/PrelimsArchievedScreen';
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
 
@@ -66,6 +67,7 @@ export default function AppNavigator() {
         name="FullScreenImageViewer"
         component={FullScreenImageViewer}
       />
+      <Stack.Screen name="PrelimsArchived" component={PrelimsArchievedScreen} />
     </Stack.Navigator>
   );
 }

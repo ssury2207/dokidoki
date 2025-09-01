@@ -10,7 +10,10 @@ import PracticeButton from '../common/PracticeButton';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import { RootState, AppDispatch } from '@/store/store';
 import { useSelector } from 'react-redux';
-import { selectArchivedQuestions } from '@/store/slices/archivedQuestionsSlice';
+import {
+  selectArchivedPrelimsQuestions,
+  selectArchivedQuestions,
+} from '@/store/slices/archivedQuestionsSlice';
 
 type PracticeSelectScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -27,16 +30,21 @@ export default function PracticeSelectScreen({
 }: PracticeSelectScreenProps) {
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
-
-  const { caseType } = route.params
+  const { caseType } = route.params;
   const data = useSelector(selectArchivedQuestions);
-  const mainsButtonHandler = () => {
-    caseType ? (navigation as any).navigate('PractisedQuestions', { data }) : navigation.navigate('MainsScreen');
+  const prelimsData = useSelector(selectArchivedPrelimsQuestions);
 
+  const mainsButtonHandler = () => {
+    caseType
+      ? (navigation as any).navigate('PractisedQuestions', { data })
+      : navigation.navigate('MainsScreen');
   };
   const prelimsButtonHandler = () => {
     caseType
-      ? alert('Show previous prelims questions')
+      ? (navigation as any).navigate('PractisedQuestions', {
+          data: prelimsData,
+          questionType: 'prelims',
+        })
       : navigation.navigate('PrelimsScreen');
   };
 
@@ -75,7 +83,7 @@ export default function PracticeSelectScreen({
         <PracticeButton
           buttonHandler={mainsButtonHandler}
           questionType="Mains"
-          points="3"
+          points="5"
           context={caseType}
         />
 
@@ -88,7 +96,7 @@ export default function PracticeSelectScreen({
         />
         <PrimaryButton
           submitHandler={reviseOrPracticeButtonHandler}
-          title={caseType ? 'Start Challenge' : 'Revise a Random Question'}
+          title={caseType ? 'Start Challenge' : 'Revise a Missed Question'}
           isActive={true}
         />
         <FooterText
