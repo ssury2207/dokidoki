@@ -7,8 +7,10 @@ import { dirname, resolve } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Resolve path to the Firebase service account key
-const serviceAccountPath = resolve(__dirname, 'config/firebase-key.json');
+const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+  ? resolve(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS)
+  : resolve(__dirname, 'config/firebase-key.json');
+
 const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
 
 // Initialize Firebase
