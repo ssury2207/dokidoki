@@ -27,6 +27,11 @@ import {
 } from '@/store/userProgressSlice';
 import getDateDiffInDays from '@/src/utils/dateDifference';
 import ShimmerPlaceholder from '../common/ShimmerComponent';
+import Card from '../atoms/Card';
+import NormalText from '../atoms/NormalText';
+import Subtitle from '../atoms/Subtitle';
+import TextLabel from '../atoms/TextLabel';
+import { reportIssue } from '@/src/utils/MailMe';
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
@@ -40,7 +45,6 @@ type DashboardScreenProps = {
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const dispatch = useDispatch<AppDispatch>();
   const theme = useSelector((state: RootState) => state.theme.isLight);
-  const isLoading = false;
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -92,6 +96,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             by <Text style={styles.footerTeam}>dokidoki</Text> Team
           </Text>
         </View>
+        <TouchableOpacity style={styles.linkContainer} onPress={reportIssue}>
+          <Text style={styles.linkText}>
+            Tap here to report an issue or send feedback
+          </Text>
+          <Text style={styles.linkText}>
+            or mail us @dokidoki.cse@gmail.com
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
@@ -141,6 +153,17 @@ const styles = StyleSheet.create({
   footerTeam: {
     color: '#FF8358',
     fontWeight: '900',
+  },
+  linkContainer: {
+    flex: 1,
+    margin: 8,
+    alignItems: 'center',
+  },
+  linkText: {
+    color: '#FF6347',
+    borderColor: '#FF6347',
+    borderBottomWidth: 1,
+    fontWeight: '600',
   },
 });
 
