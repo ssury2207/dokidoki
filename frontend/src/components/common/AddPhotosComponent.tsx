@@ -6,11 +6,11 @@ import {
   Alert,
   Image,
   Linking,
-} from "react-native";
-import React, { useState } from "react";
-import * as ImagePicker from "expo-image-picker";
-import AddPhotoModal from "../atoms/AddPhotoModal";
-
+} from 'react-native';
+import React, { useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+import AddPhotoModal from '../atoms/AddPhotoModal';
+import NormalText from '../atoms/NormalText';
 
 interface ImageData {
   id: number;
@@ -24,8 +24,13 @@ interface AddPhotosComponentsProps {
   navigation: any;
 }
 
-const AddPhotosComponents = ({ isAnswerUploaded, uploadCopies, setUploadCopies, navigation }: AddPhotosComponentsProps) => {
-  const [id, setId] = useState(0); 
+const AddPhotosComponents = ({
+  isAnswerUploaded,
+  uploadCopies,
+  setUploadCopies,
+  navigation,
+}: AddPhotosComponentsProps) => {
+  const [id, setId] = useState(0);
   const [isShowModal, setIsShowModal] = useState(false);
 
   const requestCameraPermissionBeforeUpload = async () => {
@@ -33,31 +38,31 @@ const AddPhotosComponents = ({ isAnswerUploaded, uploadCopies, setUploadCopies, 
       const { status, canAskAgain } =
         await ImagePicker.getCameraPermissionsAsync();
 
-      if (status === "granted") {
+      if (status === 'granted') {
         await uploadImage();
       } else if (canAskAgain) {
         const { status: newStatus } =
           await ImagePicker.requestCameraPermissionsAsync();
-        if (newStatus === "granted") {
+        if (newStatus === 'granted') {
           await uploadImage();
         } else {
           Alert.alert(
-            "Permission denied",
-            "Camera access is required to take photos."
+            'Permission denied',
+            'Camera access is required to take photos.'
           );
         }
       } else {
         Alert.alert(
-          "Camera Permission Required",
-          "Please enable camera access in your device settings to use this feature.",
+          'Camera Permission Required',
+          'Please enable camera access in your device settings to use this feature.',
           [
-            { text: "Open Settings", onPress: () => Linking.openSettings() },
-            { text: "Cancel", style: "cancel" },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+            { text: 'Cancel', style: 'cancel' },
           ]
         );
       }
     } catch (error) {
-        Alert.alert("Error", "An unexpected error occurred. Please try again.");
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
     }
   };
 
@@ -65,9 +70,12 @@ const AddPhotosComponents = ({ isAnswerUploaded, uploadCopies, setUploadCopies, 
     try {
       setIsShowModal(false);
       setId((id) => id + 1);
-      setUploadCopies((prevData: ImageData[]) => [...prevData, { id: id, uri: image }]);
+      setUploadCopies((prevData: ImageData[]) => [
+        ...prevData,
+        { id: id, uri: image },
+      ]);
     } catch (error) {
-      console.log("Error in Saving Image", error);
+      console.log('Error in Saving Image', error);
     }
   };
 
@@ -83,10 +91,10 @@ const AddPhotosComponents = ({ isAnswerUploaded, uploadCopies, setUploadCopies, 
         // save image
         await saveImage(result.assets[0].uri);
       } else {
-        alert("No Photo taken");
+        alert('No Photo taken');
       }
     } catch (error) {
-      alert("Error uploading image: " + error);
+      alert('Error uploading image: ' + error);
       setIsShowModal(false);
     }
   };
@@ -104,10 +112,10 @@ const AddPhotosComponents = ({ isAnswerUploaded, uploadCopies, setUploadCopies, 
       if (!result.canceled) {
         await saveImage(result.assets[0].uri);
       } else {
-        alert("No image selected");
+        alert('No image selected');
       }
     } catch (error) {
-      alert("Error while picking up image" + error);
+      alert('Error while picking up image' + error);
     }
   };
 
@@ -121,36 +129,43 @@ const AddPhotosComponents = ({ isAnswerUploaded, uploadCopies, setUploadCopies, 
 
   return (
     <View style={styles.viewContainer}>
+      <NormalText text="Add max 3 Images" />
       <TouchableOpacity
         onPress={addPhotoHandler}
         style={styles.addPhotoContainer}
-        disabled={isAnswerUploaded}
+        disabled={isAnswerUploaded || uploadCopies.length >= 3}
       >
         <Text
           style={[
             styles.addPhotoText,
-            isAnswerUploaded ? { color: "#B0B0B0" } : null // Change color when disabled
+            isAnswerUploaded ? { color: '#B0B0B0' } : null, // Change color when disabled
           ]}
         >
           + Add Photo
         </Text>
       </TouchableOpacity>
 
-      {!isAnswerUploaded && uploadCopies.map((item) => (
-        <View key={item.id} style={styles.fileItem}>
-          <Text style={styles.fileText}>{item.id}.jpg</Text>
-          <TouchableOpacity
-            onPress={() => 
-              navigation.navigate("FullScreenImageViewer", { imageUrl: item.uri })
-            }
-          >
-            <Image source={{ uri: item.uri }} style={{ height: 50, width: 50 }} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => deletePhotoHandler(item.id)}>
-            <Text style={{}}>X</Text>
-          </TouchableOpacity>
-        </View>
-      ))}
+      {!isAnswerUploaded &&
+        uploadCopies.map((item) => (
+          <View key={item.id} style={styles.fileItem}>
+            <Text style={styles.fileText}>{item.id}.jpg</Text>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('FullScreenImageViewer', {
+                  imageUrl: item.uri,
+                })
+              }
+            >
+              <Image
+                source={{ uri: item.uri }}
+                style={{ height: 50, width: 50 }}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => deletePhotoHandler(item.id)}>
+              <Text style={{}}>X</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
 
       <AddPhotoModal
         isVisible={isShowModal}
@@ -164,36 +179,36 @@ const AddPhotosComponents = ({ isAnswerUploaded, uploadCopies, setUploadCopies, 
 
 const styles = StyleSheet.create({
   viewContainer: {
-    width: "100%",
+    width: '100%',
     marginVertical: 20,
   },
   addPhotoContainer: {
-    borderColor: "#E6E7ED",
+    borderColor: '#E6E7ED',
     borderRadius: 10,
-    justifyContent: "space-around",
+    justifyContent: 'space-around',
     borderWidth: 1,
     marginBottom: 10,
   },
   addPhotoText: {
-    color: "#37B9C5",
-    fontWeight: "700",
+    color: '#37B9C5',
+    fontWeight: '700',
     padding: 10,
-    textAlign: "center",
+    textAlign: 'center',
   },
   fileItem: {
-    borderColor: "#FFC618",
+    borderColor: '#FFC618',
     borderRadius: 10,
     borderWidth: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 10,
     marginBottom: 5,
   },
   fileText: {
-    color: "#37B9C5",
-    fontWeight: "700",
-    fontStyle: "italic",
+    color: '#37B9C5',
+    fontWeight: '700',
+    fontStyle: 'italic',
   },
 });
 

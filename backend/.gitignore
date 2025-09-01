@@ -1,4 +1,4 @@
 node_modules/
 Data/PrelimsData/*
 .env
-config/config.json
+config/firebase-key.json
