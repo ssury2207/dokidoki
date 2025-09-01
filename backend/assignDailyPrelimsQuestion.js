@@ -1,11 +1,23 @@
 import admin from 'firebase-admin';
-const serviceAccount = JSON.parse(
-  readFileSync(resolve('./firebase-key.json'), 'utf8')
-);
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+// Reconstruct __dirname for ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Resolve path to the Firebase service account key
+const serviceAccountPath = resolve(__dirname, 'config/firebase-key.json');
+const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
+
+// Initialize Firebase
+if (!admin.apps.length) {
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+}
+
 const db = admin.firestore();
 
 async function assignDailyPrelimsQuestion() {
@@ -16,6 +28,7 @@ async function assignDailyPrelimsQuestion() {
     .collection('daily_prelims_questions')
     .doc(today)
     .get();
+
   if (todayDoc.exists) {
     console.log('A Prelims question is already assigned for today.');
     return;
@@ -38,7 +51,7 @@ async function assignDailyPrelimsQuestion() {
   const qDoc = candidates[Math.floor(Math.random() * candidates.length)];
   const qData = qDoc.data();
 
-  // Create the day's doc in daily_mains_questions
+  // Create the day's doc in daily_prelims_questions
   await db.collection('daily_prelims_questions').doc(today).set({
     date: today,
     questionId: qDoc.id,
@@ -54,4 +67,5 @@ async function assignDailyPrelimsQuestion() {
 
   console.log('Assigned new prelims daily question for', today, ':', qDoc.id);
 }
+
 assignDailyPrelimsQuestion().catch(console.error);
