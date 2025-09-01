@@ -19,25 +19,21 @@ jobs:
           node-version: '18'
 
       - name: Install backend dependencies
-        run: |
-          cd backend
-          npm install
+        run: npm install
+        working-directory: backend
 
       - name: Write Firebase secret to file
-        run: |
-          cd backend
-          echo "${{ secrets.FIREBASE_ADMIN_SDK }}" > firebase-key.json
+        run: echo "${{ secrets.FIREBASE_ADMIN_SDK }}" > firebase-key.json
+        working-directory: backend
 
-      - name: Run Script 1
-        run: |
-          cd backend
-          node assignDailyPrelimsQuestion.js
+      - name: Run Script 1 (Prelims)
+        run: node assignDailyPrelimsQuestion.js
+        working-directory: backend
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: backend/firebase-key.json
+          GOOGLE_APPLICATION_CREDENTIALS: firebase-key.json
 
-      - name: Run Script 2
-        run: |
-          cd backend
-          node assignDailyQuestion.js
+      - name: Run Script 2 (Mains)
+        run: node assignDailyQuestion.js
+        working-directory: backend
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: backend/firebase-key.json
+          GOOGLE_APPLICATION_CREDENTIALS: firebase-key.json
