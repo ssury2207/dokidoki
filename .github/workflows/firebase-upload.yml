@@ -26,18 +26,24 @@ jobs:
       - name: Write Firebase secret to file
         run: |
           cd backend
-          echo "${{ secrets.FIREBASE_ADMIN_SDK }}" > firebase-key.json
+          echo "$FIREBASE_ADMIN_SDK" > firebase-key.json
+        env:
+          FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
 
-      - name: Run Script 1
+      - name: Debug Firebase key format (optional)
         run: |
           cd backend
-          node assignDailyPrelimsQuestion.js
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: backend/firebase-key.json
+          head -n 5 firebase-key.json || echo "firebase-key.json missing"
 
-      - name: Run Script 2
+      - name: Run Script 1 (Mains)
         run: |
           cd backend
           node assignDailyQuestion.js
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: backend/firebase-key.json
+          GOOGLE_APPLICATION_CREDENTIALS: firebase-key.json
+      - name: Run Script 2 (Prelims)
+        run: |
+          cd backend
+          node assignDailyPrelimsQuestion.js
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: firebase-key.json
