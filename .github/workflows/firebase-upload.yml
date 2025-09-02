@@ -31,9 +31,9 @@ jobs:
       - name: Run Script 1 (Prelims)
         run: |
           cd backend
-          node test.js
-        # env:
-        #   GOOGLE_APPLICATION_CREDENTIALS: firebase-key.json
+          node assignDailyQuestion.js
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: firebase-key.json
 
       # - name: Run Script 2 (Mains)
       #   run: |
