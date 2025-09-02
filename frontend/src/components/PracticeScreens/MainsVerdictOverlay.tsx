@@ -21,7 +21,7 @@ import submitMainsData from '@/src/utils/submitMainsData';
 const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
   const navigation = useNavigation();
 
-  const { uid, uploadCopies, prelims_solved, mains_solved, data } =
+  const { uid, uploadCopies, prelims_solved, mains_solved, data, date } =
     route.params;
   const db = getFirestore();
   const today = new Date().toISOString().substring(0, 10);
@@ -64,13 +64,15 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
       const updated_points = points + points_awarded;
       const updated_streak = prelims_solved ? curr_streak : curr_streak + 1;
 
+      const isCurrentDay = date === new Date().toISOString().substring(0, 10);
+
       // Step 3: Submit mains data
       await submitMainsData({
         uid,
         todays_date: today,
-        total_points: updated_points,
+        total_points: isCurrentDay ? updated_points : points,
         points_awarded,
-        current_streak: updated_streak,
+        current_streak: isCurrentDay ? updated_streak : curr_streak,
         longest_streak,
         question_date: data.date,
         questionId: data.questionId,
@@ -79,10 +81,10 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
       });
 
       // Step 4: Update UI and local state
-      if (!prelims_solved) {
+      if (!prelims_solved && isCurrentDay) {
         dispatch(setCurrentStreak(updated_streak));
       }
-      dispatch(setPoints(updated_points));
+      isCurrentDay && dispatch(setPoints(updated_points));
       navigation.dispatch(StackActions.pop(2));
     } catch (error: any) {
       alert(error?.message || 'Mains submission failed.');

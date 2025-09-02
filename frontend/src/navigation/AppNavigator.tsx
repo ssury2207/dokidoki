@@ -11,8 +11,9 @@ import FullScreenImageViewer from '../components/common/FullScreenImageViewer';
 import PrelimsArchievedScreen from '../components/archivedScreens/PrelimsArchievedScreen';
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
+import { RootStackParamList } from '@/src/types/navigation';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
   const theme = useSelector((state: RootState) => state.theme.isLight);

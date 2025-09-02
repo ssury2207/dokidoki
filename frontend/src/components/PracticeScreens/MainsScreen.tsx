@@ -18,18 +18,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import NormalText from '../atoms/NormalText';
 import { fetchTodaysQuestion } from '@/src/api/dailyMainsQuestion';
 import {
-  doc,
-  Firestore,
-  getDoc,
   getFirestore,
-  updateDoc,
 } from 'firebase/firestore';
 import { auth } from '@/src/firebaseConfig';
 import FullScreenLoader from '../common/FullScreenLoader';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import { checkTodaysSubmissions } from '@/src/api/checkTodaysSubmissions';
-const MainsScreen = ({ navigation }) => {
+import { checkSubmissions } from '@/src/api/checkTodaysSubmissions';
+import { RootStackParamList } from '@/src/types/navigation';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+type MainsScreenProps = NativeStackScreenProps<RootStackParamList, 'MainsScreen'>;
+
+const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
+  const date = route.params?.date;
   const [data, setData] = useState<{ id: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const theme = useSelector((state: RootState) => state.theme.isLight);
@@ -49,11 +51,11 @@ const MainsScreen = ({ navigation }) => {
   } | null>(null);
 
   const db = getFirestore();
-  const today = new Date().toISOString().substring(0, 10);
+  const today = date || new Date().toISOString().substring(0, 10);
   const uid = auth.currentUser?.uid;
 
   useEffect(() => {
-    fetchTodaysQuestion()
+    fetchTodaysQuestion(today)
       .then(setData)
       .finally(() => setLoading(false));
   }, []);
@@ -77,7 +79,7 @@ const MainsScreen = ({ navigation }) => {
         }
 
         const { pre_submitted_data, mains_submitted_data } =
-          await checkTodaysSubmissions();
+          await checkSubmissions(today);
 
         if (cancelled) return;
 
@@ -126,6 +128,7 @@ const MainsScreen = ({ navigation }) => {
       prelims_solved,
       mains_solved,
       data,
+      date: today,
     });
   };
 
@@ -171,7 +174,7 @@ const MainsScreen = ({ navigation }) => {
               </View>
             ))}
           {isAnswerCopiesDateExists ? (
-            <NormalText text={'Thank you for writing an answer today'} />
+            <NormalText text={`Thank you for writing an answer today : ${loaderVisible} && ${loading}`} />
           ) : (
             <></>
           )}

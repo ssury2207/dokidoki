@@ -3,7 +3,7 @@ import { auth } from '../firebaseConfig';
 
 const db = getFirestore();
 
-export async function checkTodaysSubmissions() {
+export async function checkSubmissions(date?: string) {
   try {
     const uid = auth.currentUser?.uid;
     if (!uid) {
@@ -11,11 +11,11 @@ export async function checkTodaysSubmissions() {
       throw new Error('User not logged in');
     }
 
-    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-    const prePath = `submissions.pre.${today}`;
-    const mainsPath = `submissions.mains.${today}`;
+    const submissionDate = date || new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const prePath = `submissions.pre.${submissionDate}`;
+    const mainsPath = `submissions.mains.${submissionDate}`;
 
-    console.log(`Fetching submissions for today: ${today}`);
+    // console.log(`Fetching submissions for : ${submissionDate}`);
 
     const userRef = doc(db, 'users', uid);
     const snap = await getDoc(userRef);
@@ -33,7 +33,7 @@ export async function checkTodaysSubmissions() {
 
     return { pre_submitted_data: preData, mains_submitted_data: mainsData };
   } catch (error) {
-    console.error(`Error checking today's submissions:`, error);
+    console.error(`Error checking submissions:`, error);
     throw error;
   }
 }

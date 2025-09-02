@@ -36,7 +36,7 @@ export default async function submitMainsData({
 
     const data = snap.data() as any;
 
-    const alreadyHasMains = !!data?.submissions?.mains?.[todays_date];
+    const alreadyHasMains = !!data?.submissions?.mains?.[question_date];
     if (alreadyHasMains)
       throw new Error('Your mains submission was already recorded.');
 
@@ -53,11 +53,11 @@ export default async function submitMainsData({
       [`submissions.mains.${question_date}`]: submissionPayload,
       'submissions.total_solved': (data?.submissions?.total_solved || 0) + 1,
       'points.total_points': total_points,
-      [`points.history.${question_date}`]: points_awarded,
+      [`points.history.${question_date}`]: todays_date === question_date ? points_awarded : 0,
       'streak.current_streak': current_streak,
       'streak.longest_streak': Math.max(longest_streak, current_streak),
-      'streak.last_active_date': question_date,
-      [`streak.dates_active.${question_date}`]: true,
+      'streak.last_active_date': todays_date === question_date ? question_date : data.streak.last_active_date,
+      [`streak.dates_active.${question_date}`]: todays_date === question_date ? true : (data.streak.dates_active[question_date] || false),
     };
 
     tx.update(userRef, updates);
