@@ -23,7 +23,7 @@ import submitData from '@/src/utils/submitPreData';
 import { auth } from '@/src/firebaseConfig';
 import FullScreenLoader from '../common/FullScreenLoader';
 import { resetSelectedOption } from '@/store/slices/optionSelectorSlice';
-import { checkTodaysSubmissions } from '@/src/api/checkTodaysSubmissions';
+import { checkSubmissions } from '@/src/api/checkTodaysSubmissions';
 
 export default function PrelimsScreen({ navigation }) {
   const [prelimsubmissionData, setPrelimSubmissionData] = useState<{
@@ -79,7 +79,7 @@ export default function PrelimsScreen({ navigation }) {
           return;
         }
         const { pre_submitted_data, mains_submitted_data } =
-          await checkTodaysSubmissions(); // object or null
+          await checkSubmissions(); // object or null
         if (mains_submitted_data) {
           setMainsSubmissionData(mains_submitted_data);
         }

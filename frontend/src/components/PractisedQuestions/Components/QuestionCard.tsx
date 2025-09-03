@@ -3,6 +3,8 @@ import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useNavigation } from 'expo-router';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/src/types/navigation';
 
 type QuestionCardProps = {
   question: string;
@@ -17,7 +19,7 @@ type QuestionCardProps = {
 export default function QuestionCard(props: QuestionCardProps) {
   const isLight = useSelector((state: RootState) => state.theme.isLight);
   const questionType = props.questionType;
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const date = props.date;
   const questionData = props.questionData;
   const buttonHandler = () => {
@@ -33,7 +35,8 @@ export default function QuestionCard(props: QuestionCardProps) {
         question: matchedQuestion,
       });
     } else {
-      alert('Mains navigation');
+      // alert(`Mains navigation`);
+      navigation.navigate('MainsScreen', {date});
     }
   };
 
