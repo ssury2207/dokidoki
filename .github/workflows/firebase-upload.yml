@@ -2,7 +2,7 @@ name: Upload Questions to Firebase
 
 on:
   schedule:
-    - cron: '0 16 * * *' # Runs daily at 1:00 AM JST
+    - cron: '0 21 * * *' # Runs daily at 2:30 AM IST
   workflow_dispatch:
 
 jobs:
