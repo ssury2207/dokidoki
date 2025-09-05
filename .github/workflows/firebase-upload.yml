@@ -35,15 +35,9 @@ jobs:
           cd backend
           head -n 5 firebase-key.json || echo "firebase-key.json missing"
 
-      - name: Run Script 1 (Mains)
+      - name: Run Daily Questions Assignment
         run: |
           cd backend
           node assignDailyQuestion.js
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: firebase-key.json
-      - name: Run Script 2 (Prelims)
-        run: |
-          cd backend
-          node assignDailyPrelimsQuestion.js
         env:
           GOOGLE_APPLICATION_CREDENTIALS: firebase-key.json
