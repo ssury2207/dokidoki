@@ -22,7 +22,7 @@ const UserStats = () => {
           <NormalText text={`${streakCount} Days`} />
         </View>
         <View style={styles.points}>
-          <TextLabel text="TOTAL POINTS: " />
+          <TextLabel text="POINTS: " />
           <NormalText text={pointsCount.toString()} />
         </View>
       </View>

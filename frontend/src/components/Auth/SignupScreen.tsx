@@ -4,15 +4,22 @@ import { useState, useEffect } from 'react';
 import {
   View,
   Image,
-  Button,
   Text,
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+
+import { useHeaderHeight } from '@react-navigation/elements';
+import {
+  useSafeAreaInsets,
+  SafeAreaView,
+} from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { setDoc, doc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import TypewriterText from '../common/TypewriterText';
 import FullScreenLoader from '../common/FullScreenLoader';
 
@@ -28,6 +35,9 @@ export default function SignupScreen({ navigation }: Props) {
   const [disabled, setDisabled] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const headerHeight = useHeaderHeight();
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const allFilled =
@@ -67,9 +77,7 @@ export default function SignupScreen({ navigation }: Props) {
         },
         points: {
           total_points: 0,
-          history: {
-            // Later populated as: "2025-07-29": { pre: 2, mains: 3 }
-          },
+          history: {},
         },
         createdAt: serverTimestamp(),
       };
@@ -84,92 +92,87 @@ export default function SignupScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Image
-            source={require('../../../assets/dokidoki.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <View style={styles.cardContainer}>
-            <TypewriterText
-              text={`In which year was the first Lok Sabha constituted? (2016)`}
-              speed={40}
-            />
-          </View>
-        </View>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={headerHeight + insets.top}
+        style={styles.kavContainer}
+      >
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Image
+                source={require('../../../assets/dokidoki.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+              <View style={styles.cardContainer}>
+                <TypewriterText
+                  text={`Explain the significance of the Non-Cooperation Movement in India's freedom struggle. (2017)`}
+                  speed={40}
+                />
+              </View>
+            </View>
+            <View style={styles.formContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="User Name"
+                value={username}
+                maxLength={10}
+                onChangeText={setUserName}
+                autoCapitalize="none"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Phone Number"
+                maxLength={13}
+                value={phonenumber}
+                keyboardType="numeric"
+                onChangeText={setPhonenumber}
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                autoCapitalize="none"
+                secureTextEntry
+              />
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+              <TouchableOpacity
+                onPress={handleSignup}
+                disabled={loading}
+                style={[styles.button, styles.signupButton]}
+              >
+                <Text style={styles.buttonText}>
+                  {loading ? 'Please wait…' : 'SIGN UP '}
+                </Text>
+              </TouchableOpacity>
 
-        <TextInput
-          style={styles.input}
-          placeholder="User Name"
-          value={username}
-          maxLength={10}
-          onChangeText={setUserName}
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Phone Number"
-          maxLength={13}
-          value={phonenumber}
-          keyboardType="numeric"
-          onChangeText={setPhonenumber}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          value={password}
-          onChangeText={setPassword}
-          autoCapitalize="none"
-          secureTextEntry
-        />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        <TouchableOpacity
-          onPress={handleSignup}
-          style={[
-            styles.button,
-            {
-              backgroundColor: true ? '#00ADB5' : '#108174',
-            },
-          ]}
-        >
-          <Text style={styles.buttonText}>SIGN UP</Text>
-        </TouchableOpacity>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-around',
-            alignItems: 'center',
-          }}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              { color: 'black', fontWeight: 'semibold' },
-            ]}
-          >
-            Have an account?
-          </Text>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text
-              style={[
-                styles.buttonText,
-                { color: '#2650BB', fontWeight: 'light' },
-              ]}
-            >
-              {' '}
-              Login
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+              <TouchableOpacity
+                style={styles.alreadyAccountContainer}
+                onPress={() => navigation.goBack()}
+              >
+                <Text style={styles.alreadyAccountText}>
+                  Already Have an account?
+                  <Text style={styles.loginText}> Login</Text>
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
       <FullScreenLoader visible={loading} />
     </SafeAreaView>
   );
@@ -178,32 +181,33 @@ export default function SignupScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FEF9ED',
+  },
+  kavContainer: {
+    flex: 1,
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#FEF9ED',
-    paddingVertical: 40,
-    paddingHorizontal: 24,
+    width: '100%',
   },
   content: {
+    flex: 1,
     width: '100%',
+  },
+  contentContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+    alignItems: 'center',
+  },
+  formContainer: {
+    width: '100%',
+    marginTop: 24,
     justifyContent: 'space-around',
     alignItems: 'center',
   },
   header: {
     justifyContent: 'space-around',
     alignItems: 'center',
-  },
-  button: {
-    paddingVertical: 14,
-    borderRadius: 10,
-    width: '50%',
-    marginVertical: 15,
-  },
-  buttonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-    textAlign: 'center',
+    width: '100%',
   },
   logo: {
     width: 120,
@@ -224,11 +228,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     borderRadius: 20,
   },
-  typewriterText: {
-    fontSize: 16,
-    fontFamily: 'monospace',
-    padding: 10,
-  },
   input: {
     width: '100%',
     height: 48,
@@ -243,5 +242,36 @@ const styles = StyleSheet.create({
   error: {
     color: 'red',
     marginBottom: 16,
+  },
+  button: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    width: '50%',
+    marginVertical: 15,
+  },
+  signupButton: {
+    backgroundColor: '#00ADB5',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  alreadyAccountContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  alreadyAccountText: {
+    color: 'black',
+    fontWeight: '600',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  loginText: {
+    color: '#2650BB',
+    fontWeight: '300',
+    fontSize: 16,
   },
 });

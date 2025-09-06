@@ -35,7 +35,6 @@ const PracticeButton: React.FC<Props> = (props) => {
           )}
         </View>
         <View style={styles.rightSection}>
-          <TextLabel text={'Attempt Now'} />
           <View style={styles.iconWrapper}>
             <PaperPlaneIcon />
           </View>
