@@ -100,9 +100,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           <Text style={styles.linkText}>
             Tap here to report an issue or send feedback
           </Text>
-          <Text style={styles.linkText}>
-            or mail us @dokidoki.cse@gmail.com
-          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -164,6 +161,7 @@ const styles = StyleSheet.create({
     borderColor: '#FF6347',
     borderBottomWidth: 1,
     fontWeight: '600',
+    fontSize: 8,
   },
 });
 
