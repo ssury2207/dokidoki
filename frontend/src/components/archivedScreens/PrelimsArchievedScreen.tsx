@@ -184,10 +184,15 @@ export default function PrelimsArchivedScreen() {
       ]}
     >
       <ScrollView
+        style={[
+          styles.scroll,
+          theme
+            ? { backgroundColor: '#222831' }
+            : { backgroundColor: '#F5F5F5' },
+        ]}
         contentContainerStyle={{
           paddingTop: 16,
         }}
-        style={styles.scroll}
       >
         <TitleAndSubtitleCard
           title="MISSED PRELIMS QUESTION"

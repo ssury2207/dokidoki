@@ -209,7 +209,14 @@ export default function PrelimsScreen({ navigation }) {
           : [styles.bodyBGLight, styles.body],
       ]}
     >
-      <ScrollView style={styles.scroll}>
+      <ScrollView
+        style={[
+          styles.scroll,
+          theme
+            ? { backgroundColor: '#222831' }
+            : { backgroundColor: '#F5F5F5' },
+        ]}
+      >
         <TitleAndSubtitleCard
           title="PRELIMS QUESTION"
           subtite="Select one correct option to keep streak alive and earn points!"

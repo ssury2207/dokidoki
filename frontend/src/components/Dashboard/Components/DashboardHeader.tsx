@@ -6,10 +6,10 @@ import LogoutIcon from '../../atoms/LogoutIcon';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/store/store';
 import MoonIcon from '../../atoms/Moon';
-import { setTheme } from '@/store/slices/themeSlice';
+import { setTheme, toggleTheme } from '@/store/slices/themeSlice';
 import SunIcon from '../../atoms/SunIcon';
 import ShimmerPlaceholder from '../../common/ShimmerComponent';
-import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const DashboardHeader = () => {
   const userName = useSelector(
@@ -19,8 +19,10 @@ const DashboardHeader = () => {
   const dispatch = useDispatch<AppDispatch>();
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
-  const themeBtnHandler = () => {
-    dispatch(setTheme(!theme));
+  const themeBtnHandler = async () => {
+    dispatch(toggleTheme());
+    const newSavedTheme = !theme;
+    await AsyncStorage.setItem('APP_THEME', JSON.stringify(newSavedTheme));
   };
 
   const signOutButtonHandler = () => {

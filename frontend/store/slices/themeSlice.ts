@@ -5,7 +5,7 @@ interface themeState {
 }
 
 const initialState: themeState = {
-  isLight: false,
+  isLight: true,
 };
 
 const themeSlice = createSlice({
@@ -15,8 +15,11 @@ const themeSlice = createSlice({
     setTheme(state, action: PayloadAction<boolean>) {
       state.isLight = action.payload;
     },
+    toggleTheme(state) {
+      state.isLight = !state.isLight;
+    },
   },
 });
 
-export const { setTheme } = themeSlice.actions;
+export const { setTheme, toggleTheme } = themeSlice.actions;
 export default themeSlice.reducer;

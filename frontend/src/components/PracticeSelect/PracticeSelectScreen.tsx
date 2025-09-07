@@ -14,6 +14,7 @@ import {
   selectArchivedPrelimsQuestions,
   selectArchivedQuestions,
 } from '@/store/slices/archivedQuestionsSlice';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type PracticeSelectScreenProps = {
   navigation: StackNavigationProp<any, any>;
@@ -54,73 +55,87 @@ export default function PracticeSelectScreen({
       : (navigation as any).navigate('PracticeSelect', { caseType: true });
   };
   return (
-    <ScrollView
+    <SafeAreaView
       style={[
         theme
           ? [styles.bodyBGDark, styles.body]
           : [styles.bodyBGLight, styles.body],
       ]}
     >
-      <TitleAndSubtitleCard
-        title={caseType ? 'MISSED QUESTIONS' : 'STAY ON TRACK'}
-        subtite={
-          caseType
-            ? 'Catch up on questions you skipped in your daily challenges'
-            : "Answer today's question to keep your streak and earn points."
-        }
-      />
-
-      <UserStats />
-
-      <Card>
-        <TextLabel text={caseType ? 'Previous Questions' : 'Todays Question'} />
-        <PracticeButton
-          buttonHandler={prelimsButtonHandler}
-          questionType="Prelims"
-          points="2"
-          context={caseType}
-        />
-        <PracticeButton
-          buttonHandler={mainsButtonHandler}
-          questionType="Mains"
-          points="5"
-          context={caseType}
-        />
-
-        <TextLabel
-          text={
+      <ScrollView
+        style={[
+          styles.scroll,
+          theme
+            ? { backgroundColor: '#222831' }
+            : { backgroundColor: '#F5F5F5' },
+        ]}
+      >
+        <TitleAndSubtitleCard
+          title={caseType ? 'MISSED QUESTIONS' : 'STAY ON TRACK'}
+          subtite={
             caseType
-              ? 'Want to attempt Daily Challenge?'
-              : 'Want to review a past question?'
+              ? 'Catch up on questions you skipped in your daily challenges'
+              : "Answer today's question to keep your streak and earn points."
           }
         />
-        <PrimaryButton
-          submitHandler={reviseOrPracticeButtonHandler}
-          title={caseType ? 'Start Challenge' : 'Revise a Missed Question'}
-          isActive={true}
-        />
-        <FooterText
-          text={
-            caseType
-              ? 'Revisit missed questions and strengthen your confidence'
-              : 'Attempt any question to maintain your current streak.'
-          }
-        />
-      </Card>
-    </ScrollView>
+
+        <UserStats />
+
+        <Card>
+          <TextLabel
+            text={caseType ? 'Previous Questions' : 'Todays Question'}
+          />
+          <PracticeButton
+            buttonHandler={prelimsButtonHandler}
+            questionType="Prelims"
+            points="2"
+            context={caseType}
+          />
+          <PracticeButton
+            buttonHandler={mainsButtonHandler}
+            questionType="Mains"
+            points="5"
+            context={caseType}
+          />
+
+          <TextLabel
+            text={
+              caseType
+                ? 'Want to attempt Daily Challenge?'
+                : 'Want to review a past question?'
+            }
+          />
+          <PrimaryButton
+            submitHandler={reviseOrPracticeButtonHandler}
+            title={caseType ? 'Start Challenge' : 'Revise a Missed Question'}
+            isActive={true}
+          />
+          <FooterText
+            text={
+              caseType
+                ? 'Revisit missed questions and strengthen your confidence'
+                : 'Attempt any question to maintain your current streak.'
+            }
+          />
+        </Card>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   body: {
-    paddingHorizontal: 24,
-    paddingVertical: 40,
+    flex: 1,
   },
   bodyBGDark: {
     backgroundColor: '#222831',
   },
   bodyBGLight: {
     backgroundColor: '#F5F5F5',
+  },
+  scroll: {
+    paddingBottom: 40,
+    paddingHorizontal: 24,
   },
   text: {
     fontSize: 20,

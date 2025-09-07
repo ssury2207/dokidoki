@@ -17,9 +17,7 @@ import Card from '../atoms/Card';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NormalText from '../atoms/NormalText';
 import { fetchTodaysQuestion } from '@/src/api/dailyMainsQuestion';
-import {
-  getFirestore,
-} from 'firebase/firestore';
+import { getFirestore } from 'firebase/firestore';
 import { auth } from '@/src/firebaseConfig';
 import FullScreenLoader from '../common/FullScreenLoader';
 import { useSelector } from 'react-redux';
@@ -28,7 +26,10 @@ import { checkSubmissions } from '@/src/api/checkTodaysSubmissions';
 import { RootStackParamList } from '@/src/types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-type MainsScreenProps = NativeStackScreenProps<RootStackParamList, 'MainsScreen'>;
+type MainsScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  'MainsScreen'
+>;
 
 const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
   const date = route.params?.date;
@@ -140,7 +141,14 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
           : [styles.bodyBGLight, styles.body],
       ]}
     >
-      <ScrollView style={styles.scroll}>
+      <ScrollView
+        style={[
+          styles.scroll,
+          theme
+            ? { backgroundColor: '#222831' }
+            : { backgroundColor: '#F5F5F5' },
+        ]}
+      >
         <TitleAndSubtitleCard
           title="MAINS QUESTION"
           subtite="Upload your handwritten answer to keep the streak alive!"
@@ -174,7 +182,7 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
               </View>
             ))}
           {isAnswerCopiesDateExists ? (
-            <NormalText text={`Thank you for writing an answer today : ${loaderVisible} && ${loading}`} />
+            <NormalText text={`Thank you for writing an answer today`} />
           ) : (
             <></>
           )}
