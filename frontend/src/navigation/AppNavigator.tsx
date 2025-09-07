@@ -28,6 +28,9 @@ export default function AppNavigator() {
         headerStyle: {
           backgroundColor: theme ? '#393E46' : 'white',
         },
+        contentStyle: {
+          backgroundColor: theme ? '#393E46' : 'white',
+        },
       }}
     >
       <Stack.Screen

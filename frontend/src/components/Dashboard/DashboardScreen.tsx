@@ -26,11 +26,6 @@ import {
   resetStreak,
 } from '@/store/userProgressSlice';
 import getDateDiffInDays from '@/src/utils/dateDifference';
-import ShimmerPlaceholder from '../common/ShimmerComponent';
-import Card from '../atoms/Card';
-import NormalText from '../atoms/NormalText';
-import Subtitle from '../atoms/Subtitle';
-import TextLabel from '../atoms/TextLabel';
 import { reportIssue } from '@/src/utils/MailMe';
 type RootStackParamList = {
   Dashboard: undefined;
@@ -81,7 +76,14 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={theme ? styles.bodyDark : styles.bodyLight}>
-      <ScrollView style={styles.scroll}>
+      <ScrollView
+        style={[
+          styles.scroll,
+          theme
+            ? { backgroundColor: '#222831' }
+            : { backgroundColor: '#F5F5F5' },
+        ]}
+      >
         <DashboardHeader />
         <DailyChallengeCard />
         <ProgressCard />

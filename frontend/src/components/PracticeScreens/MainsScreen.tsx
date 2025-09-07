@@ -141,7 +141,14 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
           : [styles.bodyBGLight, styles.body],
       ]}
     >
-      <ScrollView style={styles.scroll}>
+      <ScrollView
+        style={[
+          styles.scroll,
+          theme
+            ? { backgroundColor: '#222831' }
+            : { backgroundColor: '#F5F5F5' },
+        ]}
+      >
         <TitleAndSubtitleCard
           title="MAINS QUESTION"
           subtite="Upload your handwritten answer to keep the streak alive!"
