@@ -6,6 +6,7 @@ import {
   Alert,
   Image,
   Linking,
+  Platform,
 } from 'react-native';
 import React, { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
@@ -83,8 +84,7 @@ const AddPhotosComponents = ({
     try {
       let result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true, // Enables cropping
-        aspect: [4, 3], // Aspect ratio for cropping - Keep it as full screen view
+        allowsEditing: Platform.OS === 'ios' ? false : true, // Enables cropping only on iOS
         quality: 1,
       });
       if (!result.canceled) {

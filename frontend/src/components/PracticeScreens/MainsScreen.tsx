@@ -187,7 +187,7 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
             <></>
           )}
           <PrimaryButton
-            isActive={!isAnswerCopiesDateExists}
+            isActive={!isAnswerCopiesDateExists && uploadCopies.length > 0}
             submitHandler={submitHandler}
             title="Submit"
           />
