@@ -4,23 +4,23 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
-import React, { useEffect, useState } from 'react';
-import NormalText from '@/src/components/atoms/NormalText';
-import AnswerItem from './AnswerItem';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '@/store/store';
-import { useSelector } from 'react-redux';
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import NormalText from "@/src/components/atoms/NormalText";
+import AnswerItem from "./AnswerItem";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/store/store";
+import { useSelector } from "react-redux";
 import {
   fetchDailyPrelimsQuestion,
   selectDailyPrelimsQuestion,
   selectDailyPrelimsQuestionError,
   selectDailyPrelimsQuestionLoading,
-} from '@/store/slices/prelimsQuestionSlice';
-import Table from '../../atoms/Table';
-import { RootState } from '@/store/store';
-import { setSelectedOption } from '@/store/slices/optionSelectorSlice';
-
+} from "@/store/slices/prelimsQuestionSlice";
+import Table from "../../atoms/Table";
+import { RootState } from "@/store/store";
+import { setSelectedOption } from "@/store/slices/optionSelectorSlice";
+import ShareButton from "../../common/ShareButton";
 const PrelimsQuestionSection = ({ isLocked, initialSelection }) => {
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(
     null
@@ -37,7 +37,7 @@ const PrelimsQuestionSection = ({ isLocked, initialSelection }) => {
 
   // Set pre-selected index from saved submission
   useEffect(() => {
-    if (typeof initialSelection === 'number') {
+    if (typeof initialSelection === "number") {
       setSelectedItemIndex(initialSelection);
       dispatch(setSelectedOption(initialSelection));
     }
@@ -89,29 +89,30 @@ const PrelimsQuestionSection = ({ isLocked, initialSelection }) => {
             </TouchableOpacity>
           );
         })}
+      <ShareButton question={data.Question} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   cardContainer: {
-    flexDirection: 'column',
+    flexDirection: "column",
     marginVertical: 20,
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "flex-start",
   },
   label: {
-    fontWeight: '500',
+    fontWeight: "500",
     margin: 2,
   },
   questionContainer: {
     marginVertical: 8,
   },
   questionText: {
-    fontWeight: '400',
-    fontStyle: 'italic',
+    fontWeight: "400",
+    fontStyle: "italic",
     fontSize: 16,
   },
 
@@ -119,28 +120,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     margin: 4,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "flex-start",
   },
   selected: {
-    backgroundColor: '#CBDFE1',
-    borderColor: '#37B9C5',
+    backgroundColor: "#CBDFE1",
+    borderColor: "#37B9C5",
   },
   incorrect: {
-    backgroundColor: '#E8D8D8',
-    borderColor: '#FF5A5A',
+    backgroundColor: "#E8D8D8",
+    borderColor: "#FF5A5A",
   },
   unselected: {
-    backgroundColor: '#F0F3F6',
-    borderColor: '#50555C',
+    backgroundColor: "#F0F3F6",
+    borderColor: "#50555C",
   },
   unselectedDark: {
-    backgroundColor: '#393E46',
-    borderColor: '#50555C',
+    backgroundColor: "#393E46",
+    borderColor: "#50555C",
   },
   selectedDark: {
-    backgroundColor: '#393E46',
-    borderColor: '#37B9C5',
+    backgroundColor: "#393E46",
+    borderColor: "#37B9C5",
   },
 });
 
