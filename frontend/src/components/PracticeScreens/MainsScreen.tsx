@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
   Text,
   StyleSheet,
@@ -6,29 +6,29 @@ import {
   Image,
   View,
   TouchableOpacity,
-} from 'react-native';
-import { useState } from 'react';
-import MainsQuestionCard from '../common/MainsQuestionCard';
-import AddPhotosComponents from '../common/AddPhotosComponent';
-import PrimaryButton from '../atoms/PrimaryButton';
-import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
-import UserStats from '../common/UserStats';
-import Card from '../atoms/Card';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import NormalText from '../atoms/NormalText';
-import { fetchTodaysQuestion } from '@/src/api/dailyMainsQuestion';
-import { getFirestore } from 'firebase/firestore';
-import { auth } from '@/src/firebaseConfig';
-import FullScreenLoader from '../common/FullScreenLoader';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
-import { checkSubmissions } from '@/src/api/checkTodaysSubmissions';
-import { RootStackParamList } from '@/src/types/navigation';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+} from "react-native";
+import { useState } from "react";
+import MainsQuestionCard from "../common/MainsQuestionCard";
+import AddPhotosComponents from "../common/AddPhotosComponent";
+import PrimaryButton from "../atoms/PrimaryButton";
+import TitleAndSubtitleCard from "../common/TitleAndSubtitleCard";
+import UserStats from "../common/UserStats";
+import Card from "../atoms/Card";
+import { SafeAreaView } from "react-native-safe-area-context";
+import NormalText from "../atoms/NormalText";
+import { fetchTodaysQuestion } from "@/src/api/dailyMainsQuestion";
+import { getFirestore } from "firebase/firestore";
+import { auth } from "@/src/firebaseConfig";
+import FullScreenLoader from "../common/FullScreenLoader";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { checkSubmissions } from "@/src/api/checkTodaysSubmissions";
+import { RootStackParamList } from "@/src/types/navigation";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import ShareButton from "../common/ShareButton";
 type MainsScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'MainsScreen'
+  "MainsScreen"
 >;
 
 const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
@@ -99,7 +99,7 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
         }
       } catch (e) {
         if (!cancelled) {
-          console.log('checkTodaysSubmissions failed:', e);
+          console.log("checkTodaysSubmissions failed:", e);
           setPrelimSubmissionData(null);
           setMainsSubmissionData(null);
           setIsAnswerCopiesDateExists(false);
@@ -123,7 +123,7 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
     const prelims_solved = prelimsubmissionData != null;
     const mains_solved = mainssubmissionData != null;
 
-    navigation.navigate('MainsVerdictOverlay', {
+    navigation.navigate("MainsVerdictOverlay", {
       uid,
       uploadCopies,
       prelims_solved,
@@ -145,8 +145,8 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
         style={[
           styles.scroll,
           theme
-            ? { backgroundColor: '#222831' }
-            : { backgroundColor: '#F5F5F5' },
+            ? { backgroundColor: "#222831" }
+            : { backgroundColor: "#F5F5F5" },
         ]}
       >
         <TitleAndSubtitleCard
@@ -169,7 +169,7 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
                 <Text style={styles.fileText}>{idx}.jpg</Text>
                 <TouchableOpacity
                   onPress={() =>
-                    navigation.navigate('FullScreenImageViewer', {
+                    navigation.navigate("FullScreenImageViewer", {
                       imageUrl: url,
                     })
                   }
@@ -186,6 +186,9 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
           ) : (
             <></>
           )}
+
+          {data != null ? <ShareButton question={data.Question} /> : <></>}
+
           <PrimaryButton
             isActive={!isAnswerCopiesDateExists && uploadCopies.length > 0}
             submitHandler={submitHandler}
@@ -203,29 +206,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bodyBGDark: {
-    backgroundColor: '#222831',
+    backgroundColor: "#222831",
   },
   bodyBGLight: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
   scroll: {
     paddingBottom: 40,
     paddingHorizontal: 24,
   },
   fileItem: {
-    borderColor: '#FFC618',
+    borderColor: "#FFC618",
     borderRadius: 10,
     borderWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 10,
     marginBottom: 5,
   },
   fileText: {
-    color: '#37B9C5',
-    fontWeight: '700',
-    fontStyle: 'italic',
+    color: "#37B9C5",
+    fontWeight: "700",
+    fontStyle: "italic",
   },
 });
 
