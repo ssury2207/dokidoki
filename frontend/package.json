@@ -20,6 +20,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "expo": "~53.0.15",
     "expo-blur": "~14.1.5",
+    "expo-clipboard": "^8.0.7",
     "expo-constants": "~17.1.6",
     "expo-font": "~13.3.2",
     "expo-haptics": "~14.1.4",

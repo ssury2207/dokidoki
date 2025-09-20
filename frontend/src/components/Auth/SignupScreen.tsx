@@ -121,6 +121,7 @@ export default function SignupScreen({ navigation }: Props) {
               <TextInput
                 style={styles.input}
                 placeholder="User Name"
+                placeholderTextColor="#999"
                 value={username}
                 maxLength={10}
                 onChangeText={setUserName}
@@ -129,6 +130,7 @@ export default function SignupScreen({ navigation }: Props) {
               <TextInput
                 style={styles.input}
                 placeholder="Phone Number"
+                placeholderTextColor="#999"
                 maxLength={13}
                 value={phonenumber}
                 keyboardType="numeric"
@@ -137,6 +139,7 @@ export default function SignupScreen({ navigation }: Props) {
               <TextInput
                 style={styles.input}
                 placeholder="Email"
+                placeholderTextColor="#999"
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -144,6 +147,7 @@ export default function SignupScreen({ navigation }: Props) {
               <TextInput
                 style={styles.input}
                 placeholder="Password"
+                placeholderTextColor="#999"
                 value={password}
                 onChangeText={setPassword}
                 autoCapitalize="none"
