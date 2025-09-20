@@ -17,7 +17,15 @@
         "foregroundImage": "./assets/dokidoki.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "intentFilters": [
+        {
+          "action": "android.intent.action.VIEW",
+          "data": {
+            "scheme": "mailto"
+          }
+        }
+      ]
     },
     "web": {
       "bundler": "metro",
