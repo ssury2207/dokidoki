@@ -2,7 +2,7 @@
   "expo": {
     "name": "dokidoki",
     "slug": "dokidoki",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/dokidoki.png",
     "scheme": "frontend",
@@ -13,6 +13,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.dokidoki.dev.dokidoki",
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/dokidoki.png",
         "backgroundColor": "#ffffff"
@@ -46,6 +48,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9ba5a170-c777-4ade-a551-bb0f536c53b2"
+      }
     }
   }
 }
