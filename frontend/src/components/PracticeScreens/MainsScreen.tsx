@@ -26,6 +26,9 @@ import { checkSubmissions } from "@/src/api/checkTodaysSubmissions";
 import { RootStackParamList } from "@/src/types/navigation";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import ShareButton from "../common/ShareButton";
+import DisclaimerText from "../atoms/DisclaimerText";
+import Subtitle from "../atoms/Subtitle";
+import TextLabel from "../atoms/TextLabel";
 type MainsScreenProps = NativeStackScreenProps<
   RootStackParamList,
   "MainsScreen"
@@ -33,7 +36,7 @@ type MainsScreenProps = NativeStackScreenProps<
 
 const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
   const date = route.params?.date;
-  const [data, setData] = useState<{ id: string } | null>(null);
+  const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
@@ -189,11 +192,29 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
 
           {data != null ? <ShareButton question={data.Question} /> : <></>}
 
-          <PrimaryButton
-            isActive={!isAnswerCopiesDateExists && uploadCopies.length > 0}
-            submitHandler={submitHandler}
-            title="Submit"
-          />
+          {!isAnswerCopiesDateExists ? (
+            <PrimaryButton
+              isActive={uploadCopies.length > 0}
+              submitHandler={submitHandler}
+              title="Submit"
+            />
+          ) : (
+            <>
+              <PrimaryButton
+                isActive={true}
+                submitHandler={() =>
+                  navigation.navigate("CreatePostOverlay", {
+                    images: todaysAnswerCopies,
+                    question: data?.Question,
+                    year: data?.Year?.toString(),
+                    paper: data?.Paper,
+                  })
+                }
+                title="Create Post"
+              />
+              <DisclaimerText text="Create a post to share and get feedback" />
+            </>
+          )}
         </Card>
       </ScrollView>
       <FullScreenLoader visible={loaderVisible || loading} />
