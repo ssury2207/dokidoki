@@ -21,4 +21,13 @@ export type RootStackParamList = {
   PrelimsArchived: {
     question: any;
   };
+  CreatePostScreen: {
+    images?: string[];
+  };
+  CreatePostOverlay: {
+    images?: string[];
+    question?: string;
+    year?: string;
+    paper?: string;
+  };
 };

@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { StyleSheet, ScrollView, TextInput } from "react-native";
+import {
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useState } from "react";
 import Card from "../atoms/Card";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,11 +14,41 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import Title from "../atoms/Title";
 import DisclaimerText from "../atoms/DisclaimerText";
-const CreatePostScreen = ({ navigation }) => {
+import PrimaryButton from "../atoms/PrimaryButton";
+import SecondaryButton from "../atoms/SecondaryButton";
+import Checkbox from "../atoms/Checkbox";
+import { RootStackParamList } from "@/src/types/navigation";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import FixedImageCarousel from "../common/FixedImageCarousel";
+import NormalText from "../atoms/NormalText";
+
+type CreatePostScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  "CreatePostScreen"
+>;
+
+const CreatePostScreen = ({ navigation, route }: CreatePostScreenProps) => {
   const [loading, setLoading] = useState(false);
   const theme = useSelector((state: RootState) => state.theme.isLight);
-
   const [loaderVisible, setLoaderVisible] = useState(false);
+  const [showQuestion, setShowQuestion] = useState(false);
+  const [newComment, setNewComment] = useState("");
+
+  const images = route.params?.images || [];
+
+  // Mock data for now - in real app this would come from props/API
+  const postData = {
+    username: "subhash", // This should come from route params or API
+    isAnonymous: true, // Changed to true to test anonymous display
+    date: "26/09/2024", // This should be formatted from createdAt
+    question:
+      "Discuss the impact of climate change on global food security and suggest possible solutions.", // From route params
+    comments: [], // This should come from API
+  };
+
+  const handleImagePress = (imageUrl: string) => {
+    navigation.navigate("FullScreenImageViewer", { imageUrl });
+  };
 
   return (
     <SafeAreaView
@@ -30,28 +66,33 @@ const CreatePostScreen = ({ navigation }) => {
             : { backgroundColor: "#F5F5F5" },
         ]}
       >
-        <Title title="Create Post" />
-
         <Card>
-          <TextInput
-            placeholder="Title"
-            multiline={true}
-            maxLength={150}
-            placeholderTextColor={!theme ? "#393E46" : "#CCCCCC"}
-            style={[
-              styles.inputStyle,
-              theme ? styles.inputColorDark : styles.inputColorLight,
-            ]}
+          <NormalText
+            text={
+              postData.isAnonymous
+                ? `anonymous | ${postData.date}`
+                : `${postData.username} | ${postData.date}`
+            }
           />
-          <DisclaimerText text="*max 150 chars" />
-          <TextInput
-            placeholder="Add More Details..."
-            multiline={true}
-            maxLength={200}
-            placeholderTextColor={!theme ? "#393E46" : "#CCCCCC"}
-            style={theme ? styles.inputColorDark : styles.inputColorLight}
-          />
-          <DisclaimerText text="*max 200 chars" />
+          {showQuestion && <DisclaimerText text={postData.question} />}
+
+          <TouchableOpacity
+            style={{ marginVertical: 8 }}
+            onPress={() => setShowQuestion(!showQuestion)}
+          >
+            <DisclaimerText
+              text={showQuestion ? "Hide Question" : "Show Question"}
+            />
+          </TouchableOpacity>
+
+          {images.length > 0 && (
+            <View style={styles.carouselContainer}>
+              <FixedImageCarousel
+                images={images}
+                onImagePress={handleImagePress}
+              />
+            </View>
+          )}
         </Card>
       </ScrollView>
       <FullScreenLoader visible={loaderVisible || loading} />
@@ -73,6 +114,30 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     paddingHorizontal: 24,
   },
+  headerContainer: {
+    marginBottom: 12,
+    paddingHorizontal: 4,
+  },
+
+  carouselContainer: {
+    marginBottom: 16,
+  },
+  noCommentsContainer: {
+    paddingVertical: 20,
+    alignItems: "center",
+  },
+  commentInputContainer: {
+    marginTop: 16,
+  },
+  commentInput: {
+    borderColor: "#CCCC",
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+    minHeight: 80,
+    textAlignVertical: "top",
+  },
   fileItem: {
     borderColor: "#FFC618",
     borderRadius: 10,
@@ -92,6 +157,8 @@ const styles = StyleSheet.create({
     borderColor: "#CCCC",
     borderWidth: 1,
     borderRadius: 10,
+    padding: 10,
+    marginVertical: 8,
   },
   inputColorLight: {
     color: "#50555C",

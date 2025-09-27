@@ -88,11 +88,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <DashboardHeader />
         <DailyChallengeCard />
         <ProgressCard />
-        <TouchableOpacity
-          onPress={() => navigation.navigate("CreatePostOverlay")}
-        >
-          <NormalText text="Feed" />
-        </TouchableOpacity>
+
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with</Text>
           <Image

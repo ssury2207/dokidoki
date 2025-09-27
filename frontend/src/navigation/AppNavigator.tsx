@@ -81,7 +81,13 @@ export default function AppNavigator() {
           headerShown: false,
         }}
       />
-      <Stack.Screen name="CreatePostScreen" component={CreatePostScreen} />
+      <Stack.Screen
+        name="CreatePostScreen"
+        component={CreatePostScreen}
+        options={{
+          presentation: "card",
+        }}
+      />
 
       <Stack.Screen name="PrelimsArchived" component={PrelimsArchievedScreen} />
     </Stack.Navigator>

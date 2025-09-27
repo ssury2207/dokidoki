@@ -36,7 +36,7 @@ const ShareButton: React.FC<Props> = (props) => {
           theme ? styles.borderBgDark : styles.borderBgLight,
         ]}
       >
-        <NormalText text="Share now with your friends!" />
+        <NormalText text="Share this Question Now!" />
       </TouchableOpacity>
     </View>
   );
@@ -55,7 +55,6 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
   },
 });
 

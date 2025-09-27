@@ -1,25 +1,28 @@
-import { View, StyleSheet } from 'react-native';
-import { StackActions, useNavigation } from '@react-navigation/native';
-import Title from '../atoms/Title';
-import NormalText from '../atoms/NormalText';
-import PrimaryButton from '../atoms/PrimaryButton';
-import { uploadImageToCloudinary } from '@/src/api/uploadImageToCloudinary';
-import { doc, getFirestore, updateDoc } from 'firebase/firestore';
-import FullScreenLoader from '../common/FullScreenLoader';
-import { useState } from 'react';
-import { RootState } from '@/store/store';
-import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
-import { setCurrentStreak, setPoints } from '@/store/userProgressSlice';
+import { View, StyleSheet } from "react-native";
+import { StackActions, useNavigation } from "@react-navigation/native";
+import { RootStackParamList } from "@/src/types/navigation";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import Title from "../atoms/Title";
+import NormalText from "../atoms/NormalText";
+import PrimaryButton from "../atoms/PrimaryButton";
+import { uploadImageToCloudinary } from "@/src/api/uploadImageToCloudinary";
+import { doc, getFirestore, updateDoc } from "firebase/firestore";
+import FullScreenLoader from "../common/FullScreenLoader";
+import { useState } from "react";
+import { RootState } from "@/store/store";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { setCurrentStreak, setPoints } from "@/store/userProgressSlice";
 
 type Props = {
   verdict: boolean;
 };
 
-import submitMainsData from '@/src/utils/submitMainsData';
+import submitMainsData from "@/src/utils/submitMainsData";
+import SecondaryButton from "../atoms/SecondaryButton";
 
 const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { uid, uploadCopies, prelims_solved, mains_solved, data, date } =
     route.params;
@@ -85,10 +88,18 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
         dispatch(setCurrentStreak(updated_streak));
       }
       isCurrentDay && dispatch(setPoints(updated_points));
+      
+      // Navigate to CreatePostOverlay after successful submission
       navigation.dispatch(StackActions.pop(2));
+      navigation.navigate("CreatePostOverlay", {
+        images: downloadURLs, // Pass the uploaded image URLs
+        question: data.Question,
+        year: data.Year?.toString(),
+        paper: data.Paper,
+      });
     } catch (error: any) {
-      alert(error?.message || 'Mains submission failed.');
-      console.error('Mains submission error:', error);
+      alert(error?.message || "Mains submission failed.");
+      console.error("Mains submission error:", error);
       navigation.goBack();
     } finally {
       setLoaderVisible(false);
@@ -115,7 +126,7 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
           submitHandler={overlaySubmitButtonHandler}
           title="Submit"
         />
-        <PrimaryButton
+        <SecondaryButton
           isActive={true}
           submitHandler={overlayBackButtonHandler}
           title="Back"
@@ -132,25 +143,25 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modal: {
     padding: 20,
     borderRadius: 12,
-    width: '80%',
+    width: "80%",
   },
   modalBGLight: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
   },
   modalBGDark: {
-    backgroundColor: '#222831',
+    backgroundColor: "#222831",
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
   },
 });
 
