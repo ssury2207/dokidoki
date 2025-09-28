@@ -50,7 +50,10 @@ const ProgressCard = () => {
               <NormalText text={` All Questions: ${data.length}`} />
             </View>
             <TouchableOpacity
-              style={styles.seeAllButton}
+              style={[
+                styles.seeAllButton,
+                { backgroundColor: theme ? '#00ADB5' : '#108174' },
+              ]}
               onPress={() =>
                 (navigation as any).navigate('PracticeSelect', {
                   caseType: true,

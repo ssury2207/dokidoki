@@ -27,16 +27,17 @@ const OthersAnswersCard: React.FC<OthersAnswersCardProps> = ({ onPress }) => {
             { color: theme ? '#EEEEEE' : '#000000' },
           ]}
         >
-          CHECK OUT OTHER'S ANSWERS
+          COMMUNITY ANSWERS
         </Text>
 
         <TouchableOpacity
-          style={styles.seeAllButton}
+          style={[
+            styles.seeAllButton,
+            { backgroundColor: theme ? '#00ADB5' : '#108174' },
+          ]}
           onPress={onPress}
         >
-          <Text style={styles.seeAllButtonText}>
-            Check out Other's answers
-          </Text>
+          <Text style={styles.seeAllButtonText}>VIEW COMMUNITY POSTS</Text>
         </TouchableOpacity>
       </View>
     </View>
