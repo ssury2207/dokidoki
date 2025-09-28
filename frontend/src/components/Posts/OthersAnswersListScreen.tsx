@@ -5,8 +5,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  ActivityIndicator,
   Dimensions,
+  Modal,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
@@ -53,6 +53,7 @@ export default function OthersAnswersListScreen() {
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [sortBy, setSortBy] = useState<'createdAt' | 'likeCount'>('createdAt');
   const [hasNext, setHasNext] = useState<boolean>(true);
+  const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
 
   const formatDate = useCallback((createdAt: Post['createdAt']) => {
     try {
@@ -215,13 +216,49 @@ export default function OthersAnswersListScreen() {
         <Text style={[styles.headerLabel, { color: !isLight ? '#000' : '#EEE' }]}>Sort by:</Text>
         <TouchableOpacity
           style={[styles.dropdown, { backgroundColor: !isLight ? '#FFF' : '#393E46' }]}
-          onPress={() => setSortBy((prev) => (prev === 'createdAt' ? 'likeCount' : 'createdAt'))}
+          onPress={() => setSortMenuOpen(true)}
         >
           <Text style={{ color: !isLight ? '#000' : '#EEE' }}>
             {sortBy === 'createdAt' ? 'Recency' : 'Likes'}
           </Text>
         </TouchableOpacity>
       </View>
+
+      {/* Sort dropdown modal */}
+      <Modal
+        visible={sortMenuOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSortMenuOpen(false)}
+      >
+        <TouchableOpacity style={styles.sortOverlay} activeOpacity={1} onPress={() => setSortMenuOpen(false)}>
+          <View style={[styles.sortCard, { backgroundColor: isLight ? '#FFFFFF' : '#2C2C2C' }]}
+            // stop propagation to avoid closing when tapping inside
+            onStartShouldSetResponder={() => true}
+          >
+            <TouchableOpacity
+              style={styles.sortOption}
+              onPress={() => {
+                setSortMenuOpen(false);
+                // keep as is if already selected
+                if (sortBy !== 'createdAt') setSortBy('createdAt');
+              }}
+            >
+              <Text style={[styles.sortOptionText, { color: isLight ? '#000' : '#EEE', fontWeight: sortBy === 'createdAt' ? '700' : '500' }]}>Recency</Text>
+            </TouchableOpacity>
+            <View style={styles.sortDivider} />
+            <TouchableOpacity
+              style={styles.sortOption}
+              onPress={() => {
+                setSortMenuOpen(false);
+                if (sortBy !== 'likeCount') setSortBy('likeCount');
+              }}
+            >
+              <Text style={[styles.sortOptionText, { color: isLight ? '#000' : '#EEE', fontWeight: sortBy === 'likeCount' ? '700' : '500' }]}>Likes</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* List */}
       <FlatList
@@ -336,6 +373,38 @@ const styles = StyleSheet.create({
   pageIndicator: {
     color: '#666',
     fontWeight: '600',
+  },
+  // Sort dropdown styles
+  sortOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  sortCard: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 12,
+    paddingVertical: 8,
+    // shadow/elevation
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  sortOption: {
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  sortOptionText: {
+    fontSize: 16,
+  },
+  sortDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#ccc',
+    opacity: 0.6,
   },
   emptyContainer: {
     flex: 1,
