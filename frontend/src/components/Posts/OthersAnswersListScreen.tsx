@@ -201,9 +201,27 @@ export default function OthersAnswersListScreen() {
           <Text style={[styles.metaText, { color: !isLight ? '#555' : '#DDD' }]}>
             {item.username}
           </Text>
-          <Text style={[styles.metaText, { color: !isLight ? '#555' : '#DDD' }]}>
-            {date}
-          </Text>
+          <View style={styles.rightMetaRow}>
+            <Text style={[styles.metaText, { color: !isLight ? '#555' : '#DDD' }]}>
+              {date}
+            </Text>
+            <View style={styles.likeRow}>
+              <Text
+                style={[styles.likeCountNum, { color: !isLight ? '#555' : '#666' }]}
+                numberOfLines={1}
+              >
+                {item.likeCount ?? 0}
+              </Text>
+              <Text
+                style={[
+                  styles.heart,
+                  { color: item.likeCount > 0 ? '#FF3B30' : (!isLight ? '#888' : '#999') },
+                ]}
+              >
+                {item.likeCount > 0 ? '♥' : '♡'}
+              </Text>
+            </View>
+          </View>
         </View>
       </View>
     );
@@ -351,6 +369,30 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 12,
+  },
+  rightMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  likeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 12,
+  },
+  heart: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  likeCountNum: {
+    width: 28,
+    textAlign: 'right',
+    fontSize: 12,
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  likeCount: {
+    fontSize: 12,
+    fontWeight: '600',
   },
   pagination: {
     flexDirection: 'row',
