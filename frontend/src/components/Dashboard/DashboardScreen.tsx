@@ -27,10 +27,12 @@ import {
 } from '@/store/userProgressSlice';
 import getDateDiffInDays from '@/src/utils/dateDifference';
 import { reportIssue } from '@/src/utils/MailMe';
+import OthersAnswersCard from './Components/OthersAnswersCard';
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
   PractisedQuestions: undefined;
+  OthersAnswersList: undefined;
 };
 
 type DashboardScreenProps = {
@@ -87,6 +89,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <DashboardHeader />
         <DailyChallengeCard />
         <ProgressCard />
+        <OthersAnswersCard onPress={() => navigation.navigate('OthersAnswersList')} />
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with</Text>

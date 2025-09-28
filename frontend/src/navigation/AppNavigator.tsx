@@ -12,6 +12,7 @@ import PrelimsArchievedScreen from '../components/archivedScreens/PrelimsArchiev
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
 import { RootStackParamList } from '@/src/types/navigation';
+import OthersAnswersListScreen from '@/src/components/Posts/OthersAnswersListScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -23,7 +24,6 @@ export default function AppNavigator() {
       initialRouteName="Dashboard"
       screenOptions={{
         headerTitle: '',
-        headerBackTitleVisible: false,
         headerTintColor: theme ? 'white' : 'black',
         headerStyle: {
           backgroundColor: theme ? '#393E46' : 'white',
@@ -47,6 +47,10 @@ export default function AppNavigator() {
       <Stack.Screen
         name="PractisedQuestions"
         component={PractisedQuestionsScreen}
+      />
+      <Stack.Screen
+        name="OthersAnswersList"
+        component={OthersAnswersListScreen}
       />
       <Stack.Screen name="PrelimsScreen" component={PrelimsScreen} />
       <Stack.Screen
