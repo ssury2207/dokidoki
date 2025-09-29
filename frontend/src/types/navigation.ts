@@ -25,4 +25,7 @@ export type RootStackParamList = {
     question: any;
   };
   OthersAnswersList: undefined;
+  PostDetail: {
+    postId: string;
+  };
 };

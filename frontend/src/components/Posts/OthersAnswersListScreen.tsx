@@ -185,7 +185,7 @@ export default function OthersAnswersListScreen() {
   const renderPost = useCallback(({ item }: { item: Post }) => {
     const date = formatDate(item.createdAt);
     return (
-      <View
+      <TouchableOpacity
         style={[
           styles.card,
           {
@@ -193,6 +193,8 @@ export default function OthersAnswersListScreen() {
             shadowColor: isLight ? '#FFF' : '#000',
           },
         ]}
+        onPress={() => navigation.navigate('PostDetail', { postId: item.id })}
+        activeOpacity={0.8}
       >
         <Text style={[styles.question, { color: !isLight ? '#000' : '#EEE' }]} numberOfLines={2}>
           {item.question}
@@ -223,9 +225,9 @@ export default function OthersAnswersListScreen() {
             </View>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
-  }, [formatDate, isLight]);
+  }, [formatDate, isLight, navigation]);
 
   return (
     <View style={[styles.container, { backgroundColor: !isLight ? '#F0F0F0' : '#222831' }]}> 
