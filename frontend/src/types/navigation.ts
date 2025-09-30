@@ -1,10 +1,13 @@
 export type RootStackParamList = {
   Dashboard: undefined;
-  PracticeSelect: { caseType: string | null };
+  PracticeSelect: { caseType: boolean | null };
   MainsScreen: {
     date?: string;
   };
-  PractisedQuestions: undefined;
+  PractisedQuestions: {
+    data?: unknown[];
+    questionType?: 'pre' | 'mains';
+  } | undefined;
   PrelimsScreen: undefined;
   Overlay: undefined;
   MainsVerdictOverlay: {
@@ -21,4 +24,5 @@ export type RootStackParamList = {
   PrelimsArchived: {
     question: any;
   };
+  OthersAnswersList: undefined;
 };

@@ -7,7 +7,7 @@ import TextLabel from '../atoms/TextLabel';
 import PrimaryButton from '../atoms/PrimaryButton';
 import FooterText from '../atoms/FooterText';
 import PracticeButton from '../common/PracticeButton';
-import type { StackNavigationProp } from '@react-navigation/stack';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootState, AppDispatch } from '@/store/store';
 import { useSelector } from 'react-redux';
 import {
@@ -15,20 +15,11 @@ import {
   selectArchivedQuestions,
 } from '@/store/slices/archivedQuestionsSlice';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import type { RootStackParamList } from '@/src/types/navigation';
 
-type PracticeSelectScreenProps = {
-  navigation: StackNavigationProp<any, any>;
-  route: {
-    params: {
-      caseType: boolean | null;
-    };
-  };
-};
+type Props = NativeStackScreenProps<RootStackParamList, 'PracticeSelect'>;
 
-export default function PracticeSelectScreen({
-  navigation,
-  route,
-}: PracticeSelectScreenProps) {
+export default function PracticeSelectScreen({ navigation, route }: Props) {
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
   const { caseType } = route.params;
@@ -37,22 +28,22 @@ export default function PracticeSelectScreen({
 
   const mainsButtonHandler = () => {
     caseType
-      ? (navigation as any).navigate('PractisedQuestions', { data })
-      : navigation.navigate('MainsScreen');
+      ? navigation.navigate({ name: 'PractisedQuestions', params: { data } })
+      : navigation.navigate({ name: 'MainsScreen', params: {} });
   };
   const prelimsButtonHandler = () => {
     caseType
-      ? (navigation as any).navigate('PractisedQuestions', {
-          data: prelimsData,
-          questionType: 'prelims',
+      ? navigation.navigate({
+          name: 'PractisedQuestions',
+          params: { data: prelimsData, questionType: 'pre' },
         })
-      : navigation.navigate('PrelimsScreen');
+      : navigation.navigate({ name: 'PrelimsScreen', params: undefined });
   };
 
   const reviseOrPracticeButtonHandler = () => {
     caseType
-      ? navigation.navigate('PracticeSelect')
-      : (navigation as any).navigate('PracticeSelect', { caseType: true });
+      ? navigation.navigate({ name: 'PracticeSelect', params: { caseType: null } })
+      : navigation.navigate({ name: 'PracticeSelect', params: { caseType: true } });
   };
   return (
     <SafeAreaView

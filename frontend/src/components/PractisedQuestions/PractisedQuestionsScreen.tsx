@@ -2,13 +2,13 @@ import { StyleSheet, View } from 'react-native';
 import React from 'react';
 import QuestionCard from './Components/QuestionCard';
 import { FlatList } from 'react-native';
-import { RouteProp } from '@react-navigation/native';
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
 import PrimaryButton from '../atoms/PrimaryButton';
-import { useNavigation } from 'expo-router';
 import TextLabel from '../atoms/TextLabel';
 import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@/src/types/navigation';
 
 type renderItemProps = {
   questionId: string;
@@ -20,24 +20,16 @@ type renderItemProps = {
   questionData: [] | null;
 };
 
-type PractisedQuestionsScreenRouteProp = RouteProp<
-  {
-    params: {
-      data: renderItemProps[];
-      questionType: 'pre' | 'mains'; // or string if open
-    };
-  },
-  'params'
+type Props = NativeStackScreenProps<
+  RootStackParamList,
+  'PractisedQuestions'
 >;
 
-export default function PractisedQuestionsScreen({
-  route,
-}: {
-  route: PractisedQuestionsScreenRouteProp;
-}) {
-  const { data, questionType } = route.params;
+export default function PractisedQuestionsScreen({ route, navigation }: Props) {
+  const params = route.params ?? {};
+  const data = (params as any).data ?? [];
+  const questionType = (params as any).questionType ?? 'pre';
 
-  const navigation = useNavigation();
   const theme = useSelector((state: RootState) => state.theme.isLight);
   const renderItem = ({ item }: { item: renderItemProps }) => (
     <QuestionCard
