@@ -4,10 +4,12 @@ export type RootStackParamList = {
   MainsScreen: {
     date?: string;
   };
-  PractisedQuestions: {
-    data?: unknown[];
-    questionType?: 'pre' | 'mains';
-  } | undefined;
+  PractisedQuestions:
+    | {
+        data?: unknown[];
+        questionType?: "pre" | "mains";
+      }
+    | undefined;
   PrelimsScreen: undefined;
   Overlay: undefined;
   MainsVerdictOverlay: {
@@ -27,5 +29,15 @@ export type RootStackParamList = {
   OthersAnswersList: undefined;
   PostDetail: {
     postId: string;
+  };
+  CreatePostScreen: {
+    images?: string[];
+  };
+  CreatePostOverlay: {
+    images?: string[];
+    question?: string;
+    year?: string;
+    paper?: string;
+    questionId?: string;
   };
 };
