@@ -13,6 +13,7 @@ import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
 import { RootStackParamList } from '@/src/types/navigation';
 import OthersAnswersListScreen from '@/src/components/Posts/OthersAnswersListScreen';
+import PostDetailScreen from '@/src/components/Posts/PostDetailScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -51,6 +52,11 @@ export default function AppNavigator() {
       <Stack.Screen
         name="OthersAnswersList"
         component={OthersAnswersListScreen}
+      />
+      <Stack.Screen
+        name="PostDetail"
+        component={PostDetailScreen}
+        options={{ headerShown: false }}
       />
       <Stack.Screen name="PrelimsScreen" component={PrelimsScreen} />
       <Stack.Screen
