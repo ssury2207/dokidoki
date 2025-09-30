@@ -38,5 +38,6 @@ export type RootStackParamList = {
     question?: string;
     year?: string;
     paper?: string;
+    questionId?: string;
   };
 };

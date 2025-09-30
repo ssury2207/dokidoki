@@ -35,6 +35,7 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
   const question = route.params?.question || "";
   const year = route.params?.year || "";
   const paper = route.params?.paper || "";
+  const questionId = route.params?.questionId || "";
 
   const overlayButtonHandler = () => {
     navigation.goBack();
@@ -64,6 +65,7 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
         question: question,
         year: year,
         paper: paper,
+        questionId: questionId,
         isAnonymous: isAnonymous,
         images: images,
         likeCount: 0,
@@ -72,11 +74,17 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
       };
 
       // Add post to Firestore
-      await addDoc(collection(db, "posts"), postData);
+      const docRef = await addDoc(collection(db, "posts"), postData);
 
       setLoading(false);
-      // Navigate to CreatePostScreen on success
-      navigation.navigate("CreatePostScreen", { images });
+      
+      // First go back to close the overlay, then navigate to PostDetail
+      navigation.goBack();
+      
+      // Use a slight delay to ensure the overlay is closed before navigation
+      setTimeout(() => {
+        navigation.navigate("PostDetail", { postId: docRef.id });
+      }, 100);
     } catch (error) {
       setLoading(false);
       Alert.alert("Error", "Failed to create post. Please try again.");

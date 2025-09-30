@@ -64,6 +64,7 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
       .finally(() => setLoading(false));
   }, []);
 
+
   useEffect(() => {
     let cancelled = false;
 
@@ -191,7 +192,6 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
           )}
 
           {data != null ? <ShareButton question={data.Question} /> : <></>}
-
           {!isAnswerCopiesDateExists ? (
             <PrimaryButton
               isActive={uploadCopies.length > 0}
@@ -208,6 +208,7 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
                     question: data?.Question,
                     year: data?.Year?.toString(),
                     paper: data?.Paper,
+                    questionId: data?.id,
                   })
                 }
                 title="Create Post"

@@ -58,7 +58,9 @@ export default function AppNavigator() {
       <Stack.Screen
         name="PostDetail"
         component={PostDetailScreen}
-        options={{ headerShown: false }}
+        options={{
+          presentation: "card",
+        }}
       />
       <Stack.Screen name="PrelimsScreen" component={PrelimsScreen} />
       <Stack.Screen
