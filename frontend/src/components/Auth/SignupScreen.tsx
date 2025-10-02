@@ -1,6 +1,6 @@
-import { auth, firestore } from '../../firebaseConfig';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { useState, useEffect } from 'react';
+import { auth, firestore } from "../../firebaseConfig";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useState, useEffect } from "react";
 import {
   View,
   Image,
@@ -11,29 +11,29 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-} from 'react-native';
+} from "react-native";
 
-import { useHeaderHeight } from '@react-navigation/elements';
+import { useHeaderHeight } from "@react-navigation/elements";
 import {
   useSafeAreaInsets,
   SafeAreaView,
-} from 'react-native-safe-area-context';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
-import TypewriterText from '../common/TypewriterText';
-import FullScreenLoader from '../common/FullScreenLoader';
+} from "react-native-safe-area-context";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { setDoc, doc, serverTimestamp } from "firebase/firestore";
+import TypewriterText from "../common/TypewriterText";
+import FullScreenLoader from "../common/FullScreenLoader";
 
 type Props = {
   navigation: NativeStackNavigationProp<any>;
 };
 
 export default function SignupScreen({ navigation }: Props) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUserName] = useState('');
-  const [phonenumber, setPhonenumber] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [username, setUserName] = useState("");
+  const [phonenumber, setPhonenumber] = useState("");
   const [disabled, setDisabled] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const headerHeight = useHeaderHeight();
@@ -41,10 +41,10 @@ export default function SignupScreen({ navigation }: Props) {
 
   useEffect(() => {
     const allFilled =
-      email.trim() !== '' &&
-      password.trim() !== '' &&
-      username.trim() !== '' &&
-      phonenumber.trim() !== '';
+      email.trim() !== "" &&
+      password.trim() !== "" &&
+      username.trim() !== "" &&
+      phonenumber.trim() !== "";
 
     setDisabled(!allFilled);
   }, [email, password, username, phonenumber]);
@@ -82,7 +82,7 @@ export default function SignupScreen({ navigation }: Props) {
         createdAt: serverTimestamp(),
       };
 
-      await setDoc(doc(firestore, 'users', user_id), userData);
+      await setDoc(doc(firestore, "users", user_id), userData);
     } catch (e) {
       setError(`Error:- ${e}`);
     } finally {
@@ -93,7 +93,7 @@ export default function SignupScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={headerHeight + insets.top}
         style={styles.kavContainer}
       >
@@ -106,7 +106,7 @@ export default function SignupScreen({ navigation }: Props) {
           <View style={styles.content}>
             <View style={styles.header}>
               <Image
-                source={require('../../../assets/dokidoki.png')}
+                source={require("../../../assets/dokidoki.png")}
                 style={styles.logo}
                 resizeMode="contain"
               />
@@ -145,7 +145,7 @@ export default function SignupScreen({ navigation }: Props) {
                 autoCapitalize="none"
               />
               <TextInput
-                style={styles.input}
+                style={[styles.input, { color: "#FFF" }]}
                 placeholder="Password"
                 placeholderTextColor="#999"
                 value={password}
@@ -160,7 +160,7 @@ export default function SignupScreen({ navigation }: Props) {
                 style={[styles.button, styles.signupButton]}
               >
                 <Text style={styles.buttonText}>
-                  {loading ? 'Please wait…' : 'SIGN UP '}
+                  {loading ? "Please wait…" : "SIGN UP "}
                 </Text>
               </TouchableOpacity>
 
@@ -185,33 +185,33 @@ export default function SignupScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FEF9ED',
+    backgroundColor: "#FEF9ED",
   },
   kavContainer: {
     flex: 1,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    width: '100%',
+    justifyContent: "space-around",
+    alignItems: "center",
+    width: "100%",
   },
   content: {
     flex: 1,
-    width: '100%',
+    width: "100%",
   },
   contentContainer: {
     paddingHorizontal: 24,
     paddingVertical: 40,
-    alignItems: 'center',
+    alignItems: "center",
   },
   formContainer: {
-    width: '100%',
+    width: "100%",
     marginTop: 24,
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    justifyContent: "space-around",
+    alignItems: "center",
   },
   header: {
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    width: '100%',
+    justifyContent: "space-around",
+    alignItems: "center",
+    width: "100%",
   },
   logo: {
     width: 120,
@@ -220,62 +220,62 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   cardContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     paddingVertical: 16,
     paddingHorizontal: 24,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 8,
-    width: '100%',
+    width: "100%",
     marginBottom: 24,
     borderRadius: 20,
   },
   input: {
-    width: '100%',
+    width: "100%",
     height: 48,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 16,
     paddingHorizontal: 12,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     fontSize: 16,
   },
   error: {
-    color: 'red',
+    color: "red",
     marginBottom: 16,
   },
   button: {
     paddingVertical: 14,
     borderRadius: 10,
-    width: '50%',
+    width: "50%",
     marginVertical: 15,
   },
   signupButton: {
-    backgroundColor: '#00ADB5',
+    backgroundColor: "#00ADB5",
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
   alreadyAccountContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
   },
   alreadyAccountText: {
-    color: 'black',
-    fontWeight: '600',
+    color: "black",
+    fontWeight: "600",
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
   },
   loginText: {
-    color: '#2650BB',
-    fontWeight: '300',
+    color: "#2650BB",
+    fontWeight: "300",
     fontSize: 16,
   },
 });
