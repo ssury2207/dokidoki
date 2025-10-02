@@ -17,7 +17,7 @@ import Card from "../atoms/Card";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NormalText from "../atoms/NormalText";
 import { fetchTodaysQuestion } from "@/src/api/dailyMainsQuestion";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
 import { auth } from "@/src/firebaseConfig";
 import FullScreenLoader from "../common/FullScreenLoader";
 import { useSelector } from "react-redux";
@@ -29,6 +29,7 @@ import ShareButton from "../common/ShareButton";
 import DisclaimerText from "../atoms/DisclaimerText";
 import Subtitle from "../atoms/Subtitle";
 import TextLabel from "../atoms/TextLabel";
+import { useFocusEffect } from "@react-navigation/native";
 type MainsScreenProps = NativeStackScreenProps<
   RootStackParamList,
   "MainsScreen"
@@ -53,6 +54,8 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
   const [mainssubmissionData, setMainsSubmissionData] = useState<{
     id: string;
   } | null>(null);
+  const [userPostId, setUserPostId] = useState<string | null>(null);
+  const [checkingPost, setCheckingPost] = useState(false);
 
   const db = getFirestore();
   const today = date || new Date().toISOString().substring(0, 10);
@@ -64,56 +67,90 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
       .finally(() => setLoading(false));
   }, []);
 
+  // Function to check if user has created a post for this question
+  const checkUserPost = async () => {
+    if (!uid || !data?.id) {
+      setUserPostId(null);
+      return;
+    }
 
+    setCheckingPost(true);
+    try {
+      const postsQuery = query(
+        collection(db, "posts"),
+        where("authorId", "==", uid),
+        where("questionId", "==", data.id)
+      );
+
+      const querySnapshot = await getDocs(postsQuery);
+
+      if (!querySnapshot.empty) {
+        // User has created a post for this question
+        const postDoc = querySnapshot.docs[0];
+        setUserPostId(postDoc.id);
+      } else {
+        setUserPostId(null);
+      }
+    } catch (error) {
+      console.log("Error checking user post:", error);
+      setUserPostId(null);
+    } finally {
+      setCheckingPost(false);
+    }
+  };
+
+
+  // Function to check submissions (extracted for reuse)
+  const checkSubmissionStatus = async () => {
+    setLoaderVisible(true);
+    setLoading(true);
+
+    try {
+      if (!uid) {
+        setPrelimSubmissionData(null);
+        setMainsSubmissionData(null);
+        setIsAnswerCopiesDateExists(false);
+        setTodaysAnswerCopies([]);
+        setUploadCopies([]); // Clear upload state
+        return;
+      }
+
+      const { pre_submitted_data, mains_submitted_data } =
+        await checkSubmissions(today);
+
+      // handle prelim data
+      setPrelimSubmissionData(pre_submitted_data ?? null);
+
+      // handle mains data and guard access
+      if (mains_submitted_data) {
+        setMainsSubmissionData(mains_submitted_data);
+        setIsAnswerCopiesDateExists(true);
+        setTodaysAnswerCopies(mains_submitted_data.submission_uri || []);
+        setUploadCopies([]); // Clear upload state when submission exists
+      } else {
+        setMainsSubmissionData(null);
+        setIsAnswerCopiesDateExists(false);
+        setTodaysAnswerCopies([]);
+      }
+    } catch (e) {
+      console.log("checkTodaysSubmissions failed:", e);
+      setPrelimSubmissionData(null);
+      setMainsSubmissionData(null);
+      setIsAnswerCopiesDateExists(false);
+      setTodaysAnswerCopies([]);
+    } finally {
+      setLoaderVisible(false);
+      setLoading(false);
+    }
+  };
+
+  // Initial check on mount
   useEffect(() => {
     let cancelled = false;
 
-    setLoaderVisible(true);
-    setLoading(true); // match neutral UI on screen entry
-
     const checkDate = async () => {
-      try {
-        if (!uid) {
-          if (!cancelled) {
-            setPrelimSubmissionData(null);
-            setMainsSubmissionData(null);
-            setIsAnswerCopiesDateExists(false);
-            setTodaysAnswerCopies([]);
-          }
-          return;
-        }
-
-        const { pre_submitted_data, mains_submitted_data } =
-          await checkSubmissions(today);
-
-        if (cancelled) return;
-
-        // handle prelim data
-        setPrelimSubmissionData(pre_submitted_data ?? null);
-
-        // handle mains data and guard access
-        if (mains_submitted_data) {
-          setMainsSubmissionData(mains_submitted_data);
-          setIsAnswerCopiesDateExists(true);
-          setTodaysAnswerCopies(mains_submitted_data.submission_uri || []);
-        } else {
-          setMainsSubmissionData(null);
-          setIsAnswerCopiesDateExists(false);
-          setTodaysAnswerCopies([]);
-        }
-      } catch (e) {
-        if (!cancelled) {
-          console.log("checkTodaysSubmissions failed:", e);
-          setPrelimSubmissionData(null);
-          setMainsSubmissionData(null);
-          setIsAnswerCopiesDateExists(false);
-          setTodaysAnswerCopies([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoaderVisible(false);
-          setLoading(false);
-        }
+      if (!cancelled) {
+        await checkSubmissionStatus();
       }
     };
 
@@ -122,6 +159,19 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
       cancelled = true;
     };
   }, [uid, db, today]);
+
+  // Refresh submission status and check for user's post when screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      const refreshScreen = async () => {
+        await checkSubmissionStatus();
+        if (data?.id) {
+          await checkUserPost();
+        }
+      };
+      refreshScreen();
+    }, [uid, today, data?.id])
+  );
 
   const submitHandler = async () => {
     const prelims_solved = prelimsubmissionData != null;
@@ -200,20 +250,35 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
             />
           ) : (
             <>
-              <PrimaryButton
-                isActive={true}
-                submitHandler={() =>
-                  navigation.navigate("CreatePostOverlay", {
-                    images: todaysAnswerCopies,
-                    question: data?.Question,
-                    year: data?.Year?.toString(),
-                    paper: data?.Paper,
-                    questionId: data?.id,
-                  })
-                }
-                title="Create Post"
-              />
-              <DisclaimerText text="Create a post to share and get feedback" />
+              {userPostId ? (
+                <>
+                  <PrimaryButton
+                    isActive={true}
+                    submitHandler={() =>
+                      navigation.navigate("PostDetail", { postId: userPostId })
+                    }
+                    title="See Your Post"
+                  />
+                  <DisclaimerText text="View your post and check reviews" />
+                </>
+              ) : (
+                <>
+                  <PrimaryButton
+                    isActive={true}
+                    submitHandler={() =>
+                      navigation.navigate("CreatePostOverlay", {
+                        images: todaysAnswerCopies,
+                        question: data?.Question,
+                        year: data?.Year?.toString(),
+                        paper: data?.Paper,
+                        questionId: data?.id,
+                      })
+                    }
+                    title="Create Post"
+                  />
+                  <DisclaimerText text="Create a post to share and get feedback" />
+                </>
+              )}
             </>
           )}
         </Card>

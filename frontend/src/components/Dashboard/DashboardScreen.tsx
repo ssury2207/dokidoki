@@ -81,11 +81,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
     <SafeAreaView style={theme ? styles.bodyDark : styles.bodyLight}>
       <ScrollView
         style={[
-          styles.scroll,
+          { flex: 1 },
           theme
             ? { backgroundColor: "#222831" }
             : { backgroundColor: "#F5F5F5" },
         ]}
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
       >
         <DashboardHeader />
         <DailyChallengeCard />
@@ -123,8 +125,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F5F5",
   },
   scroll: {
+    flexGrow: 1,
     paddingVertical: 40,
     paddingHorizontal: 24,
+    paddingBottom: 60,
   },
   themeToggleButton: {
     backgroundColor: "#00ADB5",
@@ -159,9 +163,9 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   linkContainer: {
-    flex: 1,
     margin: 8,
     alignItems: "center",
+    marginBottom: 24,
   },
   linkText: {
     color: "#FF6347",

@@ -145,7 +145,7 @@ export default function SignupScreen({ navigation }: Props) {
                 autoCapitalize="none"
               />
               <TextInput
-                style={[styles.input, { color: "#FFF" }]}
+                style={styles.input}
                 placeholder="Password"
                 placeholderTextColor="#999"
                 value={password}
@@ -242,6 +242,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: "white",
     fontSize: 16,
+    color: "#000",
   },
   error: {
     color: "red",
