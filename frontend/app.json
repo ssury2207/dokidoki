@@ -4,7 +4,7 @@
     "slug": "dokidoki",
     "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/dokidoki.png",
+    "icon": "./assets/icon-dokidoki.png",
     "scheme": "frontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -16,7 +16,7 @@
       "package": "com.dokidoki.dev.dokidoki",
       "versionCode": 3,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/dokidoki.png",
+        "foregroundImage": "./assets/icon-dokidoki.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -32,14 +32,14 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/dokidoki.png"
+      "favicon": "./assets/icon-dokidoki.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/dokidoki.png",
+          "image": "./assets/icon-dokidoki.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
