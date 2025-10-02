@@ -90,12 +90,16 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
       isCurrentDay && dispatch(setPoints(updated_points));
       
       // Navigate to CreatePostOverlay after successful submission
-      navigation.dispatch(StackActions.pop(2));
+      // Pop only this overlay (MainsVerdictOverlay), keeping MainsScreen in the stack
+      navigation.goBack();
+
+      // Then navigate to CreatePostOverlay from MainsScreen
       navigation.navigate("CreatePostOverlay", {
         images: downloadURLs, // Pass the uploaded image URLs
         question: data.Question,
         year: data.Year?.toString(),
         paper: data.Paper,
+        questionId: data.id || data.questionId, // Add questionId for post tracking
       });
     } catch (error: any) {
       alert(error?.message || "Mains submission failed.");

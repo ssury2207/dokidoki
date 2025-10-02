@@ -77,14 +77,10 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
       const docRef = await addDoc(collection(db, "posts"), postData);
 
       setLoading(false);
-      
-      // First go back to close the overlay, then navigate to PostDetail
-      navigation.goBack();
-      
-      // Use a slight delay to ensure the overlay is closed before navigation
-      setTimeout(() => {
-        navigation.navigate("PostDetail", { postId: docRef.id });
-      }, 100);
+
+      // Navigate directly to PostDetail, replacing the current overlay in the stack
+      // This prevents the user from going back to a stale CreatePostOverlay
+      navigation.replace("PostDetail", { postId: docRef.id });
     } catch (error) {
       setLoading(false);
       Alert.alert("Error", "Failed to create post. Please try again.");

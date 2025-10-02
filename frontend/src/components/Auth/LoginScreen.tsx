@@ -89,7 +89,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
               autoCapitalize="none"
             />
             <TextInput
-              style={[styles.input, { color: "#FFF" }]}
+              style={styles.input}
               placeholder="Password"
               placeholderTextColor="#999"
               value={password}
@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: "white",
     fontSize: 16,
+    color: "#000",
   },
   button: {
     paddingVertical: 14,

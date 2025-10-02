@@ -1,8 +1,7 @@
-import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { StyleSheet, View, TouchableOpacity, Text } from "react-native";
 import React from "react";
 import { RootState } from "@/store/store";
 import { useSelector } from "react-redux";
-import NormalText from "../atoms/NormalText";
 import { Share } from "react-native";
 
 type Props = {
@@ -33,10 +32,12 @@ const ShareButton: React.FC<Props> = (props) => {
         onPress={share}
         style={[
           styles.button,
-          theme ? styles.borderBgDark : styles.borderBgLight,
+          theme ? styles.buttonLight : styles.buttonDark,
         ]}
+        activeOpacity={0.8}
       >
-        <NormalText text="Share this Question Now!" />
+        <Text style={styles.shareIcon}>📤</Text>
+        <Text style={styles.buttonText}>Share this Question Now!</Text>
       </TouchableOpacity>
     </View>
   );
@@ -44,17 +45,35 @@ const ShareButton: React.FC<Props> = (props) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 8,
-  },
-  borderBgLight: {
-    borderColor: "#B3B4B7",
-  },
-  borderBgDark: {
-    borderColor: "#108174",
+    marginVertical: 10,
   },
   button: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderStyle: "dashed",
+  },
+  buttonLight: {
+    backgroundColor: "transparent",
+    borderColor: "#FFC618",
+  },
+  buttonDark: {
+    backgroundColor: "transparent",
+    borderColor: "#37B9C5",
+  },
+  shareIcon: {
+    fontSize: 18,
+    marginRight: 8,
+  },
+  buttonText: {
+    color: "#37B9C5",
+    fontSize: 15,
+    fontWeight: "600",
+    textAlign: "center",
   },
 });
 
