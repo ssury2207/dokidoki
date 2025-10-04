@@ -56,6 +56,7 @@ type DetailedPost = {
   year?: string;
   commentCount?: number;
   likedBy?: string[];
+  discussionLocked?: boolean;
 };
 
 type Comment = {
@@ -183,6 +184,15 @@ export default function PostDetailScreen() {
   const submitComment = useCallback(async () => {
     if (!commentText.trim() || !currentUser?.uid || submittingComment || !post)
       return;
+
+    // Check if discussion is locked
+    if (post.discussionLocked) {
+      Alert.alert(
+        'Discussion Locked',
+        'Comments are disabled for this post by the admin or OP.'
+      );
+      return;
+    }
 
     if (commentText.length > MAX_COMMENT_LENGTH) {
       Alert.alert(
@@ -850,10 +860,27 @@ export default function PostDetailScreen() {
               Share your review about this answer:
             </Text>
 
+            {/* Discussion Locked Disclaimer */}
+            {post.discussionLocked && (
+              <View style={styles.lockedDisclaimer}>
+                <Text
+                  style={[
+                    styles.lockedDisclaimerText,
+                    { color: '#FF3B30' },
+                  ]}
+                >
+                  🔒 This post is locked for discussion by admin or OP
+                </Text>
+              </View>
+            )}
+
             <View
               style={[
                 styles.commentInputContainer,
-                { borderColor: !isLight ? '#DDD' : '#666' },
+                {
+                  borderColor: !isLight ? '#DDD' : '#666',
+                  opacity: post.discussionLocked ? 0.5 : 1,
+                },
               ]}
             >
               <TextInput
@@ -864,51 +891,54 @@ export default function PostDetailScreen() {
                     textAlignVertical: 'top',
                   },
                 ]}
-                placeholder="Write your review about how well this question was answered..."
+                placeholder={post.discussionLocked ? "Discussion locked" : "Write your review about how well this question was answered..."}
                 placeholderTextColor={!isLight ? '#999' : '#AAA'}
                 value={commentText}
                 onChangeText={handleCommentTextChange}
                 multiline={true}
                 // numberOfLines={4}
                 maxLength={MAX_COMMENT_LENGTH}
+                editable={!post.discussionLocked}
               />
             </View>
 
             <View style={styles.commentFooter}>
-              <Text
-                style={[
-                  styles.characterCounter,
-                  {
-                    color:
-                      commentText.length > MAX_COMMENT_LENGTH * 0.9
-                        ? '#FF3B30'
-                        : !isLight
-                        ? '#666'
-                        : '#AAA',
-                  },
-                ]}
-              >
-                {commentText.length}/{MAX_COMMENT_LENGTH} characters
-              </Text>
+              {!post.discussionLocked && (
+                <Text
+                  style={[
+                    styles.characterCounter,
+                    {
+                      color:
+                        commentText.length > MAX_COMMENT_LENGTH * 0.9
+                          ? '#FF3B30'
+                          : !isLight
+                          ? '#666'
+                          : '#AAA',
+                    },
+                  ]}
+                >
+                  {commentText.length}/{MAX_COMMENT_LENGTH} characters
+                </Text>
+              )}
 
               <TouchableOpacity
                 style={[
                   styles.submitButton,
                   {
                     backgroundColor:
-                      commentText.trim().length > 0 && !submittingComment
+                      commentText.trim().length > 0 && !submittingComment && !post.discussionLocked
                         ? '#00ADB5'
                         : !isLight
                         ? '#DDD'
                         : '#555',
                     opacity:
-                      commentText.trim().length > 0 && !submittingComment
+                      commentText.trim().length > 0 && !submittingComment && !post.discussionLocked
                         ? 1
                         : 0.5,
                   },
                 ]}
                 onPress={submitComment}
-                disabled={!commentText.trim() || submittingComment}
+                disabled={!commentText.trim() || submittingComment || post.discussionLocked}
               >
                 {submittingComment ? (
                   <ActivityIndicator size="small" color="#FFF" />
@@ -1364,5 +1394,18 @@ const styles = StyleSheet.create({
     // justifyContent: "space-around",
     // alignItems: "center",
     // width: "100%",
+  },
+  lockedDisclaimer: {
+    backgroundColor: 'rgba(255, 59, 48, 0.1)',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#FF3B30',
+  },
+  lockedDisclaimerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
