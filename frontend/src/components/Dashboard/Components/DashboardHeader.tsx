@@ -1,7 +1,6 @@
 import { Text, View, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
-import { signOut } from 'firebase/auth';
-import { auth } from '@/src/firebaseConfig';
+import { supabase } from '@/src/supabaseConfig';
 import LogoutIcon from '../../atoms/LogoutIcon';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/store/store';
@@ -28,7 +27,21 @@ const DashboardHeader = () => {
   const signOutButtonHandler = () => {
     Alert.alert('Log Out', 'You will be logged out', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'OK', onPress: () => signOut(auth) },
+      {
+        text: 'OK',
+        onPress: async () => {
+          try {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          } catch (err) {
+            console.error('Logout error:', err);
+            Alert.alert('Error', 'Failed to logout. Please try again.');
+          }
+        }
+      },
     ]);
   };
 

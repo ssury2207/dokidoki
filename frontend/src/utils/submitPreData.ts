@@ -1,6 +1,5 @@
-import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
-import { app } from '../firebaseConfig';
-import { getFirestore } from 'firebase/firestore';
+import { supabase } from '../supabaseConfig';
+
 type submitArgs = {
   uid: string;
   todays_date: string;
@@ -18,6 +17,7 @@ type submitArgs = {
   Options: string[];
   Explanation: string;
 };
+
 export default async function submitData({
   uid,
   todays_date,
@@ -35,48 +35,70 @@ export default async function submitData({
   Options,
   Explanation,
 }: submitArgs) {
-  const db = getFirestore(app);
-  const userRef = doc(db, 'users', uid);
-  await runTransaction(db, async (tx) => {
-    const snap = await tx.get(userRef);
-    if (!snap.exists()) throw new Error('User doc missing');
+  // 1. Fetch current user data
+  const { data: userData, error: fetchError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', uid)
+    .single();
 
-    const data = snap.data() as any;
-    // Block if today's prelims submission already exists
-    const alreadyHasPre = !!data?.submissions?.pre?.[todays_date];
-    if (alreadyHasPre) throw new Error('Your submission was already recored.');
-    // Build submission snapshot (includes the question snapshot per your args)
-    const submissionPayload = {
-      selected_option: user_selection,
-      verdict: verdict ? 'correct' : 'incorrect',
-      timestamp: serverTimestamp(),
-      question_snapshot: {
-        question_id: questionId,
-        Question,
-        Answer,
-        Options,
-        Table,
-        Explanation,
-      },
-    };
+  if (fetchError || !userData) {
+    throw new Error('User doc missing');
+  }
 
-    // Atomic updates
-    const updates: Record<string, any> = {
-      // Save prelims submission for today
-      [`submissions.pre.${question_date}`]: submissionPayload,
-      'submissions.total_solved': (data?.submissions?.total_solved || 0) + 1,
+  // 2. Check if submission already exists
+  const preSubmissions = userData.pre_submissions || {};
+  if (preSubmissions[todays_date]) {
+    throw new Error('Your submission was already recorded.');
+  }
 
-      // Points
-      'points.total_points': total_points,
-      [`points.history.${question_date}`]: points_awarded,
+  // 3. Build submission payload
+  const submissionPayload = {
+    selected_option: user_selection,
+    verdict: verdict ? 'correct' : 'incorrect',
+    timestamp: new Date().toISOString(),
+    question_snapshot: {
+      question_id: questionId,
+      Question,
+      Answer,
+      Options,
+      Table,
+      Explanation,
+    },
+  };
 
-      // Streaks
-      'streak.current_streak': current_streak,
-      'streak.longest_streak': Math.max(longest_streak, current_streak),
-      'streak.last_active_date': question_date,
-      [`streak.dates_active.${question_date}`]: true,
-    };
+  // 4. Update JSONB fields
+  const updatedPreSubmissions = {
+    ...preSubmissions,
+    [question_date]: submissionPayload,
+  };
 
-    tx.update(userRef, updates);
-  });
+  const updatedPointsHistory = {
+    ...(userData.points_history || {}),
+    [question_date]: points_awarded,
+  };
+
+  const updatedDatesActive = {
+    ...(userData.dates_active || {}),
+    [question_date]: true,
+  };
+
+  // 5. Perform update
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({
+      pre_submissions: updatedPreSubmissions,
+      total_solved: (userData.total_solved || 0) + 1,
+      total_points: total_points,
+      points_history: updatedPointsHistory,
+      current_streak: current_streak,
+      longest_streak: Math.max(longest_streak, current_streak),
+      last_active_date: question_date,
+      dates_active: updatedDatesActive,
+    })
+    .eq('id', uid);
+
+  if (updateError) {
+    throw new Error(`Failed to submit data: ${updateError.message}`);
+  }
 }

@@ -13,8 +13,7 @@ import DisclaimerText from '../atoms/DisclaimerText';
 import { RootStackParamList } from '@/src/types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useState } from 'react';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
-import { auth } from '@/src/firebaseConfig';
+import { supabase } from '@/src/supabaseConfig';
 import { Alert } from 'react-native';
 import FullScreenLoader from '../common/FullScreenLoader';
 
@@ -43,7 +42,7 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
 
   const postButtonHandler = async () => {
     // Validate user authentication
-    const user = auth.currentUser;
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       Alert.alert('Error', 'You must be logged in to create a post');
       return;
@@ -58,32 +57,37 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
     setLoading(true);
 
     try {
-      const db = getFirestore();
       const postData = {
-        authorId: user.uid,
+        author_id: user.id,
         username: isAnonymous ? 'Anonymous' : userName,
         question: question,
         year: year,
         paper: paper,
-        questionId: questionId,
-        isAnonymous: isAnonymous,
+        question_id: questionId,
+        is_anonymous: isAnonymous,
         images: images,
-        likeCount: 0,
-        commentCount: 0,
-        hidePost: false,
-        discussionLocked: false,
-        createdAt: new Date().toISOString(),
+        like_count: 0,
+        comment_count: 0,
+        liked_by: [],
       };
 
-      // Add post to Firestore
-      const docRef = await addDoc(collection(db, 'posts'), postData);
+      // Add post to Supabase
+      const { data, error } = await supabase
+        .from('posts')
+        .insert([postData])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
 
       setLoading(false);
 
       // Navigate directly to PostDetail, replacing the current overlay in the stack
       // This prevents the user from going back to a stale CreatePostOverlay
-      navigation.replace('PostDetail', { postId: docRef.id });
-    } catch (error) {
+      navigation.replace('PostDetail', { postId: data.id });
+    } catch (error: any) {
       setLoading(false);
       Alert.alert('Error', 'Failed to create post. Please try again.');
       console.error('Error creating post:', error);

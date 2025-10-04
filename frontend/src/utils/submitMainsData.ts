@@ -1,6 +1,4 @@
-import { doc, runTransaction, serverTimestamp } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
-import { app } from '../firebaseConfig';
+import { supabase } from '../supabaseConfig';
 
 export type SubmitMainsArgs = {
   uid: string;
@@ -27,39 +25,71 @@ export default async function submitMainsData({
   Question,
   submission_uri,
 }: SubmitMainsArgs) {
-  const db = getFirestore(app);
-  const userRef = doc(db, 'users', uid);
+  // 1. Fetch current user data
+  const { data: userData, error: fetchError } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', uid)
+    .single();
 
-  await runTransaction(db, async (tx) => {
-    const snap = await tx.get(userRef);
-    if (!snap.exists()) throw new Error('User doc missing');
+  if (fetchError || !userData) {
+    throw new Error('User doc missing');
+  }
 
-    const data = snap.data() as any;
+  // 2. Check if submission already exists
+  const mainsAnswerCopies = userData.mains_answer_copies || {};
+  if (mainsAnswerCopies[question_date]) {
+    throw new Error('Your mains submission was already recorded.');
+  }
 
-    const alreadyHasMains = !!data?.submissions?.mains?.[question_date];
-    if (alreadyHasMains)
-      throw new Error('Your mains submission was already recorded.');
+  // 3. Build submission payload
+  const submissionPayload = {
+    timestamp: new Date().toISOString(),
+    question_snapshot: {
+      question_id: questionId,
+      Question,
+    },
+    submission_uri,
+  };
 
-    const submissionPayload = {
-      timestamp: serverTimestamp(),
-      question_snapshot: {
-        question_id: questionId,
-        Question,
-      },
-      submission_uri,
-    };
+  // 4. Update JSONB fields
+  const updatedMainsAnswerCopies = {
+    ...mainsAnswerCopies,
+    [question_date]: submissionPayload,
+  };
 
-    const updates: Record<string, any> = {
-      [`submissions.mains.${question_date}`]: submissionPayload,
-      'submissions.total_solved': (data?.submissions?.total_solved || 0) + 1,
-      'points.total_points': total_points,
-      [`points.history.${question_date}`]: todays_date === question_date ? points_awarded : 0,
-      'streak.current_streak': current_streak,
-      'streak.longest_streak': Math.max(longest_streak, current_streak),
-      'streak.last_active_date': todays_date === question_date ? question_date : data.streak.last_active_date,
-      [`streak.dates_active.${question_date}`]: todays_date === question_date ? true : (data.streak.dates_active[question_date] || false),
-    };
+  const updatedPointsHistory = {
+    ...(userData.points_history || {}),
+    [question_date]: todays_date === question_date ? points_awarded : 0,
+  };
 
-    tx.update(userRef, updates);
-  });
+  const updatedDatesActive = {
+    ...(userData.dates_active || {}),
+    [question_date]:
+      todays_date === question_date
+        ? true
+        : userData.dates_active?.[question_date] || false,
+  };
+
+  // 5. Perform update
+  const { error: updateError } = await supabase
+    .from('users')
+    .update({
+      mains_answer_copies: updatedMainsAnswerCopies,
+      total_solved: (userData.total_solved || 0) + 1,
+      total_points: total_points,
+      points_history: updatedPointsHistory,
+      current_streak: current_streak,
+      longest_streak: Math.max(longest_streak, current_streak),
+      last_active_date:
+        todays_date === question_date
+          ? question_date
+          : userData.last_active_date,
+      dates_active: updatedDatesActive,
+    })
+    .eq('id', uid);
+
+  if (updateError) {
+    throw new Error(`Failed to submit mains data: ${updateError.message}`);
+  }
 }

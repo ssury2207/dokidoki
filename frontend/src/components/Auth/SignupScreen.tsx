@@ -1,5 +1,4 @@
-import { auth, firestore } from "../../firebaseConfig";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { supabase } from "../../supabaseConfig";
 import { useState, useEffect } from "react";
 import {
   View,
@@ -19,7 +18,6 @@ import {
   SafeAreaView,
 } from "react-native-safe-area-context";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { setDoc, doc, serverTimestamp } from "firebase/firestore";
 import TypewriterText from "../common/TypewriterText";
 import FullScreenLoader from "../common/FullScreenLoader";
 
@@ -52,39 +50,94 @@ export default function SignupScreen({ navigation }: Props) {
   const handleSignup = async () => {
     if (loading) return;
     setLoading(true);
+    setError("");
+
     try {
-      const userCred = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      const user_id = userCred.user.uid;
-      const userData = {
-        username: username,
-        phoneNumber: phonenumber,
-        streak: {
-          longest_streak: 0,
-          current_streak: 0,
-          last_active_date: null,
-          dates_active: {},
-        },
-        submissions: {
-          total_solved: 0,
-          pre: {},
-          mains: {
-            answerCopies: {},
+      // 1. Sign up the user with Supabase Auth (with metadata)
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password,
+        options: {
+          data: {
+            username: username,
+            phone_number: phonenumber,
           },
         },
-        points: {
-          total_points: 0,
-          history: {},
-        },
-        createdAt: serverTimestamp(),
+      });
+
+      if (authError) {
+        // Handle specific signup errors with user-friendly messages
+        if (authError.message.includes("already registered")) {
+          setError("This email is already registered. Please login instead.");
+        } else if (authError.message.includes("Password should be")) {
+          setError("Password must be at least 6 characters long.");
+        } else if (authError.message.includes("Invalid email")) {
+          setError("Please enter a valid email address.");
+        } else {
+          setError(`Signup failed: ${authError.message}`);
+        }
+        return;
+      }
+
+      if (!authData.user) {
+        setError("Signup failed. Please try again.");
+        return;
+      }
+
+      // Check if email confirmation is required
+      if (!authData.session) {
+        // Email confirmation required - navigate to confirmation screen
+        // User profile will be created AFTER email confirmation
+        navigation.replace("EmailConfirmation", {
+          email: email.trim(),
+          username: username,
+          phoneNumber: phonenumber,
+        });
+        return;
+      }
+
+      // If no confirmation needed (email confirmation disabled)
+      // Create profile immediately
+      const user_id = authData.user.id;
+
+      await supabase.auth.setSession({
+        access_token: authData.session.access_token,
+        refresh_token: authData.session.refresh_token,
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const userData = {
+        id: user_id,
+        username: username,
+        phone_number: phonenumber,
+        longest_streak: 0,
+        current_streak: 0,
+        last_active_date: null,
+        dates_active: {},
+        total_solved: 0,
+        pre_submissions: {},
+        mains_answer_copies: {},
+        total_points: 0,
+        points_history: {},
       };
 
-      await setDoc(doc(firestore, "users", user_id), userData);
-    } catch (e) {
-      setError(`Error:- ${e}`);
+      const { error: dbError } = await supabase
+        .from('users')
+        .insert([userData]);
+
+      if (dbError) {
+        // Don't show technical database errors to user
+        setError("Failed to create your profile. Please try again.");
+        // Silent logging if needed for debugging
+        // console.log("Profile creation error:", dbError);
+      }
+      // Success - user will be logged in via AuthContext
+    } catch (e: any) {
+      // Handle unexpected errors gracefully
+      setError("An unexpected error occurred. Please try again.");
+      // Silent logging if needed for debugging
+      // console.log("Signup error:", e);
     } finally {
       setLoading(false);
     }

@@ -10,8 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebaseConfig";
+import { supabase } from "../../supabaseConfig";
 import {
   SafeAreaView,
   useSafeAreaInsets,
@@ -43,10 +42,32 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     if (loaderVisible) return;
     setError("");
     setLoaderVisible(true);
+
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (error) {
+        // Handle specific error types with user-friendly messages
+        if (error.message.includes("Invalid login credentials")) {
+          setError("Invalid email or password. Please try again.");
+        } else if (error.message.includes("Email not confirmed")) {
+          setError("Please verify your email before logging in. Check your inbox.");
+        } else if (error.message.includes("Invalid email")) {
+          setError("Please enter a valid email address.");
+        } else {
+          setError("Login failed. Please check your credentials and try again.");
+        }
+        // Don't use console.error - just silent logging if needed
+        // console.log("Login error:", error.message);
+      }
     } catch (e: any) {
-      setError("Login failed. Check your credentials.");
+      // Catch any unexpected errors
+      setError("An unexpected error occurred. Please try again.");
+      // Don't use console.error
+      // console.log("Login error:", e);
     } finally {
       setLoaderVisible(false);
     }
