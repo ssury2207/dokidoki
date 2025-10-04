@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,13 +11,14 @@ import {
   Alert,
   TextInput,
   FlatList,
+  Platform,
   Modal,
-} from "react-native";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { useAuth } from "@/src/context/AuthContext";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+} from 'react-native';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/store';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useAuth } from '@/src/context/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   doc,
   getDoc,
@@ -32,14 +33,15 @@ import {
   orderBy,
   getDocs,
   serverTimestamp,
-} from "firebase/firestore";
-import { firestore as db } from "@/src/firebaseConfig";
-import type { StackNavigationProp } from "@react-navigation/stack";
-import type { RootStackParamList } from "@/src/types/navigation";
-import FullScreenLoader from "@/src/components/common/FullScreenLoader";
-
-type PostDetailRouteProp = RouteProp<RootStackParamList, "PostDetail">;
-type Nav = StackNavigationProp<RootStackParamList, "PostDetail">;
+} from 'firebase/firestore';
+import { firestore as db } from '@/src/firebaseConfig';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import type { RootStackParamList } from '@/src/types/navigation';
+import FullScreenLoader from '@/src/components/common/FullScreenLoader';
+import { KeyboardAvoidingView } from 'react-native';
+import { useHeaderHeight } from '@react-navigation/elements';
+type PostDetailRouteProp = RouteProp<RootStackParamList, 'PostDetail'>;
+type Nav = StackNavigationProp<RootStackParamList, 'PostDetail'>;
 
 type DetailedPost = {
   id: string;
@@ -86,46 +88,48 @@ export default function PostDetailScreen() {
   const [likingPost, setLikingPost] = useState<boolean>(false);
 
   // Comment functionality
-  const [commentText, setCommentText] = useState<string>("");
+  const [commentText, setCommentText] = useState<string>('');
   const [submittingComment, setSubmittingComment] = useState<boolean>(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState<boolean>(false);
   const [likingComments, setLikingComments] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<"createdAt" | "likeCount">("createdAt");
+  const [sortBy, setSortBy] = useState<'createdAt' | 'likeCount'>('createdAt');
   const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
 
   const MAX_COMMENT_LENGTH = 500;
 
-  const formatDate = useCallback((createdAt: DetailedPost["createdAt"]) => {
+  const headerHeight = useHeaderHeight();
+
+  const formatDate = useCallback((createdAt: DetailedPost['createdAt']) => {
     try {
-      if (!createdAt) return "";
-      if (typeof createdAt?.seconds === "number") {
+      if (!createdAt) return '';
+      if (typeof createdAt?.seconds === 'number') {
         return new Date(createdAt.seconds * 1000).toLocaleString();
       }
-      if (typeof createdAt?.toDate === "function") {
+      if (typeof createdAt?.toDate === 'function') {
         return createdAt.toDate().toLocaleString();
       }
       return new Date(createdAt).toLocaleString();
     } catch {
-      return "";
+      return '';
     }
   }, []);
 
   const fetchPost = useCallback(async () => {
     setLoading(true);
     try {
-      const postDoc = await getDoc(doc(db, "posts", postId));
+      const postDoc = await getDoc(doc(db, 'posts', postId));
       if (postDoc.exists()) {
         const data = postDoc.data() as DetailedPost;
         const postData = { id: postDoc.id, ...data };
         setPost(postData);
       } else {
-        Alert.alert("Error", "Post not found");
+        Alert.alert('Error', 'Post not found');
         navigation.goBack();
       }
     } catch (error) {
-      console.error("Error fetching post:", error);
-      Alert.alert("Error", "Failed to load post");
+      console.error('Error fetching post:', error);
+      Alert.alert('Error', 'Failed to load post');
       setLoading(false);
     }
   }, [postId, navigation]);
@@ -135,7 +139,7 @@ export default function PostDetailScreen() {
 
     setLikingPost(true);
     try {
-      const postRef = doc(db, "posts", postId);
+      const postRef = doc(db, 'posts', postId);
       const isLiked = post.likedBy?.includes(currentUser.uid);
 
       if (isLiked) {
@@ -169,8 +173,8 @@ export default function PostDetailScreen() {
         );
       }
     } catch (error) {
-      console.error("Error toggling like:", error);
-      Alert.alert("Error", "Failed to update like status");
+      console.error('Error toggling like:', error);
+      Alert.alert('Error', 'Failed to update like status');
     } finally {
       setLikingPost(false);
     }
@@ -182,7 +186,7 @@ export default function PostDetailScreen() {
 
     if (commentText.length > MAX_COMMENT_LENGTH) {
       Alert.alert(
-        "Error",
+        'Error',
         `Comment cannot exceed ${MAX_COMMENT_LENGTH} characters.`
       );
       return;
@@ -197,8 +201,8 @@ export default function PostDetailScreen() {
         authorUsername:
           userProgress.userName ||
           currentUser.displayName ||
-          currentUser.email?.split("@")[0] ||
-          "User",
+          currentUser.email?.split('@')[0] ||
+          'User',
         content: commentText.trim(),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -210,10 +214,10 @@ export default function PostDetailScreen() {
         isAnonymous: false,
       };
 
-      const docRef = await addDoc(collection(db, "comments"), commentData);
+      const docRef = await addDoc(collection(db, 'comments'), commentData);
 
       // Update post's comment count
-      await updateDoc(doc(db, "posts", postId), {
+      await updateDoc(doc(db, 'posts', postId), {
         commentCount: increment(1),
       });
 
@@ -231,11 +235,11 @@ export default function PostDetailScreen() {
         prev ? { ...prev, commentCount: (prev.commentCount || 0) + 1 } : null
       );
 
-      setCommentText("");
-      Alert.alert("Success", "Review submitted successfully!");
+      setCommentText('');
+      Alert.alert('Success', 'Review submitted successfully!');
     } catch (error) {
-      console.error("Error submitting comment:", error);
-      Alert.alert("Error", "Failed to submit review");
+      console.error('Error submitting comment:', error);
+      Alert.alert('Error', 'Failed to submit review');
     } finally {
       setSubmittingComment(false);
     }
@@ -265,9 +269,9 @@ export default function PostDetailScreen() {
     try {
       // Option 1: Try with orderBy (requires composite index)
       let commentsQuery = query(
-        collection(db, "comments"),
-        where("postId", "==", postId),
-        orderBy(sortBy, "desc")
+        collection(db, 'comments'),
+        where('postId', '==', postId),
+        orderBy(sortBy, 'desc')
       );
 
       let querySnapshot;
@@ -276,20 +280,20 @@ export default function PostDetailScreen() {
       } catch (indexError) {
         // Option 2: Fallback without orderBy if index doesn't exist
         commentsQuery = query(
-          collection(db, "comments"),
-          where("postId", "==", postId)
+          collection(db, 'comments'),
+          where('postId', '==', postId)
         );
         querySnapshot = await getDocs(commentsQuery);
       }
 
       let fetchedComments: Comment[] = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...(doc.data() as Omit<Comment, "id">),
+        ...(doc.data() as Omit<Comment, 'id'>),
       }));
 
       // Sort client-side if we couldn't sort server-side
       fetchedComments = fetchedComments.sort((a, b) => {
-        if (sortBy === "createdAt") {
+        if (sortBy === 'createdAt') {
           const aTime = a.createdAt?.seconds
             ? a.createdAt.seconds
             : new Date(a.createdAt).getTime() / 1000;
@@ -305,7 +309,7 @@ export default function PostDetailScreen() {
 
       setComments(fetchedComments);
     } catch (error) {
-      console.error("Error fetching comments:", error);
+      console.error('Error fetching comments:', error);
     } finally {
       setLoadingComments(false);
     }
@@ -319,7 +323,7 @@ export default function PostDetailScreen() {
       setLikingComments((prev) => new Set(prev).add(commentId));
 
       try {
-        const commentRef = doc(db, "comments", commentId);
+        const commentRef = doc(db, 'comments', commentId);
 
         // Find the current comment to check its current state
         const currentComment = comments.find((c) => c.id === commentId);
@@ -383,7 +387,7 @@ export default function PostDetailScreen() {
           )
         );
       } catch (error) {
-        console.error("Error toggling comment like:", error);
+        console.error('Error toggling comment like:', error);
       } finally {
         // Remove from loading state
         setLikingComments((prev) => {
@@ -404,7 +408,7 @@ export default function PostDetailScreen() {
       setLikingComments((prev) => new Set(prev).add(commentId));
 
       try {
-        const commentRef = doc(db, "comments", commentId);
+        const commentRef = doc(db, 'comments', commentId);
 
         // Find the current comment to check its current state
         const currentComment = comments.find((c) => c.id === commentId);
@@ -468,7 +472,7 @@ export default function PostDetailScreen() {
           )
         );
       } catch (error) {
-        console.error("Error toggling comment dislike:", error);
+        console.error('Error toggling comment dislike:', error);
       } finally {
         // Remove from loading state
         setLikingComments((prev) => {
@@ -483,9 +487,9 @@ export default function PostDetailScreen() {
 
   const renderComment = useCallback(
     ({ item }: { item: Comment }) => {
-      const isLiked = Boolean(item.likedBy?.includes(currentUser?.uid || ""));
+      const isLiked = Boolean(item.likedBy?.includes(currentUser?.uid || ''));
       const isDisliked = Boolean(
-        item.dislikedBy?.includes(currentUser?.uid || "")
+        item.dislikedBy?.includes(currentUser?.uid || '')
       );
       const commentDate = formatDate(item.createdAt);
       const isLoading = likingComments.has(item.id);
@@ -494,22 +498,22 @@ export default function PostDetailScreen() {
         <View
           style={[
             styles.commentItem,
-            { backgroundColor: !isLight ? "#F8F8F8" : "#2C2C2C" },
+            { backgroundColor: !isLight ? '#F8F8F8' : '#2C2C2C' },
           ]}
         >
           <View style={styles.commentHeader}>
             <Text
               style={[
                 styles.commentAuthor,
-                { color: !isLight ? "#000" : "#EEE" },
+                { color: !isLight ? '#000' : '#EEE' },
               ]}
             >
-              {item.isAnonymous ? "Anonymous" : item.authorUsername}
+              {item.isAnonymous ? 'Anonymous' : item.authorUsername}
             </Text>
             <Text
               style={[
                 styles.commentDate,
-                { color: !isLight ? "#666" : "#AAA" },
+                { color: !isLight ? '#666' : '#AAA' },
               ]}
             >
               {commentDate}
@@ -519,7 +523,7 @@ export default function PostDetailScreen() {
           <Text
             style={[
               styles.commentContent,
-              { color: !isLight ? "#333" : "#DDD" },
+              { color: !isLight ? '#333' : '#DDD' },
             ]}
           >
             {item.content}
@@ -537,7 +541,7 @@ export default function PostDetailScreen() {
               {isLoading ? (
                 <ActivityIndicator
                   size="small"
-                  color={isLiked ? "#00ADB5" : !isLight ? "#666" : "#AAA"}
+                  color={isLiked ? '#00ADB5' : !isLight ? '#666' : '#AAA'}
                 />
               ) : (
                 <>
@@ -545,7 +549,7 @@ export default function PostDetailScreen() {
                     style={[
                       styles.commentActionIcon,
                       {
-                        color: isLiked ? "#00ADB5" : !isLight ? "#666" : "#AAA",
+                        color: isLiked ? '#00ADB5' : !isLight ? '#666' : '#AAA',
                       },
                     ]}
                   >
@@ -555,7 +559,7 @@ export default function PostDetailScreen() {
                     style={[
                       styles.commentActionText,
                       {
-                        color: isLiked ? "#00ADB5" : !isLight ? "#666" : "#AAA",
+                        color: isLiked ? '#00ADB5' : !isLight ? '#666' : '#AAA',
                       },
                     ]}
                   >
@@ -576,7 +580,7 @@ export default function PostDetailScreen() {
               {isLoading ? (
                 <ActivityIndicator
                   size="small"
-                  color={isDisliked ? "#FF3B30" : !isLight ? "#666" : "#AAA"}
+                  color={isDisliked ? '#FF3B30' : !isLight ? '#666' : '#AAA'}
                 />
               ) : (
                 <>
@@ -585,10 +589,10 @@ export default function PostDetailScreen() {
                       styles.commentActionIcon,
                       {
                         color: isDisliked
-                          ? "#FF3B30"
+                          ? '#FF3B30'
                           : !isLight
-                          ? "#666"
-                          : "#AAA",
+                          ? '#666'
+                          : '#AAA',
                       },
                     ]}
                   >
@@ -599,10 +603,10 @@ export default function PostDetailScreen() {
                       styles.commentActionText,
                       {
                         color: isDisliked
-                          ? "#FF3B30"
+                          ? '#FF3B30'
                           : !isLight
-                          ? "#666"
-                          : "#AAA",
+                          ? '#666'
+                          : '#AAA',
                       },
                     ]}
                   >
@@ -649,7 +653,7 @@ export default function PostDetailScreen() {
 
   if (loading) {
     const message =
-      loadingComments && post ? "Sorting reviews..." : "Loading post...";
+      loadingComments && post ? 'Sorting reviews...' : 'Loading post...';
     return <FullScreenLoader visible={loading} message={message} />;
   }
 
@@ -657,397 +661,416 @@ export default function PostDetailScreen() {
     return <FullScreenLoader visible={false} message="Post not found" />;
   }
 
-  const isLiked = post.likedBy?.includes(currentUser?.uid || "");
+  const isLiked = post.likedBy?.includes(currentUser?.uid || '');
   const date = formatDate(post.createdAt);
-  const displayUsername = post.isAnonymous ? "Anonymous" : post.username;
+  const displayUsername = post.isAnonymous ? 'Anonymous' : post.username;
 
   return (
     <View
       style={[
         styles.container,
         {
-          backgroundColor: !isLight ? "#F0F0F0" : "#222831",
+          backgroundColor: !isLight ? '#F0F0F0' : '#222831',
           paddingTop: insets.top,
         },
       ]}
     >
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={headerHeight + insets.top}
+        style={styles.kavContainer}
       >
-        {/* Post Content */}
-        <View
-          style={[
-            styles.postCard,
-            { backgroundColor: !isLight ? "#FFFFFF" : "#393E46" },
-          ]}
+        <ScrollView
+          style={styles.scrollContainer}
+          contentContainerStyle={styles.scrollContent}
         >
-          {/* Question */}
-          <Text
-            style={[styles.question, { color: !isLight ? "#000" : "#EEE" }]}
+          {/* Post Content */}
+          <View
+            style={[
+              styles.postCard,
+              { backgroundColor: !isLight ? '#FFFFFF' : '#393E46' },
+            ]}
           >
-            {post.question}
-          </Text>
-
-          {/* Paper and Year */}
-          {(post.paper || post.year) && (
-            <View style={styles.paperInfo}>
-              {post.paper && (
-                <Text
-                  style={[
-                    styles.paperText,
-                    { color: !isLight ? "#666" : "#AAA" },
-                  ]}
-                >
-                  Paper: {post.paper}
-                </Text>
-              )}
-              {post.year && (
-                <Text
-                  style={[
-                    styles.paperText,
-                    { color: !isLight ? "#666" : "#AAA" },
-                  ]}
-                >
-                  Year: {post.year}
-                </Text>
-              )}
-            </View>
-          )}
-
-          {/* Answer Images */}
-          {post.images && post.images.length > 0 && (
-            <View style={styles.imagesSection}>
-              <Text
-                style={[
-                  styles.sectionTitle,
-                  { color: !isLight ? "#000" : "#EEE" },
-                ]}
-              >
-                Answer Images:
-              </Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.imagesScrollView}
-              >
-                {post.images.map((imageUrl, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    onPress={() =>
-                      navigation.navigate("FullScreenImageViewer", { imageUrl })
-                    }
-                    style={styles.imageContainer}
-                  >
-                    <Image
-                      source={{ uri: imageUrl }}
-                      style={styles.answerImage}
-                      resizeMode="cover"
-                    />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* Meta Info */}
-          <View style={styles.metaSection}>
-            <View style={styles.userInfo}>
-              <Text
-                style={[styles.username, { color: !isLight ? "#333" : "#CCC" }]}
-              >
-                By: {displayUsername}
-              </Text>
-              <Text
-                style={[styles.date, { color: !isLight ? "#666" : "#AAA" }]}
-              >
-                {date}
-              </Text>
-            </View>
-
-            {/* Like Button */}
-            <TouchableOpacity
-              style={[
-                styles.likeButton,
-                { borderColor: !isLight ? "#DDD" : "#666" },
-              ]}
-              onPress={toggleLike}
-              disabled={likingPost}
+            {/* Question */}
+            <Text
+              style={[styles.question, { color: !isLight ? '#000' : '#EEE' }]}
             >
-              {likingPost ? (
-                <>
-                  <ActivityIndicator
-                    size="small"
-                    color="#666"
-                    style={styles.heartIcon}
-                  />
+              {post.question}
+            </Text>
+
+            {/* Paper and Year */}
+            {(post.paper || post.year) && (
+              <View style={styles.paperInfo}>
+                {post.paper && (
                   <Text
                     style={[
-                      styles.likeCount,
-                      { color: !isLight ? "#666" : "#AAA" },
+                      styles.paperText,
+                      { color: !isLight ? '#666' : '#AAA' },
                     ]}
                   >
-                    {post.likeCount}
+                    Paper: {post.paper}
                   </Text>
-                </>
-              ) : (
-                <>
+                )}
+                {post.year && (
                   <Text
                     style={[
-                      styles.heartIcon,
+                      styles.paperText,
+                      { color: !isLight ? '#666' : '#AAA' },
+                    ]}
+                  >
+                    Year: {post.year}
+                  </Text>
+                )}
+              </View>
+            )}
+
+            {/* Answer Images */}
+            {post.images && post.images.length > 0 && (
+              <View style={styles.imagesSection}>
+                <Text
+                  style={[
+                    styles.sectionTitle,
+                    { color: !isLight ? '#000' : '#EEE' },
+                  ]}
+                >
+                  Answer Images:
+                </Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.imagesScrollView}
+                >
+                  {post.images.map((imageUrl, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() =>
+                        navigation.navigate('FullScreenImageViewer', {
+                          imageUrl,
+                        })
+                      }
+                      style={styles.imageContainer}
+                    >
+                      <Image
+                        source={{ uri: imageUrl }}
+                        style={styles.answerImage}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Meta Info */}
+            <View style={styles.metaSection}>
+              <View style={styles.userInfo}>
+                <Text
+                  style={[
+                    styles.username,
+                    { color: !isLight ? '#333' : '#CCC' },
+                  ]}
+                >
+                  By: {displayUsername}
+                </Text>
+                <Text
+                  style={[styles.date, { color: !isLight ? '#666' : '#AAA' }]}
+                >
+                  {date}
+                </Text>
+              </View>
+
+              {/* Like Button */}
+              <TouchableOpacity
+                style={[
+                  styles.likeButton,
+                  { borderColor: !isLight ? '#DDD' : '#666' },
+                ]}
+                onPress={toggleLike}
+                disabled={likingPost}
+              >
+                {likingPost ? (
+                  <>
+                    <ActivityIndicator
+                      size="small"
+                      color="#666"
+                      style={styles.heartIcon}
+                    />
+                    <Text
+                      style={[
+                        styles.likeCount,
+                        { color: !isLight ? '#666' : '#AAA' },
+                      ]}
+                    >
+                      {post.likeCount}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text
+                      style={[
+                        styles.heartIcon,
+                        {
+                          color: isLiked
+                            ? '#FF3B30'
+                            : !isLight
+                            ? '#666'
+                            : '#AAA',
+                        },
+                      ]}
+                    >
+                      {isLiked ? '♥' : '♡'}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.likeCount,
+                        { color: !isLight ? '#666' : '#AAA' },
+                      ]}
+                    >
+                      {post.likeCount}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Comment Section */}
+          <View
+            style={[
+              styles.commentSection,
+              { backgroundColor: !isLight ? '#FFFFFF' : '#393E46' },
+            ]}
+          >
+            <Text
+              style={[
+                styles.commentSectionTitle,
+                { color: !isLight ? '#000' : '#EEE' },
+              ]}
+            >
+              Share your review about this answer:
+            </Text>
+
+            <View
+              style={[
+                styles.commentInputContainer,
+                { borderColor: !isLight ? '#DDD' : '#666' },
+              ]}
+            >
+              <TextInput
+                style={[
+                  styles.commentInput,
+                  {
+                    color: !isLight ? '#000' : '#EEE',
+                    textAlignVertical: 'top',
+                  },
+                ]}
+                placeholder="Write your review about how well this question was answered..."
+                placeholderTextColor={!isLight ? '#999' : '#AAA'}
+                value={commentText}
+                onChangeText={handleCommentTextChange}
+                multiline={true}
+                // numberOfLines={4}
+                maxLength={MAX_COMMENT_LENGTH}
+              />
+            </View>
+
+            <View style={styles.commentFooter}>
+              <Text
+                style={[
+                  styles.characterCounter,
+                  {
+                    color:
+                      commentText.length > MAX_COMMENT_LENGTH * 0.9
+                        ? '#FF3B30'
+                        : !isLight
+                        ? '#666'
+                        : '#AAA',
+                  },
+                ]}
+              >
+                {commentText.length}/{MAX_COMMENT_LENGTH} characters
+              </Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  {
+                    backgroundColor:
+                      commentText.trim().length > 0 && !submittingComment
+                        ? '#00ADB5'
+                        : !isLight
+                        ? '#DDD'
+                        : '#555',
+                    opacity:
+                      commentText.trim().length > 0 && !submittingComment
+                        ? 1
+                        : 0.5,
+                  },
+                ]}
+                onPress={submitComment}
+                disabled={!commentText.trim() || submittingComment}
+              >
+                {submittingComment ? (
+                  <ActivityIndicator size="small" color="#FFF" />
+                ) : (
+                  <Text style={styles.submitButtonText}>Submit Review</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Comments List */}
+          <View
+            style={[
+              styles.commentsSection,
+              { backgroundColor: !isLight ? '#FFFFFF' : '#393E46' },
+            ]}
+          >
+            <View style={styles.commentsHeader}>
+              <Text
+                style={[
+                  styles.commentsSectionTitle,
+                  { color: !isLight ? '#000' : '#EEE' },
+                ]}
+              >
+                Reviews ({comments.length})
+              </Text>
+            </View>
+
+            {/* Sort Header */}
+            <View style={styles.sortHeader}>
+              <Text
+                style={[
+                  styles.sortLabel,
+                  { color: !isLight ? '#000' : '#EEE' },
+                ]}
+              >
+                Sort by:
+              </Text>
+              <TouchableOpacity
+                style={[
+                  styles.sortDropdown,
+                  {
+                    backgroundColor: !isLight ? '#FFF' : '#2C2C2C',
+                    borderColor: !isLight ? '#DDD' : '#555',
+                  },
+                ]}
+                onPress={() => setSortMenuOpen(true)}
+              >
+                <Text style={{ color: !isLight ? '#000' : '#EEE' }}>
+                  {sortBy === 'createdAt' ? 'Recency' : 'Upvotes'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {comments.length === 0 && !loadingComments ? (
+              <View style={styles.noCommentsContainer}>
+                <Text
+                  style={[
+                    styles.noCommentsText,
+                    { color: !isLight ? '#666' : '#AAA' },
+                  ]}
+                >
+                  No reviews yet. Be the first to share your thoughts!
+                </Text>
+              </View>
+            ) : (
+              <FlatList
+                data={comments}
+                renderItem={renderComment}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={false}
+                showsVerticalScrollIndicator={false}
+                ItemSeparatorComponent={() => (
+                  <View style={styles.commentSeparator} />
+                )}
+              />
+            )}
+          </View>
+
+          {/* Sort dropdown modal */}
+          <Modal
+            visible={sortMenuOpen}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setSortMenuOpen(false)}
+          >
+            <TouchableOpacity
+              style={styles.sortOverlay}
+              activeOpacity={1}
+              onPress={() => setSortMenuOpen(false)}
+            >
+              <View
+                style={[
+                  styles.sortCard,
+                  { backgroundColor: isLight ? '#FFFFFF' : '#2C2C2C' },
+                ]}
+                onStartShouldSetResponder={() => true}
+              >
+                <TouchableOpacity
+                  style={styles.sortOption}
+                  onPress={() => {
+                    setSortMenuOpen(false);
+                    if (sortBy !== 'createdAt') setSortBy('createdAt');
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.sortOptionText,
                       {
-                        color: isLiked ? "#FF3B30" : !isLight ? "#666" : "#AAA",
+                        color: isLight ? '#000' : '#EEE',
+                        fontWeight: sortBy === 'createdAt' ? '700' : '500',
                       },
                     ]}
                   >
-                    {isLiked ? "♥" : "♡"}
+                    Recency
                   </Text>
+                </TouchableOpacity>
+                <View style={styles.sortDivider} />
+                <TouchableOpacity
+                  style={styles.sortOption}
+                  onPress={() => {
+                    setSortMenuOpen(false);
+                    if (sortBy !== 'likeCount') setSortBy('likeCount');
+                  }}
+                >
                   <Text
                     style={[
-                      styles.likeCount,
-                      { color: !isLight ? "#666" : "#AAA" },
+                      styles.sortOptionText,
+                      {
+                        color: isLight ? '#000' : '#EEE',
+                        fontWeight: sortBy === 'likeCount' ? '700' : '500',
+                      },
                     ]}
                   >
-                    {post.likeCount}
+                    Upvotes
                   </Text>
-                </>
-              )}
+                </TouchableOpacity>
+              </View>
             </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Comment Section */}
-        <View
-          style={[
-            styles.commentSection,
-            { backgroundColor: !isLight ? "#FFFFFF" : "#393E46" },
-          ]}
-        >
-          <Text
-            style={[
-              styles.commentSectionTitle,
-              { color: !isLight ? "#000" : "#EEE" },
-            ]}
-          >
-            Share your review about this answer:
-          </Text>
-
-          <View
-            style={[
-              styles.commentInputContainer,
-              { borderColor: !isLight ? "#DDD" : "#666" },
-            ]}
-          >
-            <TextInput
-              style={[
-                styles.commentInput,
-                {
-                  color: !isLight ? "#000" : "#EEE",
-                  textAlignVertical: "top",
-                },
-              ]}
-              placeholder="Write your review about how well this question was answered..."
-              placeholderTextColor={!isLight ? "#999" : "#AAA"}
-              value={commentText}
-              onChangeText={handleCommentTextChange}
-              multiline={true}
-              numberOfLines={4}
-              maxLength={MAX_COMMENT_LENGTH}
-            />
-          </View>
-
-          <View style={styles.commentFooter}>
-            <Text
-              style={[
-                styles.characterCounter,
-                {
-                  color:
-                    commentText.length > MAX_COMMENT_LENGTH * 0.9
-                      ? "#FF3B30"
-                      : !isLight
-                      ? "#666"
-                      : "#AAA",
-                },
-              ]}
-            >
-              {commentText.length}/{MAX_COMMENT_LENGTH} characters
-            </Text>
-
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                {
-                  backgroundColor:
-                    commentText.trim().length > 0 && !submittingComment
-                      ? "#00ADB5"
-                      : !isLight
-                      ? "#DDD"
-                      : "#555",
-                  opacity:
-                    commentText.trim().length > 0 && !submittingComment
-                      ? 1
-                      : 0.5,
-                },
-              ]}
-              onPress={submitComment}
-              disabled={!commentText.trim() || submittingComment}
-            >
-              {submittingComment ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <Text style={styles.submitButtonText}>Submit Review</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Comments List */}
-        <View
-          style={[
-            styles.commentsSection,
-            { backgroundColor: !isLight ? "#FFFFFF" : "#393E46" },
-          ]}
-        >
-          <View style={styles.commentsHeader}>
-            <Text
-              style={[
-                styles.commentsSectionTitle,
-                { color: !isLight ? "#000" : "#EEE" },
-              ]}
-            >
-              Reviews ({comments.length})
-            </Text>
-          </View>
-
-          {/* Sort Header */}
-          <View style={styles.sortHeader}>
-            <Text
-              style={[styles.sortLabel, { color: !isLight ? "#000" : "#EEE" }]}
-            >
-              Sort by:
-            </Text>
-            <TouchableOpacity
-              style={[
-                styles.sortDropdown,
-                {
-                  backgroundColor: !isLight ? "#FFF" : "#2C2C2C",
-                  borderColor: !isLight ? "#DDD" : "#555",
-                },
-              ]}
-              onPress={() => setSortMenuOpen(true)}
-            >
-              <Text style={{ color: !isLight ? "#000" : "#EEE" }}>
-                {sortBy === "createdAt" ? "Recency" : "Upvotes"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {comments.length === 0 && !loadingComments ? (
-            <View style={styles.noCommentsContainer}>
-              <Text
-                style={[
-                  styles.noCommentsText,
-                  { color: !isLight ? "#666" : "#AAA" },
-                ]}
-              >
-                No reviews yet. Be the first to share your thoughts!
-              </Text>
-            </View>
-          ) : (
-            <FlatList
-              data={comments}
-              renderItem={renderComment}
-              keyExtractor={(item) => item.id}
-              scrollEnabled={false}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={() => (
-                <View style={styles.commentSeparator} />
-              )}
-            />
-          )}
-        </View>
-
-        {/* Sort dropdown modal */}
-        <Modal
-          visible={sortMenuOpen}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setSortMenuOpen(false)}
-        >
-          <TouchableOpacity
-            style={styles.sortOverlay}
-            activeOpacity={1}
-            onPress={() => setSortMenuOpen(false)}
-          >
-            <View
-              style={[
-                styles.sortCard,
-                { backgroundColor: isLight ? "#FFFFFF" : "#2C2C2C" },
-              ]}
-              onStartShouldSetResponder={() => true}
-            >
-              <TouchableOpacity
-                style={styles.sortOption}
-                onPress={() => {
-                  setSortMenuOpen(false);
-                  if (sortBy !== "createdAt") setSortBy("createdAt");
-                }}
-              >
-                <Text
-                  style={[
-                    styles.sortOptionText,
-                    {
-                      color: isLight ? "#000" : "#EEE",
-                      fontWeight: sortBy === "createdAt" ? "700" : "500",
-                    },
-                  ]}
-                >
-                  Recency
-                </Text>
-              </TouchableOpacity>
-              <View style={styles.sortDivider} />
-              <TouchableOpacity
-                style={styles.sortOption}
-                onPress={() => {
-                  setSortMenuOpen(false);
-                  if (sortBy !== "likeCount") setSortBy("likeCount");
-                }}
-              >
-                <Text
-                  style={[
-                    styles.sortOptionText,
-                    {
-                      color: isLight ? "#000" : "#EEE",
-                      fontWeight: sortBy === "likeCount" ? "700" : "500",
-                    },
-                  ]}
-                >
-                  Upvotes
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      </ScrollView>
+          </Modal>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 const IMAGE_SIZE = width * 0.7;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingVertical: 20,
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
+    borderBottomColor: '#E0E0E0',
   },
   backButton: {
     padding: 12,
@@ -1056,16 +1079,16 @@ const styles = StyleSheet.create({
   },
   backArrow: {
     fontSize: 24,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   headerTitleContainer: {
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    textAlign: "center",
+    fontWeight: '700',
+    textAlign: 'center',
   },
   placeholder: {
     width: 56,
@@ -1086,7 +1109,7 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 16,
-    fontWeight: "400",
+    fontWeight: '400',
     lineHeight: 24,
     marginBottom: 16,
     marginVertical: 8,
@@ -1095,12 +1118,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: "rgba(0, 173, 181, 0.1)",
+    backgroundColor: 'rgba(0, 173, 181, 0.1)',
     borderRadius: 8,
   },
   paperText: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
     marginBottom: 2,
   },
   imagesSection: {
@@ -1108,7 +1131,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: 12,
   },
   imagesScrollView: {
@@ -1117,7 +1140,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     marginRight: 12,
     borderRadius: 12,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   answerImage: {
     width: IMAGE_SIZE,
@@ -1125,35 +1148,35 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   metaSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginTop: 20,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "rgba(0, 0, 0, 0.1)",
+    borderTopColor: 'rgba(0, 0, 0, 0.1)',
   },
   userInfo: {
     flex: 1,
   },
   username: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: 4,
   },
   date: {
     fontSize: 12,
   },
   likeButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 12,
     minWidth: 60,
-    justifyContent: "center",
+    justifyContent: 'center',
     borderRadius: 20,
     borderWidth: 1,
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
   },
   heartIcon: {
     fontSize: 16,
@@ -1161,7 +1184,7 @@ const styles = StyleSheet.create({
   },
   likeCount: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   // Comment section styles
   commentSection: {
@@ -1175,7 +1198,7 @@ const styles = StyleSheet.create({
   },
   commentSectionTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
     marginBottom: 12,
   },
   commentInputContainer: {
@@ -1188,29 +1211,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingHorizontal: 12,
     paddingVertical: 12,
-    minHeight: 100,
-    maxHeight: 150,
+    minHeight: 50,
+    maxHeight: 250,
   },
   commentFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   characterCounter: {
     fontSize: 12,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   submitButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
     minWidth: 120,
-    alignItems: "center",
+    alignItems: 'center',
   },
   submitButtonText: {
-    color: "#FFF",
+    color: '#FFF',
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   // Comments list styles
   commentsSection: {
@@ -1223,22 +1246,22 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   commentsHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
   },
   commentsSectionTitle: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   noCommentsContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: 20,
   },
   noCommentsText: {
     fontSize: 14,
-    textAlign: "center",
+    textAlign: 'center',
   },
   commentItem: {
     borderRadius: 12,
@@ -1246,14 +1269,14 @@ const styles = StyleSheet.create({
     marginVertical: 4,
   },
   commentHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
   commentAuthor: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   commentDate: {
     fontSize: 12,
@@ -1264,12 +1287,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   commentActions: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   commentActionButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginRight: 20,
     paddingVertical: 4,
     paddingHorizontal: 8,
@@ -1280,24 +1303,24 @@ const styles = StyleSheet.create({
   },
   commentActionText: {
     fontSize: 12,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   commentSeparator: {
     height: 1,
-    backgroundColor: "rgba(0,0,0,0.1)",
+    backgroundColor: 'rgba(0,0,0,0.1)',
     marginVertical: 4,
   },
   // Sort dropdown styles (consistent with OthersAnswersListScreen)
   sortHeader: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
     paddingTop: 8,
   },
   sortLabel: {
     fontSize: 14,
     marginRight: 8,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   sortDropdown: {
     paddingVertical: 6,
@@ -1308,17 +1331,17 @@ const styles = StyleSheet.create({
   },
   sortOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.25)",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
     paddingHorizontal: 24,
   },
   sortCard: {
-    width: "100%",
+    width: '100%',
     maxWidth: 360,
     borderRadius: 12,
     paddingVertical: 8,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 6 },
@@ -1333,7 +1356,13 @@ const styles = StyleSheet.create({
   },
   sortDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: "#ccc",
+    backgroundColor: '#ccc',
     opacity: 0.6,
+  },
+  kavContainer: {
+    flex: 1,
+    // justifyContent: "space-around",
+    // alignItems: "center",
+    // width: "100%",
   },
 });

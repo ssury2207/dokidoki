@@ -47,9 +47,12 @@ export default function OthersAnswersListScreen() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [lastDoc, setLastDoc] =
+    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   // cursorStack[N] is the cursor to startAfter for page N (0-based). cursorStack[0] = null for first page.
-  const [cursorStack, setCursorStack] = useState<(QueryDocumentSnapshot<DocumentData> | null)[]>([null]);
+  const [cursorStack, setCursorStack] = useState<
+    (QueryDocumentSnapshot<DocumentData> | null)[]
+  >([null]);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [sortBy, setSortBy] = useState<'createdAt' | 'likeCount'>('createdAt');
   const [hasNext, setHasNext] = useState<boolean>(true);
@@ -71,7 +74,11 @@ export default function OthersAnswersListScreen() {
   }, []);
 
   const baseQuery = useMemo(() => {
-    return query(collection(db, 'posts'), orderBy(sortBy, 'desc'), limit(PAGE_SIZE));
+    return query(
+      collection(db, 'posts'),
+      orderBy(sortBy, 'desc'),
+      limit(PAGE_SIZE)
+    );
   }, [sortBy]);
 
   const fetchNext = useCallback(async () => {
@@ -79,12 +86,24 @@ export default function OthersAnswersListScreen() {
     try {
       // To move to the next page, we fetch pageIndex+1 using startAfter cursorStack[pageIndex+1] (which is last doc of current page)
       const nextCursor = cursorStack[pageIndex + 1];
-      let q = query(collection(db, 'posts'), orderBy(sortBy, 'desc'), limit(PAGE_SIZE));
+      let q = query(
+        collection(db, 'posts'),
+        orderBy(sortBy, 'desc'),
+        limit(PAGE_SIZE)
+      );
       if (nextCursor) {
-        q = query(collection(db, 'posts'), orderBy(sortBy, 'desc'), startAfter(nextCursor), limit(PAGE_SIZE));
+        q = query(
+          collection(db, 'posts'),
+          orderBy(sortBy, 'desc'),
+          startAfter(nextCursor),
+          limit(PAGE_SIZE)
+        );
       }
       const snap = await getDocs(q);
-      const docs = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as Post[];
+      const docs = snap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as any),
+      })) as Post[];
       // If no docs, we are already at the last page. Do not advance; just disable Next.
       if (docs.length === 0) {
         setHasNext(false);
@@ -103,7 +122,12 @@ export default function OthersAnswersListScreen() {
       // Peek to check if there is at least one more doc after this page to avoid empty-page navigation
       if (newLast) {
         const peek = await getDocs(
-          query(collection(db, 'posts'), orderBy(sortBy, 'desc'), startAfter(newLast), limit(1))
+          query(
+            collection(db, 'posts'),
+            orderBy(sortBy, 'desc'),
+            startAfter(newLast),
+            limit(1)
+          )
         );
         setHasNext(peek.docs.length > 0);
       } else {
@@ -120,7 +144,11 @@ export default function OthersAnswersListScreen() {
     try {
       // To move to the previous page (pageIndex - 1), fetch using startAfter cursorStack[pageIndex - 1]
       const backCursor = cursorStack[pageIndex - 1] ?? null;
-      let q = query(collection(db, 'posts'), orderBy(sortBy, 'desc'), limit(PAGE_SIZE));
+      let q = query(
+        collection(db, 'posts'),
+        orderBy(sortBy, 'desc'),
+        limit(PAGE_SIZE)
+      );
       if (backCursor) {
         q = query(
           collection(db, 'posts'),
@@ -130,7 +158,10 @@ export default function OthersAnswersListScreen() {
         );
       }
       const snap = await getDocs(q);
-      const docs = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as Post[];
+      const docs = snap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as any),
+      })) as Post[];
       setPosts(docs);
       const newLast = snap.docs[snap.docs.length - 1] ?? null;
       setLastDoc(newLast);
@@ -138,7 +169,12 @@ export default function OthersAnswersListScreen() {
       // Peek to check if there is at least one more doc after this page
       if (newLast) {
         const peek = await getDocs(
-          query(collection(db, 'posts'), orderBy(sortBy, 'desc'), startAfter(newLast), limit(1))
+          query(
+            collection(db, 'posts'),
+            orderBy(sortBy, 'desc'),
+            startAfter(newLast),
+            limit(1)
+          )
         );
         setHasNext(peek.docs.length > 0);
       } else {
@@ -159,9 +195,16 @@ export default function OthersAnswersListScreen() {
       // Load first page explicitly (pageIndex 0 uses cursorStack[0] = null)
       setLoading(true);
       try {
-        const q = query(collection(db, 'posts'), orderBy(sortBy, 'desc'), limit(PAGE_SIZE));
+        const q = query(
+          collection(db, 'posts'),
+          orderBy(sortBy, 'desc'),
+          limit(PAGE_SIZE)
+        );
         const snap = await getDocs(q);
-        const docs = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) })) as Post[];
+        const docs = snap.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as any),
+        })) as Post[];
         setPosts(docs);
         const newLast = snap.docs[snap.docs.length - 1] ?? null;
         setLastDoc(newLast);
@@ -169,7 +212,12 @@ export default function OthersAnswersListScreen() {
         // Peek for hasNext
         if (newLast) {
           const peek = await getDocs(
-            query(collection(db, 'posts'), orderBy(sortBy, 'desc'), startAfter(newLast), limit(1))
+            query(
+              collection(db, 'posts'),
+              orderBy(sortBy, 'desc'),
+              startAfter(newLast),
+              limit(1)
+            )
           );
           setHasNext(peek.docs.length > 0);
         } else {
@@ -182,60 +230,92 @@ export default function OthersAnswersListScreen() {
     init();
   }, [sortBy]);
 
-  const renderPost = useCallback(({ item }: { item: Post }) => {
-    const date = formatDate(item.createdAt);
-    return (
-      <TouchableOpacity
-        style={[
-          styles.card,
-          {
-            backgroundColor: isLight ? '#393E46' : '#FFFFFF',
-            shadowColor: isLight ? '#FFF' : '#000',
-          },
-        ]}
-        onPress={() => navigation.navigate('PostDetail', { postId: item.id })}
-        activeOpacity={0.8}
-      >
-        <Text style={[styles.question, { color: !isLight ? '#000' : '#EEE' }]} numberOfLines={2}>
-          {item.question}
-        </Text>
-        <View style={styles.metaRow}>
-          <Text style={[styles.metaText, { color: !isLight ? '#555' : '#DDD' }]}>
-            {item.username}
+  const renderPost = useCallback(
+    ({ item }: { item: Post }) => {
+      const date = formatDate(item.createdAt);
+      return (
+        <TouchableOpacity
+          style={[
+            styles.card,
+            {
+              backgroundColor: isLight ? '#393E46' : '#FFFFFF',
+              shadowColor: isLight ? '#FFF' : '#000',
+            },
+          ]}
+          onPress={() => navigation.navigate('PostDetail', { postId: item.id })}
+          activeOpacity={0.8}
+        >
+          <Text
+            style={[styles.question, { color: !isLight ? '#000' : '#EEE' }]}
+            numberOfLines={2}
+          >
+            {item.question}
           </Text>
-          <View style={styles.rightMetaRow}>
-            <Text style={[styles.metaText, { color: !isLight ? '#555' : '#DDD' }]}>
-              {date}
+          <View style={styles.metaRow}>
+            <Text
+              style={[styles.metaText, { color: !isLight ? '#555' : '#DDD' }]}
+            >
+              {item.username}
             </Text>
-            <View style={styles.likeRow}>
+            <View style={styles.rightMetaRow}>
               <Text
-                style={[styles.likeCountNum, { color: !isLight ? '#555' : '#666' }]}
-                numberOfLines={1}
+                style={[styles.metaText, { color: !isLight ? '#555' : '#DDD' }]}
               >
-                {item.likeCount ?? 0}
+                {date}
               </Text>
-              <Text
-                style={[
-                  styles.heart,
-                  { color: item.likeCount > 0 ? '#FF3B30' : (!isLight ? '#888' : '#999') },
-                ]}
-              >
-                {item.likeCount > 0 ? '♥' : '♡'}
-              </Text>
+              <View style={styles.likeRow}>
+                <Text
+                  style={[
+                    styles.likeCountNum,
+                    { color: !isLight ? '#555' : '#666' },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {item.likeCount ?? 0}
+                </Text>
+                <Text
+                  style={[
+                    styles.heart,
+                    {
+                      color:
+                        item.likeCount > 0
+                          ? '#FF3B30'
+                          : !isLight
+                          ? '#888'
+                          : '#999',
+                    },
+                  ]}
+                >
+                  {item.likeCount > 0 ? '♥' : '♡'}
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
-      </TouchableOpacity>
-    );
-  }, [formatDate, isLight, navigation]);
+        </TouchableOpacity>
+      );
+    },
+    [formatDate, isLight, navigation]
+  );
 
   return (
-    <View style={[styles.container, { backgroundColor: !isLight ? '#F0F0F0' : '#222831' }]}> 
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: !isLight ? '#F0F0F0' : '#222831' },
+      ]}
+    >
       {/* Header with sort toggle */}
       <View style={styles.header}>
-        <Text style={[styles.headerLabel, { color: !isLight ? '#000' : '#EEE' }]}>Sort by:</Text>
+        <Text
+          style={[styles.headerLabel, { color: !isLight ? '#000' : '#EEE' }]}
+        >
+          Sort by:
+        </Text>
         <TouchableOpacity
-          style={[styles.dropdown, { backgroundColor: !isLight ? '#FFF' : '#393E46' }]}
+          style={[
+            styles.dropdown,
+            { backgroundColor: !isLight ? '#FFF' : '#393E46' },
+          ]}
           onPress={() => setSortMenuOpen(true)}
         >
           <Text style={{ color: !isLight ? '#000' : '#EEE' }}>
@@ -251,8 +331,16 @@ export default function OthersAnswersListScreen() {
         animationType="fade"
         onRequestClose={() => setSortMenuOpen(false)}
       >
-        <TouchableOpacity style={styles.sortOverlay} activeOpacity={1} onPress={() => setSortMenuOpen(false)}>
-          <View style={[styles.sortCard, { backgroundColor: isLight ? '#FFFFFF' : '#2C2C2C' }]}
+        <TouchableOpacity
+          style={styles.sortOverlay}
+          activeOpacity={1}
+          onPress={() => setSortMenuOpen(false)}
+        >
+          <View
+            style={[
+              styles.sortCard,
+              { backgroundColor: isLight ? '#FFFFFF' : '#2C2C2C' },
+            ]}
             // stop propagation to avoid closing when tapping inside
             onStartShouldSetResponder={() => true}
           >
@@ -264,7 +352,17 @@ export default function OthersAnswersListScreen() {
                 if (sortBy !== 'createdAt') setSortBy('createdAt');
               }}
             >
-              <Text style={[styles.sortOptionText, { color: isLight ? '#000' : '#EEE', fontWeight: sortBy === 'createdAt' ? '700' : '500' }]}>Recency</Text>
+              <Text
+                style={[
+                  styles.sortOptionText,
+                  {
+                    color: isLight ? '#000' : '#EEE',
+                    fontWeight: sortBy === 'createdAt' ? '700' : '500',
+                  },
+                ]}
+              >
+                Recency
+              </Text>
             </TouchableOpacity>
             <View style={styles.sortDivider} />
             <TouchableOpacity
@@ -274,7 +372,17 @@ export default function OthersAnswersListScreen() {
                 if (sortBy !== 'likeCount') setSortBy('likeCount');
               }}
             >
-              <Text style={[styles.sortOptionText, { color: isLight ? '#000' : '#EEE', fontWeight: sortBy === 'likeCount' ? '700' : '500' }]}>Likes</Text>
+              <Text
+                style={[
+                  styles.sortOptionText,
+                  {
+                    color: isLight ? '#000' : '#EEE',
+                    fontWeight: sortBy === 'likeCount' ? '700' : '500',
+                  },
+                ]}
+              >
+                Likes
+              </Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -290,7 +398,9 @@ export default function OthersAnswersListScreen() {
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyTitle}>No posts yet</Text>
-            <Text style={styles.emptySubtitle}>Be the first one to share your answer!</Text>
+            <Text style={styles.emptySubtitle}>
+              Be the first one to share your answer!
+            </Text>
           </View>
         }
       />
@@ -298,7 +408,12 @@ export default function OthersAnswersListScreen() {
       <FullScreenLoader visible={loading} message="Loading posts..." />
 
       {/* Pagination Controls */}
-      <View style={[styles.pagination, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View
+        style={[
+          styles.pagination,
+          { paddingBottom: Math.max(insets.bottom, 12) },
+        ]}
+      >
         <TouchableOpacity
           style={[styles.navButton, pageIndex <= 0 && { opacity: 0.5 }]}
           disabled={pageIndex <= 0 || loading}
@@ -325,7 +440,7 @@ const CARD_WIDTH = width * 0.9;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 16,
+    paddingVertical: 24,
     paddingHorizontal: 16,
   },
   header: {
