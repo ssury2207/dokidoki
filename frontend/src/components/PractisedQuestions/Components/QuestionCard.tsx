@@ -19,11 +19,12 @@ type QuestionCardProps = {
 export default function QuestionCard(props: QuestionCardProps) {
   const isLight = useSelector((state: RootState) => state.theme.isLight);
   const questionType = props.questionType;
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const date = props.date;
   const questionData = props.questionData;
   const buttonHandler = () => {
-    if (questionType === 'prelims') {
+    if (questionType === 'pre') {
       const matchedQuestion = questionData?.find((q) => q.date === date);
 
       if (!matchedQuestion) {
@@ -36,7 +37,7 @@ export default function QuestionCard(props: QuestionCardProps) {
       });
     } else {
       // alert(`Mains navigation`);
-      navigation.navigate('MainsScreen', {date});
+      navigation.navigate('MainsScreen', { date });
     }
   };
 
