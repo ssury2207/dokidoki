@@ -2,7 +2,7 @@
   "expo": {
     "name": "dokidoki",
     "slug": "dokidoki",
-    "version": "1.0.1",
+    "version": "1.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon-dokidoki.png",
     "scheme": "frontend",
@@ -14,7 +14,7 @@
     },
     "android": {
       "package": "com.dokidoki.dev.dokidoki",
-      "versionCode": 3,
+      "versionCode": 4,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon-dokidoki.png",
         "backgroundColor": "#ffffff"
