@@ -19,6 +19,7 @@ import {
   orderBy,
   query,
   startAfter,
+  where,
   QueryDocumentSnapshot,
   DocumentData,
 } from 'firebase/firestore';
@@ -76,6 +77,7 @@ export default function OthersAnswersListScreen() {
   const baseQuery = useMemo(() => {
     return query(
       collection(db, 'posts'),
+      where('hidePost', '==', false),
       orderBy(sortBy, 'desc'),
       limit(PAGE_SIZE)
     );
@@ -88,12 +90,14 @@ export default function OthersAnswersListScreen() {
       const nextCursor = cursorStack[pageIndex + 1];
       let q = query(
         collection(db, 'posts'),
+        where('hidePost', '==', false),
         orderBy(sortBy, 'desc'),
         limit(PAGE_SIZE)
       );
       if (nextCursor) {
         q = query(
           collection(db, 'posts'),
+          where('hidePost', '==', false),
           orderBy(sortBy, 'desc'),
           startAfter(nextCursor),
           limit(PAGE_SIZE)
@@ -104,6 +108,7 @@ export default function OthersAnswersListScreen() {
         id: d.id,
         ...(d.data() as any),
       })) as Post[];
+      console.log('fetchNext - Fetched posts:', docs.length, docs);
       // If no docs, we are already at the last page. Do not advance; just disable Next.
       if (docs.length === 0) {
         setHasNext(false);
@@ -124,6 +129,7 @@ export default function OthersAnswersListScreen() {
         const peek = await getDocs(
           query(
             collection(db, 'posts'),
+            where('hidePost', '==', false),
             orderBy(sortBy, 'desc'),
             startAfter(newLast),
             limit(1)
@@ -146,12 +152,14 @@ export default function OthersAnswersListScreen() {
       const backCursor = cursorStack[pageIndex - 1] ?? null;
       let q = query(
         collection(db, 'posts'),
+        where('hidePost', '==', false),
         orderBy(sortBy, 'desc'),
         limit(PAGE_SIZE)
       );
       if (backCursor) {
         q = query(
           collection(db, 'posts'),
+          where('hidePost', '==', false),
           orderBy(sortBy, 'desc'),
           startAfter(backCursor),
           limit(PAGE_SIZE)
@@ -162,6 +170,7 @@ export default function OthersAnswersListScreen() {
         id: d.id,
         ...(d.data() as any),
       })) as Post[];
+      console.log('Fetched posts:', docs.length, docs);
       setPosts(docs);
       const newLast = snap.docs[snap.docs.length - 1] ?? null;
       setLastDoc(newLast);
@@ -171,6 +180,7 @@ export default function OthersAnswersListScreen() {
         const peek = await getDocs(
           query(
             collection(db, 'posts'),
+            where('hidePost', '==', false),
             orderBy(sortBy, 'desc'),
             startAfter(newLast),
             limit(1)
@@ -197,14 +207,17 @@ export default function OthersAnswersListScreen() {
       try {
         const q = query(
           collection(db, 'posts'),
+          where('hidePost', '==', false),
           orderBy(sortBy, 'desc'),
           limit(PAGE_SIZE)
         );
+        console.log('Executing query with sortBy:', sortBy);
         const snap = await getDocs(q);
         const docs = snap.docs.map((d) => ({
           id: d.id,
           ...(d.data() as any),
         })) as Post[];
+        console.log('useEffect init - Fetched posts:', docs.length, docs);
         setPosts(docs);
         const newLast = snap.docs[snap.docs.length - 1] ?? null;
         setLastDoc(newLast);
@@ -214,6 +227,7 @@ export default function OthersAnswersListScreen() {
           const peek = await getDocs(
             query(
               collection(db, 'posts'),
+              where('hidePost', '==', false),
               orderBy(sortBy, 'desc'),
               startAfter(newLast),
               limit(1)
@@ -223,6 +237,8 @@ export default function OthersAnswersListScreen() {
         } else {
           setHasNext(false);
         }
+      } catch (error) {
+        console.error('Error in useEffect init:', error);
       } finally {
         setLoading(false);
       }

@@ -28,7 +28,7 @@ export default function PracticeSelectScreen({ navigation, route }: Props) {
 
   const mainsButtonHandler = () => {
     caseType
-      ? navigation.navigate({ name: 'PractisedQuestions', params: { data } })
+      ? navigation.navigate({ name: 'PractisedQuestions', params: { data, questionType: 'mains' } })
       : navigation.navigate({ name: 'MainsScreen', params: {} });
   };
   const prelimsButtonHandler = () => {
