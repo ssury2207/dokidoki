@@ -84,9 +84,32 @@ export default function SignupScreen({ navigation }: Props) {
         return;
       }
 
+      // IMPORTANT: Check if user already exists and is confirmed
+      // Supabase returns the user object even if they already exist
+      // We need to check the identities array to detect existing users
+      if (authData.user.identities && authData.user.identities.length === 0) {
+        // User already exists and is confirmed (no new identity created)
+        setError("This email is already registered. Please login instead.");
+        return;
+      }
+
       // Check if email confirmation is required
       if (!authData.session) {
-        // Email confirmation required - navigate to confirmation screen
+        // Check if this is an existing unconfirmed user
+        // If the user was created before the current time, it's an existing unconfirmed user
+        const userCreatedAt = new Date(authData.user.created_at).getTime();
+        const now = Date.now();
+        const timeDifference = now - userCreatedAt;
+
+        // If user was created more than 5 seconds ago, it's an existing unconfirmed user
+        if (timeDifference > 5000) {
+          setError(
+            "This email is already registered but not verified. Please check your email for a new verification link sent now. After verifying, Click 'Login' and use your original password set earlier. Note: Signing up again does not change your password."
+          );
+          return;
+        }
+
+        // New signup - Email confirmation required - navigate to confirmation screen
         // User profile will be created AFTER email confirmation
         navigation.replace("EmailConfirmation", {
           email: email.trim(),
