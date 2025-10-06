@@ -15,8 +15,7 @@ import DailyChallengeCard from "./Components/DailyChallengeCard";
 import ProgressCard from "./Components/ProgressCard";
 import { RootState, AppDispatch } from "@/store/store";
 import { useState, useEffect } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { firestore, auth } from "../../firebaseConfig";
+import { supabase } from "../../supabaseConfig";
 import {
   setCurrentStreak,
   setLastActiveDate,
@@ -46,21 +45,79 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return;
-
       try {
-        const docRef = doc(firestore, "users", uid);
-        const docSnap = await getDoc(docRef);
+        // Get current user from Supabase auth
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log("❌ [DEBUG] No authenticated user found");
+          return;
+        }
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          dispatch(setUserName(data?.username));
-          dispatch(setPoints(data?.points.total_points));
-          dispatch(setCurrentStreak(data?.streak.current_streak));
-          dispatch(setLongestStreak(data?.streak.longest_streak));
-          dispatch(setLastActiveDate(data?.streak.last_active_date));
-          const last_active_date = data?.streak?.last_active_date;
+        // Fetch user data from Supabase database
+        const { data, error } = await supabase
+          .from('users')
+          .select('username, total_points, current_streak, longest_streak, last_active_date')
+          .eq('id', user.id)
+          .single();
+
+        // If user doesn't exist in database (PGRST116 error), create profile
+        if (error && error.code === 'PGRST116') {
+          console.log("⚠️ [DEBUG] User profile NOT found in database");
+          console.log("🔧 [DEBUG] FALLBACK TRIGGERED: Creating profile on first login...");
+
+          // Extract username from metadata or email
+          const username = user.user_metadata?.username ||
+                          user.email?.split('@')[0] ||
+                          'User';
+          const phoneNumber = user.user_metadata?.phone_number || null;
+
+          // Create user profile
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert([{
+              id: user.id,
+              username: username,
+              phone_number: phoneNumber,
+              longest_streak: 0,
+              current_streak: 0,
+              last_active_date: null,
+              dates_active: {},
+              total_solved: 0,
+              pre_submissions: {},
+              mains_answer_copies: {},
+              total_points: 0,
+              points_history: {},
+            }]);
+
+          if (insertError) {
+            console.log("❌ [DEBUG] Error creating user profile:", insertError);
+            return;
+          }
+
+          // Set initial values in Redux
+          dispatch(setUserName(username));
+          dispatch(setPoints(0));
+          dispatch(setCurrentStreak(0));
+          dispatch(setLongestStreak());
+          dispatch(setLastActiveDate(''));
+          return;
+        }
+
+        if (error) {
+          console.log("Error occurred while fetching user data:", error);
+          return;
+        }
+
+        if (data) {
+          // Dispatch data to Redux store
+          dispatch(setUserName(data.username));
+          dispatch(setPoints(data.total_points || 0));
+          dispatch(setCurrentStreak(data.current_streak || 0));
+          dispatch(setLongestStreak());
+          dispatch(setLastActiveDate(data.last_active_date || ''));
+
+          // Check if streak needs to be reset
+          const last_active_date = data.last_active_date;
           const todays_date = new Date().toLocaleDateString("en-CA");
           if (last_active_date) {
             const diff = getDateDiffInDays(last_active_date, todays_date);
@@ -70,7 +127,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           }
         }
       } catch (error) {
-        console.log("Error occurred while fetching user data:", error);
+        console.log("❌ [DEBUG] Error occurred while fetching user data:", error);
       }
     };
 

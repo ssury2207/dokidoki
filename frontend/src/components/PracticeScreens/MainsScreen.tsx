@@ -216,6 +216,7 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
             uploadCopies={uploadCopies}
             setUploadCopies={setUploadCopies}
             navigation={navigation}
+            isQuestionAvailable={data != null}
           />
           {isAnswerCopiesDateExists &&
             todaysAnswerCopies.map((url, idx) => (

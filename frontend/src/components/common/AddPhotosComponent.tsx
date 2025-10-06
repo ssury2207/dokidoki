@@ -23,6 +23,7 @@ interface AddPhotosComponentsProps {
   uploadCopies: ImageData[];
   setUploadCopies: React.Dispatch<React.SetStateAction<ImageData[]>>;
   navigation: any;
+  isQuestionAvailable?: boolean;
 }
 
 const AddPhotosComponents = ({
@@ -30,6 +31,7 @@ const AddPhotosComponents = ({
   uploadCopies,
   setUploadCopies,
   navigation,
+  isQuestionAvailable = true,
 }: AddPhotosComponentsProps) => {
   const [id, setId] = useState(0);
   const [isShowModal, setIsShowModal] = useState(false);
@@ -133,12 +135,12 @@ const AddPhotosComponents = ({
       <TouchableOpacity
         onPress={addPhotoHandler}
         style={styles.addPhotoContainer}
-        disabled={isAnswerUploaded || uploadCopies.length >= 3}
+        disabled={!isQuestionAvailable || isAnswerUploaded || uploadCopies.length >= 3}
       >
         <Text
           style={[
             styles.addPhotoText,
-            isAnswerUploaded ? { color: "#B0B0B0" } : null, // Change color when disabled
+            (!isQuestionAvailable || isAnswerUploaded || uploadCopies.length >= 3) ? { color: "#B0B0B0" } : null, // Change color when disabled
           ]}
         >
           + Add Photo
