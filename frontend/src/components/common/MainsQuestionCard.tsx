@@ -18,26 +18,32 @@ const MainsQuestionCard: React.FC<Props> = ({ fakeData }) => {
 
   return (
     <View style={styles.cardContainer}>
-      <View style={styles.row}>
-        <NormalText text="Year :" />
-        <NormalText text={fakeData.Year.toString()} />
-      </View>
+      {fakeData.Year != null && (
+        <View style={styles.row}>
+          <NormalText text="Year :" />
+          <NormalText text={fakeData.Year.toString()} />
+        </View>
+      )}
 
-      <View style={styles.row}>
-        <NormalText text="Paper :" />
-        <NormalText text={fakeData.Paper} />
-      </View>
+      {fakeData.Paper && (
+        <View style={styles.row}>
+          <NormalText text="Paper :" />
+          <NormalText text={fakeData.Paper} />
+        </View>
+      )}
 
-      {'Marks' in fakeData && (
+      {fakeData.Marks != null && (
         <View style={styles.row}>
           <NormalText text="Marks :" />
           <NormalText text={fakeData.Marks.toString()} />
         </View>
       )}
 
-      <View style={styles.questionContainer}>
-        <NormalText text={fakeData.Question} />
-      </View>
+      {fakeData.Question && (
+        <View style={styles.questionContainer}>
+          <NormalText text={fakeData.Question} />
+        </View>
+      )}
     </View>
   );
 };

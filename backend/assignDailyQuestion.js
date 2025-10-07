@@ -1,123 +1,192 @@
-// assignDailyQuestion.js (ESM-safe, Firestore upload)
+// assignDailyQuestion.js (Supabase version)
 
-import admin from 'firebase-admin';
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, resolve } from 'path';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
-// Construct __dirname in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// Load environment variables
+dotenv.config();
 
-// Load service account from firebase-key.json
-const serviceAccountPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
-  ? resolve(__dirname, process.env.GOOGLE_APPLICATION_CREDENTIALS)
-  : resolve(__dirname, 'config/firebase-key.json');
-
-const serviceAccount = JSON.parse(readFileSync(serviceAccountPath, 'utf8'));
-
-// Initialize Firebase if not already
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
-
-const db = admin.firestore();
+// Initialize Supabase client with service role key
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 async function assignDailyQuestion() {
-  // Get IST date (UTC + 5:30)
-  const now = new Date();
-  const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
-  const istDate = new Date(now.getTime() + istOffset);
-  const today = istDate.toISOString().substring(0, 10);
+  try {
+    // Get IST date (UTC + 5:30)
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
+    const istDate = new Date(now.getTime() + istOffset);
+    const today = istDate.toISOString().substring(0, 10);
 
-  const todayDoc = await db
-    .collection('daily_mains_questions')
-    .doc(today)
-    .get();
+    console.log('Checking for existing mains question for date:', today);
 
-  if (todayDoc.exists) {
-    console.log('A question is already assigned for today.');
-    return;
+    // Check if today's question already exists (don't use .single() to avoid errors)
+    const { data: existingQuestions, error: checkError } = await supabase
+      .from('daily_mains_questions')
+      .select('id')
+      .eq('date', today);
+
+    if (checkError) {
+      throw new Error(`Error checking existing question: ${checkError.message}`);
+    }
+
+    if (existingQuestions && existingQuestions.length > 0) {
+      console.log('A mains question is already assigned for today.');
+      return;
+    }
+
+    // Get all used question IDs from daily_mains_questions
+    const { data: usedQuestions, error: usedError } = await supabase
+      .from('daily_mains_questions')
+      .select('question_id');
+
+    if (usedError) {
+      throw new Error(`Error fetching used questions: ${usedError.message}`);
+    }
+
+    const usedIds = (usedQuestions || []).map((q) => q.question_id).filter(id => id != null);
+    console.log('Used question IDs:', usedIds.length);
+
+    // Get all questions from the questions table
+    const { data: allQuestions, error: questionsError } = await supabase
+      .from('questions')
+      .select('*');
+
+    if (questionsError) {
+      throw new Error(`Error fetching questions: ${questionsError.message}`);
+    }
+
+    if (!allQuestions || allQuestions.length === 0) {
+      throw new Error('No questions found in the questions table!');
+    }
+
+    // Filter out already used questions
+    const candidates = allQuestions.filter((q) => !usedIds.includes(q.id));
+
+    if (!candidates.length) {
+      throw new Error('No unused mains questions remaining!');
+    }
+
+    console.log('Available unused questions:', candidates.length);
+
+    // Select a random question
+    const selectedQuestion = candidates[Math.floor(Math.random() * candidates.length)];
+
+    // Insert the daily question
+    const { error: insertError } = await supabase
+      .from('daily_mains_questions')
+      .insert([{
+        date: today,
+        question_id: selectedQuestion.id,
+        question: selectedQuestion.question,
+        paper: selectedQuestion.paper,
+        year: selectedQuestion.year,
+        marks: selectedQuestion.marks,
+        code: selectedQuestion.code,
+      }]);
+
+    if (insertError) {
+      throw new Error(`Error inserting daily question: ${insertError.message}`);
+    }
+
+    console.log('✅ Assigned new mains daily question for', today, ':', selectedQuestion.id);
+    console.log('   Question:', selectedQuestion.question.substring(0, 100) + '...');
+  } catch (error) {
+    console.error('❌ Error in assignDailyQuestion:', error.message);
+    throw error;
   }
-
-  const usedDocs = await db.collection('daily_mains_questions').get();
-  const usedIds = usedDocs.docs.map((doc) => doc.data().questionId);
-
-  const allQs = (await db.collection('questions').get()).docs;
-  const candidates = allQs.filter((q) => !usedIds.includes(q.id));
-
-  if (!candidates.length) {
-    throw new Error('No unused questions remaining!');
-  }
-
-  const qDoc = candidates[Math.floor(Math.random() * candidates.length)];
-  const qData = qDoc.data();
-
-  await db.collection('daily_mains_questions').doc(today).set({
-    date: today,
-    questionId: qDoc.id,
-    Question: qData.Question,
-    Paper: qData.Paper,
-    Year: qData.Year,
-    Marks: qData.Marks,
-    Code: qData.Code,
-  });
-
-  console.log('Assigned new daily question for', today, ':', qDoc.id);
 }
 
 async function assignDailyPrelimsQuestion() {
-  // Get IST date (UTC + 5:30)
-  const now = new Date();
-  const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
-  const istDate = new Date(now.getTime() + istOffset);
-  const today = istDate.toISOString().substring(0, 10);
+  try {
+    // Get IST date (UTC + 5:30)
+    const now = new Date();
+    const istOffset = 5.5 * 60 * 60 * 1000; // 5.5 hours in milliseconds
+    const istDate = new Date(now.getTime() + istOffset);
+    const today = istDate.toISOString().substring(0, 10);
 
-  // Check if today's daily question exists
-  const todayDoc = await db
-    .collection('daily_prelims_questions')
-    .doc(today)
-    .get();
+    console.log('Checking for existing prelims question for date:', today);
 
-  if (todayDoc.exists) {
-    console.log('A Prelims question is already assigned for today.');
-    return;
+    // Check if today's question already exists (don't use .single() to avoid errors)
+    const { data: existingQuestions, error: checkError } = await supabase
+      .from('daily_prelims_questions')
+      .select('id')
+      .eq('date', today);
+
+    if (checkError) {
+      throw new Error(`Error checking existing prelims question: ${checkError.message}`);
+    }
+
+    if (existingQuestions && existingQuestions.length > 0) {
+      console.log('A prelims question is already assigned for today.');
+      return;
+    }
+
+    // Get all used question IDs from daily_prelims_questions
+    const { data: usedQuestions, error: usedError } = await supabase
+      .from('daily_prelims_questions')
+      .select('question_id');
+
+    if (usedError) {
+      throw new Error(`Error fetching used prelims questions: ${usedError.message}`);
+    }
+
+    const usedIds = (usedQuestions || []).map((q) => q.question_id).filter(id => id != null);
+    console.log('Used prelims question IDs:', usedIds.length);
+
+    // Get all questions from the dataset_prelims_questions table
+    const { data: allQuestions, error: questionsError } = await supabase
+      .from('dataset_prelims_questions')
+      .select('*');
+
+    if (questionsError) {
+      throw new Error(`Error fetching prelims questions: ${questionsError.message}`);
+    }
+
+    if (!allQuestions || allQuestions.length === 0) {
+      throw new Error('No questions found in the dataset_prelims_questions table!');
+    }
+
+    // Filter out already used questions
+    const candidates = allQuestions.filter((q) => !usedIds.includes(q.id));
+
+    if (!candidates.length) {
+      throw new Error('No unused prelims questions remaining!');
+    }
+
+    console.log('Available unused prelims questions:', candidates.length);
+
+    // Select a random question
+    const selectedQuestion = candidates[Math.floor(Math.random() * candidates.length)];
+
+    // Insert the daily prelims question
+    const { error: insertError } = await supabase
+      .from('daily_prelims_questions')
+      .insert([{
+        date: today,
+        question_id: selectedQuestion.id,
+        question: selectedQuestion.question_and_year,
+        year: selectedQuestion.year,
+        chapters: selectedQuestion.chapters,
+        answer: selectedQuestion.answer,
+        explanation: selectedQuestion.explanation,
+        options: selectedQuestion.options,
+        section: selectedQuestion.section,
+        table_name: selectedQuestion.table_name,
+      }]);
+
+    if (insertError) {
+      throw new Error(`Error inserting daily prelims question: ${insertError.message}`);
+    }
+
+    console.log('✅ Assigned new prelims daily question for', today, ':', selectedQuestion.id);
+    console.log('   Question:', selectedQuestion.question_and_year.substring(0, 100) + '...');
+  } catch (error) {
+    console.error('❌ Error in assignDailyPrelimsQuestion:', error.message);
+    throw error;
   }
-
-  // Gather all used questionIds
-  const usedDocs = await db.collection('daily_prelims_questions').get();
-  const usedIds = usedDocs.docs.map((doc) => doc.data().questionId);
-
-  // Get all possible questions
-  const allQs = (await db.collection('dataset/prelims/questions').get()).docs;
-
-  // Filter out used questions
-  const candidates = allQs.filter((q) => !usedIds.includes(q.id));
-  if (!candidates.length) {
-    throw new Error('No unused questions remaining!');
-  }
-
-  // Select a random question
-  const qDoc = candidates[Math.floor(Math.random() * candidates.length)];
-  const qData = qDoc.data();
-
-  // Create the day's doc in daily_prelims_questions
-  await db.collection('daily_prelims_questions').doc(today).set({
-    date: today,
-    questionId: qDoc.id,
-    Question: qData['Question and Year'],
-    Year: qData.Year,
-    Chapters: qData.Chapters,
-    Answer: qData.Answer,
-    Explanation: qData.Explanation,
-    Options: qData.Options,
-    Section: qData.Section,
-    Table: qData.Table,
-  });
-
-  console.log('Assigned new prelims daily question for', today, ':', qDoc.id);
 }
 
 assignDailyQuestion().catch(console.error);

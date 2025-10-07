@@ -1,32 +1,28 @@
 import { View, StyleSheet } from "react-native";
-import { StackActions, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/src/types/navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState, AppDispatch } from "@/store/store";
+import { setCurrentStreak, setPoints } from "@/store/userProgressSlice";
 import Title from "../atoms/Title";
 import NormalText from "../atoms/NormalText";
 import PrimaryButton from "../atoms/PrimaryButton";
-import { uploadImageToCloudinary } from "@/src/api/uploadImageToCloudinary";
-import { doc, getFirestore, updateDoc } from "firebase/firestore";
+import SecondaryButton from "../atoms/SecondaryButton";
 import FullScreenLoader from "../common/FullScreenLoader";
-import { useState } from "react";
-import { RootState } from "@/store/store";
-import { useSelector } from "react-redux";
-import { useDispatch } from "react-redux";
-import { setCurrentStreak, setPoints } from "@/store/userProgressSlice";
+import { uploadImageToCloudinary } from "@/src/api/uploadImageToCloudinary";
+import submitMainsData from "@/src/utils/submitMainsData";
 
 type Props = {
   verdict: boolean;
 };
-
-import submitMainsData from "@/src/utils/submitMainsData";
-import SecondaryButton from "../atoms/SecondaryButton";
 
 const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { uid, uploadCopies, prelims_solved, mains_solved, data, date } =
     route.params;
-  const db = getFirestore();
   const today = new Date().toISOString().substring(0, 10);
 
   const [loaderVisible, setLoaderVisible] = useState(false);
@@ -42,10 +38,6 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
   const longest_streak = useSelector(
     (state: RootState) => state.userProgress.longest_streak
   );
-  // async function uploadImagesArrayParallel( userId: string,
-  //   images: { id: number; uri: string }[] )
-  //   { const uploadPromises = images.map((img) => uploadImageToCloudinary(img.uri) ); const downloadURLs = await Promise.all(uploadPromises); await updateDoc(doc(db, 'users', userId),
-  //   { [submissions.mains.answerCopies.${today}]: downloadURLs, }); }
   const overlaySubmitButtonHandler = async () => {
     if (!uid) return;
 

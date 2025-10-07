@@ -17,8 +17,7 @@ import Card from "../atoms/Card";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NormalText from "../atoms/NormalText";
 import { fetchTodaysQuestion } from "@/src/api/dailyMainsQuestion";
-import { getFirestore, collection, query, where, getDocs } from "firebase/firestore";
-import { auth } from "@/src/firebaseConfig";
+import { supabase } from "@/src/supabaseConfig";
 import FullScreenLoader from "../common/FullScreenLoader";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
@@ -56,10 +55,18 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
   } | null>(null);
   const [userPostId, setUserPostId] = useState<string | null>(null);
   const [checkingPost, setCheckingPost] = useState(false);
+  const [uid, setUid] = useState<string | null>(null);
 
-  const db = getFirestore();
   const today = date || new Date().toISOString().substring(0, 10);
-  const uid = auth.currentUser?.uid;
+
+  // Get current user ID from Supabase
+  useEffect(() => {
+    const getUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUid(user?.id || null);
+    };
+    getUserId();
+  }, []);
 
   useEffect(() => {
     fetchTodaysQuestion(today)
@@ -76,18 +83,22 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
 
     setCheckingPost(true);
     try {
-      const postsQuery = query(
-        collection(db, "posts"),
-        where("authorId", "==", uid),
-        where("questionId", "==", data.id)
-      );
+      const { data: posts, error } = await supabase
+        .from('posts')
+        .select('id')
+        .eq('author_id', uid)
+        .eq('question_id', data.id)
+        .limit(1);
 
-      const querySnapshot = await getDocs(postsQuery);
+      if (error) {
+        console.log("Error checking user post:", error);
+        setUserPostId(null);
+        return;
+      }
 
-      if (!querySnapshot.empty) {
+      if (posts && posts.length > 0) {
         // User has created a post for this question
-        const postDoc = querySnapshot.docs[0];
-        setUserPostId(postDoc.id);
+        setUserPostId(posts[0].id);
       } else {
         setUserPostId(null);
       }
@@ -158,12 +169,13 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
     return () => {
       cancelled = true;
     };
-  }, [uid, db, today]);
+  }, [uid, today]);
 
   // Refresh submission status and check for user's post when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       const refreshScreen = async () => {
+        // Always refresh to show correct submission status
         await checkSubmissionStatus();
         if (data?.id) {
           await checkUserPost();
@@ -174,6 +186,11 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
   );
 
   const submitHandler = async () => {
+    if (!uid) {
+      alert("Please login first");
+      return;
+    }
+
     const prelims_solved = prelimsubmissionData != null;
     const mains_solved = mainssubmissionData != null;
 

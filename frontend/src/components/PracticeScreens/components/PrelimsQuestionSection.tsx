@@ -1,7 +1,6 @@
 import {
   ActivityIndicator,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -50,8 +49,8 @@ const PrelimsQuestionSection = ({ isLocked, initialSelection }) => {
   };
 
   if (isLoading) return <ActivityIndicator />;
-  if (error) return <Text>Error fetching questions</Text>;
-  if (!data) return <Text>Loading question data...</Text>;
+  // If error or no data, show the same message as Mains screen
+  if (error || !data) return <NormalText text="No question found for today." />;
 
   return (
     <View style={styles.cardContainer}>
