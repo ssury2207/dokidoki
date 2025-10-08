@@ -4,9 +4,19 @@ import { supabase } from "../supabaseConfig";
 const ARCHIVE_MAINS_KEY = 'archive_mains_questions';
 const ARCHIVE_PRELIMS_KEY = 'archive_prelims_questions';
 const ARCHIVE_META = 'archive_questions_meta';
+const CACHE_VERSION = '2'; // Increment when data structure changes
+const CACHE_VERSION_KEY = 'archive_cache_version';
 
 export async function getArchiveQuestions() {
   const today = new Date().toISOString().substring(0, 10);
+
+  // Check cache version and clear if outdated
+  const currentVersion = await AsyncStorage.getItem(CACHE_VERSION_KEY);
+  if (currentVersion !== CACHE_VERSION) {
+    console.log('Cache version mismatch, clearing old cache');
+    await AsyncStorage.multiRemove([ARCHIVE_MAINS_KEY, ARCHIVE_PRELIMS_KEY, ARCHIVE_META]);
+    await AsyncStorage.setItem(CACHE_VERSION_KEY, CACHE_VERSION);
+  }
 
   // Get local meta: { maxDate, lastCheckedDate }
   const metaRaw = await AsyncStorage.getItem(ARCHIVE_META);
@@ -52,9 +62,38 @@ export async function getArchiveQuestions() {
 
   const newestPrelims = prelimsResult && prelimsResult.length > 0 ? prelimsResult[0].date : '';
 
-  // Save results and update meta with today's lastCheckedDate
-  await AsyncStorage.setItem(ARCHIVE_MAINS_KEY, JSON.stringify(mainsResult || []));
-  await AsyncStorage.setItem(ARCHIVE_PRELIMS_KEY, JSON.stringify(prelimsResult || []));
+  // Transform snake_case to PascalCase for component compatibility
+  const transformedMains = (mainsResult || []).map(item => ({
+    id: item.id,
+    date: item.date,
+    questionId: item.question_id,
+    Question: item.question,
+    Year: item.year,
+    Paper: item.paper,
+    Marks: item.marks,
+    Code: item.code,
+  }));
+
+  const transformedPrelims = (prelimsResult || []).map(item => ({
+    id: item.id,
+    date: item.date,
+    questionId: item.question_id,
+    Question: item.question,
+    Year: item.year,
+    Chapters: item.chapters,
+    Answer: item.answer,
+    Explanation: item.explanation,
+    Options: item.options,
+    Section: item.section,
+    Table: item.table_name,
+  }));
+
+  console.log('fetchArchiveQuestions - Transformed mains sample:', transformedMains[0]);
+  console.log('fetchArchiveQuestions - Transformed prelims sample:', transformedPrelims[0]);
+
+  // Save transformed results and update meta with today's lastCheckedDate
+  await AsyncStorage.setItem(ARCHIVE_MAINS_KEY, JSON.stringify(transformedMains));
+  await AsyncStorage.setItem(ARCHIVE_PRELIMS_KEY, JSON.stringify(transformedPrelims));
   await AsyncStorage.setItem(ARCHIVE_META, JSON.stringify({
     maxDate: {
       mains: newestMains,
@@ -64,7 +103,7 @@ export async function getArchiveQuestions() {
   }));
 
   return {
-    mains: mainsResult || [],
-    prelims: prelimsResult || [],
+    mains: transformedMains,
+    prelims: transformedPrelims,
   };
 }

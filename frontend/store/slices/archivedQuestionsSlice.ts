@@ -5,12 +5,18 @@ export interface ArchivedQuestion {
   id: string;
   date: string;
   questionId: string;
-  question_text: string;
-  paper?: string;
-  year?: number;
-  marks?: number;
-  topic?: string;
-  code?: string;
+  Question: string;
+  Paper?: string;
+  Year?: number;
+  Marks?: number;
+  Code?: string;
+  // Prelims-specific fields
+  Chapters?: string[];
+  Answer?: string;
+  Explanation?: string;
+  Options?: string[];
+  Section?: string;
+  Table?: string;
 }
 
 interface ArchivedQuestionsState {

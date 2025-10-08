@@ -79,7 +79,26 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
         .single();
 
       if (error) {
-        throw error;
+        // Handle specific errors gracefully
+        setLoading(false);
+
+        if (error.code === '23505') {
+          // Duplicate post error
+          Alert.alert('Already Posted', 'You have already posted this answer.');
+        } else if (error.message.includes('permission')) {
+          Alert.alert('Permission Denied', 'You do not have permission to create posts.');
+        } else {
+          Alert.alert('Post Failed', 'Unable to create post. Please try again.');
+        }
+        // Silent logging for debugging
+        // console.log('Post creation error:', error);
+        return;
+      }
+
+      if (!data) {
+        setLoading(false);
+        Alert.alert('Post Failed', 'Unable to create post. Please try again.');
+        return;
       }
 
       setLoading(false);
@@ -89,8 +108,10 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
       navigation.replace('PostDetail', { postId: data.id });
     } catch (error: any) {
       setLoading(false);
-      Alert.alert('Error', 'Failed to create post. Please try again.');
-      console.error('Error creating post:', error);
+      // Generic fallback for unexpected errors
+      Alert.alert('Unexpected Error', 'Something went wrong. Please try again.');
+      // Silent logging for debugging
+      // console.log('Unexpected post creation error:', error);
     }
   };
 

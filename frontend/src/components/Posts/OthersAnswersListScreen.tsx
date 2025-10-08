@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -12,17 +12,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import {
-  collection,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  startAfter,
-  QueryDocumentSnapshot,
-  DocumentData,
-} from 'firebase/firestore';
-import { firestore as db } from '@/src/firebaseConfig';
+import { supabase } from '@/src/supabaseConfig';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import type { RootStackParamList } from '@/src/types/navigation';
 import FullScreenLoader from '@/src/components/common/FullScreenLoader';
@@ -32,8 +22,8 @@ export type Post = {
   id: string;
   question: string;
   username: string;
-  createdAt: { seconds: number } | { toDate: () => Date } | any;
-  likeCount: number;
+  created_at: string;
+  like_count: number;
 };
 
 type Nav = StackNavigationProp<RootStackParamList, 'OthersAnswersList'>;
@@ -47,192 +37,81 @@ export default function OthersAnswersListScreen() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [lastDoc, setLastDoc] =
-    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  // cursorStack[N] is the cursor to startAfter for page N (0-based). cursorStack[0] = null for first page.
-  const [cursorStack, setCursorStack] = useState<
-    (QueryDocumentSnapshot<DocumentData> | null)[]
-  >([null]);
   const [pageIndex, setPageIndex] = useState<number>(0);
-  const [sortBy, setSortBy] = useState<'createdAt' | 'likeCount'>('createdAt');
+  const [sortBy, setSortBy] = useState<'created_at' | 'like_count'>('created_at');
   const [hasNext, setHasNext] = useState<boolean>(true);
   const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
 
-  const formatDate = useCallback((createdAt: Post['createdAt']) => {
+  const formatDate = useCallback((createdAt: string) => {
     try {
       if (!createdAt) return '';
-      if (typeof createdAt?.seconds === 'number') {
-        return new Date(createdAt.seconds * 1000).toLocaleString();
-      }
-      if (typeof createdAt?.toDate === 'function') {
-        return createdAt.toDate().toLocaleString();
-      }
       return new Date(createdAt).toLocaleString();
     } catch {
       return '';
     }
   }, []);
 
-  const baseQuery = useMemo(() => {
-    return query(
-      collection(db, 'posts'),
-      orderBy(sortBy, 'desc'),
-      limit(PAGE_SIZE)
-    );
-  }, [sortBy]);
-
-  const fetchNext = useCallback(async () => {
+  const fetchPosts = useCallback(async (page: number, sort: 'created_at' | 'like_count') => {
     setLoading(true);
     try {
-      // To move to the next page, we fetch pageIndex+1 using startAfter cursorStack[pageIndex+1] (which is last doc of current page)
-      const nextCursor = cursorStack[pageIndex + 1];
-      let q = query(
-        collection(db, 'posts'),
-        orderBy(sortBy, 'desc'),
-        limit(PAGE_SIZE)
-      );
-      if (nextCursor) {
-        q = query(
-          collection(db, 'posts'),
-          orderBy(sortBy, 'desc'),
-          startAfter(nextCursor),
-          limit(PAGE_SIZE)
-        );
-      }
-      const snap = await getDocs(q);
-      const docs = snap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as any),
-      })) as Post[];
-      // If no docs, we are already at the last page. Do not advance; just disable Next.
-      if (docs.length === 0) {
+      const from = page * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+
+      // Fetch posts with pagination
+      const { data, error, count } = await supabase
+        .from('posts')
+        .select('id, question, username, created_at, like_count', { count: 'exact' })
+        .order(sort, { ascending: false })
+        .range(from, to);
+
+      if (error) {
+        console.log('Error fetching posts:', error);
+        setPosts([]);
         setHasNext(false);
         return;
       }
-      setPosts(docs);
-      const newLast = snap.docs[snap.docs.length - 1] ?? null;
-      setCursorStack((prev) => {
-        const copy = [...prev];
-        // Ensure cursorStack[pageIndex + 2] equals newLast (since we just fetched page pageIndex+1)
-        copy[pageIndex + 2] = newLast;
-        return copy;
-      });
-      setLastDoc(newLast);
-      setPageIndex((idx) => idx + 1);
-      // Peek to check if there is at least one more doc after this page to avoid empty-page navigation
-      if (newLast) {
-        const peek = await getDocs(
-          query(
-            collection(db, 'posts'),
-            orderBy(sortBy, 'desc'),
-            startAfter(newLast),
-            limit(1)
-          )
-        );
-        setHasNext(peek.docs.length > 0);
+
+      setPosts(data || []);
+
+      // Check if there are more pages
+      if (count) {
+        const totalPages = Math.ceil(count / PAGE_SIZE);
+        setHasNext(page < totalPages - 1);
       } else {
         setHasNext(false);
       }
+    } catch (error) {
+      console.log('Error fetching posts:', error);
+      setPosts([]);
+      setHasNext(false);
     } finally {
       setLoading(false);
     }
-  }, [cursorStack, pageIndex, sortBy]);
+  }, []);
+
+  const fetchNext = useCallback(async () => {
+    if (!hasNext || loading) return;
+    const nextPage = pageIndex + 1;
+    setPageIndex(nextPage);
+    await fetchPosts(nextPage, sortBy);
+  }, [hasNext, loading, pageIndex, sortBy, fetchPosts]);
 
   const fetchPrev = useCallback(async () => {
-    if (pageIndex <= 0) return; // already at first page
-    setLoading(true);
-    try {
-      // To move to the previous page (pageIndex - 1), fetch using startAfter cursorStack[pageIndex - 1]
-      const backCursor = cursorStack[pageIndex - 1] ?? null;
-      let q = query(
-        collection(db, 'posts'),
-        orderBy(sortBy, 'desc'),
-        limit(PAGE_SIZE)
-      );
-      if (backCursor) {
-        q = query(
-          collection(db, 'posts'),
-          orderBy(sortBy, 'desc'),
-          startAfter(backCursor),
-          limit(PAGE_SIZE)
-        );
-      }
-      const snap = await getDocs(q);
-      const docs = snap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as any),
-      })) as Post[];
-      setPosts(docs);
-      const newLast = snap.docs[snap.docs.length - 1] ?? null;
-      setLastDoc(newLast);
-      setPageIndex((idx) => Math.max(0, idx - 1));
-      // Peek to check if there is at least one more doc after this page
-      if (newLast) {
-        const peek = await getDocs(
-          query(
-            collection(db, 'posts'),
-            orderBy(sortBy, 'desc'),
-            startAfter(newLast),
-            limit(1)
-          )
-        );
-        setHasNext(peek.docs.length > 0);
-      } else {
-        setHasNext(false);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [cursorStack, pageIndex, sortBy]);
+    if (pageIndex <= 0 || loading) return;
+    const prevPage = pageIndex - 1;
+    setPageIndex(prevPage);
+    await fetchPosts(prevPage, sortBy);
+  }, [pageIndex, loading, sortBy, fetchPosts]);
 
+  // Reset and fetch first page when sort changes
   useEffect(() => {
-    // Reset pagination on sort change
-    const init = async () => {
-      setCursorStack([null]);
-      setLastDoc(null);
-      setHasNext(true);
-      setPageIndex(0);
-      // Load first page explicitly (pageIndex 0 uses cursorStack[0] = null)
-      setLoading(true);
-      try {
-        const q = query(
-          collection(db, 'posts'),
-          orderBy(sortBy, 'desc'),
-          limit(PAGE_SIZE)
-        );
-        const snap = await getDocs(q);
-        const docs = snap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as any),
-        })) as Post[];
-        setPosts(docs);
-        const newLast = snap.docs[snap.docs.length - 1] ?? null;
-        setLastDoc(newLast);
-        setCursorStack([null, newLast]);
-        // Peek for hasNext
-        if (newLast) {
-          const peek = await getDocs(
-            query(
-              collection(db, 'posts'),
-              orderBy(sortBy, 'desc'),
-              startAfter(newLast),
-              limit(1)
-            )
-          );
-          setHasNext(peek.docs.length > 0);
-        } else {
-          setHasNext(false);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, [sortBy]);
+    setPageIndex(0);
+    fetchPosts(0, sortBy);
+  }, [sortBy, fetchPosts]);
 
   const renderPost = useCallback(
     ({ item }: { item: Post }) => {
-      const date = formatDate(item.createdAt);
+      const date = formatDate(item.created_at);
       return (
         <TouchableOpacity
           style={[
@@ -271,14 +150,14 @@ export default function OthersAnswersListScreen() {
                   ]}
                   numberOfLines={1}
                 >
-                  {item.likeCount ?? 0}
+                  {item.like_count ?? 0}
                 </Text>
                 <Text
                   style={[
                     styles.heart,
                     {
                       color:
-                        item.likeCount > 0
+                        item.like_count > 0
                           ? '#FF3B30'
                           : !isLight
                           ? '#888'
@@ -286,7 +165,7 @@ export default function OthersAnswersListScreen() {
                     },
                   ]}
                 >
-                  {item.likeCount > 0 ? '♥' : '♡'}
+                  {item.like_count > 0 ? '♥' : '♡'}
                 </Text>
               </View>
             </View>
@@ -319,7 +198,7 @@ export default function OthersAnswersListScreen() {
           onPress={() => setSortMenuOpen(true)}
         >
           <Text style={{ color: !isLight ? '#000' : '#EEE' }}>
-            {sortBy === 'createdAt' ? 'Recency' : 'Likes'}
+            {sortBy === 'created_at' ? 'Recency' : 'Likes'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -348,8 +227,7 @@ export default function OthersAnswersListScreen() {
               style={styles.sortOption}
               onPress={() => {
                 setSortMenuOpen(false);
-                // keep as is if already selected
-                if (sortBy !== 'createdAt') setSortBy('createdAt');
+                if (sortBy !== 'created_at') setSortBy('created_at');
               }}
             >
               <Text
@@ -357,7 +235,7 @@ export default function OthersAnswersListScreen() {
                   styles.sortOptionText,
                   {
                     color: isLight ? '#000' : '#EEE',
-                    fontWeight: sortBy === 'createdAt' ? '700' : '500',
+                    fontWeight: sortBy === 'created_at' ? '700' : '500',
                   },
                 ]}
               >
@@ -369,7 +247,7 @@ export default function OthersAnswersListScreen() {
               style={styles.sortOption}
               onPress={() => {
                 setSortMenuOpen(false);
-                if (sortBy !== 'likeCount') setSortBy('likeCount');
+                if (sortBy !== 'like_count') setSortBy('like_count');
               }}
             >
               <Text
@@ -377,7 +255,7 @@ export default function OthersAnswersListScreen() {
                   styles.sortOptionText,
                   {
                     color: isLight ? '#000' : '#EEE',
-                    fontWeight: sortBy === 'likeCount' ? '700' : '500',
+                    fontWeight: sortBy === 'like_count' ? '700' : '500',
                   },
                 ]}
               >
@@ -396,15 +274,18 @@ export default function OthersAnswersListScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyTitle}>No posts yet</Text>
-            <Text style={styles.emptySubtitle}>
-              Be the first one to share your answer!
-            </Text>
-          </View>
+          !loading ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyTitle}>No posts yet</Text>
+              <Text style={styles.emptySubtitle}>
+                Be the first one to share your answer!
+              </Text>
+            </View>
+          ) : null
         }
       />
-      {/* Full-screen loader overlay for consistency */}
+
+      {/* Full-screen loader overlay */}
       <FullScreenLoader visible={loading} message="Loading posts..." />
 
       {/* Pagination Controls */}
@@ -507,10 +388,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginRight: 4,
   },
-  likeCount: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
   pagination: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -546,7 +423,6 @@ const styles = StyleSheet.create({
     maxWidth: 360,
     borderRadius: 12,
     paddingVertical: 8,
-    // shadow/elevation
     shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowRadius: 10,

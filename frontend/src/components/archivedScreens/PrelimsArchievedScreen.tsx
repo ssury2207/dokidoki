@@ -11,14 +11,7 @@ import PrelimsArchivedQuestionSection from './PrelimsArchievedQuestionSection';
 import ExpectedArchievedPrelimsAnswer from './ExpectedArchievedPrelimsAnswer';
 import FullScreenLoader from '../common/FullScreenLoader';
 import { fetchArchivedPrelimsSubmission } from '@/src/api/fetchArchivedPrelimsSubmission';
-import {
-  getFirestore,
-  doc,
-  updateDoc,
-  runTransaction,
-  serverTimestamp,
-} from 'firebase/firestore';
-import { auth } from '@/src/firebaseConfig';
+import { supabase } from '@/src/supabaseConfig';
 
 type QuestionItem = {
   Question: string;
@@ -126,50 +119,65 @@ export default function PrelimsArchivedScreen() {
     setLoaderVisible(true);
 
     try {
-      const uid = auth.currentUser?.uid;
+      const { data: { user } } = await supabase.auth.getUser();
+      const uid = user?.id;
+
       if (!uid) throw new Error('User not logged in');
 
-      const db = getFirestore();
-      const userRef = doc(db, 'users', uid);
+      // First, fetch current user data to check for existing submission
+      const { data: userData, error: fetchError } = await supabase
+        .from('users')
+        .select('pre_submissions, total_solved')
+        .eq('id', uid)
+        .single();
 
-      await runTransaction(db, async (tx) => {
-        const snap = await tx.get(userRef);
-        if (!snap.exists()) throw new Error('User doc missing');
+      if (fetchError) {
+        throw new Error('Failed to fetch user data');
+      }
 
-        const data = snap.data() as any;
-        const alreadyHasPre = !!data?.submissions?.pre?.[question.date];
-        if (alreadyHasPre)
-          throw new Error('Your submission was already recorded.');
+      // Check if submission already exists for this date
+      if (userData?.pre_submissions?.[question.date]) {
+        throw new Error('Your submission was already recorded.');
+      }
 
-        const submissionPayload = {
-          selected_option: String(selectedIndex),
-          verdict: isCorrect ? 'correct' : 'incorrect',
-          timestamp: serverTimestamp(),
-          question_snapshot: {
-            question_id: question.questionId,
-            Question: question.Question,
-            Answer: question.Answer,
-            Options: question.Options,
-            Table: question.Table ?? [],
-            Explanation: question.Explanation,
-          },
-        };
+      const submissionPayload = {
+        selected_option: String(selectedIndex),
+        verdict: isCorrect ? 'correct' : 'incorrect',
+        timestamp: new Date().toISOString(),
+        question_snapshot: {
+          question_id: question.questionId,
+          Question: question.Question,
+          Answer: question.Answer,
+          Options: question.Options,
+          Table: question.Table ?? [],
+          Explanation: question.Explanation,
+        },
+      };
 
-        const updates: Record<string, any> = {
-          [`submissions.pre.${question.date}`]: submissionPayload,
-          'submissions.total_solved':
-            (data?.submissions?.total_solved || 0) + 1,
-        };
+      // Update the JSONB field with the new submission
+      const updatedPreSubmissions = {
+        ...(userData?.pre_submissions || {}),
+        [question.date]: submissionPayload,
+      };
 
-        tx.update(userRef, updates);
-      });
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({
+          pre_submissions: updatedPreSubmissions,
+          total_solved: (userData?.total_solved || 0) + 1,
+        })
+        .eq('id', uid);
+
+      if (updateError) {
+        throw new Error('Failed to submit answer');
+      }
 
       setSelectedOption(selectedIndex);
       setShowAnswer(true);
       setButtonActive(false);
     } catch (e: any) {
       alert(e?.message || 'Failed to submit');
-      console.error(e?.message);
+      console.log('Submission error:', e?.message);
       setButtonActive(true);
     } finally {
       setLoaderVisible(false);

@@ -11,13 +11,14 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/src/types/navigation';
 
 type renderItemProps = {
-  questionId: string;
+  id?: string;
+  questionId?: string;
   Question: string;
-  Year: number;
-  Paper: string;
-  Marks: number;
+  Year?: number;
+  Paper?: string;
+  Marks?: number;
   date: string;
-  questionData: [] | null;
+  questionData?: [] | null;
 };
 
 type Props = NativeStackScreenProps<
@@ -28,15 +29,15 @@ type Props = NativeStackScreenProps<
 export default function PractisedQuestionsScreen({ route, navigation }: Props) {
   const params = route.params ?? {};
   const data = (params as any).data ?? [];
-  const questionType = (params as any).questionType ?? 'pre';
+  const questionType = (params as any).questionType ?? 'mains';
 
   const theme = useSelector((state: RootState) => state.theme.isLight);
   const renderItem = ({ item }: { item: renderItemProps }) => (
     <QuestionCard
       question={item.Question}
-      year={item.Year}
-      paper={item.Paper}
-      marks={item.Marks}
+      year={item.Year ?? 0}
+      paper={item.Paper ?? null}
+      marks={item.Marks ?? null}
       date={item.date}
       questionData={data}
       questionType={questionType}
@@ -48,7 +49,7 @@ export default function PractisedQuestionsScreen({ route, navigation }: Props) {
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={(item) => item.questionId}
+        keyExtractor={(item, index) => item.questionId || item.id || item.date || `question-${index}`}
         ListHeaderComponent={
           <TitleAndSubtitleCard
             title={'MISSED QUESTIONS'}
