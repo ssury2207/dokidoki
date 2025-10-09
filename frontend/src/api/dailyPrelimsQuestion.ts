@@ -22,16 +22,31 @@ export async function fetchTodaysPrelimsQuestion() {
 
   // Transform Supabase snake_case to PascalCase for component compatibility
   const questionData = data[0];
+
+  // Parse table_name if it's a string (JSON text or Python-style dict)
+  let tableData = questionData.table_name;
+  if (typeof tableData === 'string' && tableData.trim()) {
+    try {
+      // Replace Python-style single quotes with double quotes for valid JSON
+      const jsonString = tableData.replace(/'/g, '"');
+      tableData = JSON.parse(jsonString);
+    } catch (e) {
+      console.log('Failed to parse table_name:', e);
+      tableData = null;
+    }
+  }
+
   return {
     id: questionData.id,
     date: questionData.date,
+    questionId: questionData.question_id,
     Question: questionData.question,
     Chapters: questionData.chapters,
     Answer: questionData.answer,
     Explanation: questionData.explanation,
     Options: questionData.options,
     Section: questionData.section,
-    Table: questionData.table_name,
+    Table: tableData,
     Year: questionData.year?.toString() || '',
   };
 }

@@ -4,7 +4,7 @@ import { supabase } from "../supabaseConfig";
 const ARCHIVE_MAINS_KEY = 'archive_mains_questions';
 const ARCHIVE_PRELIMS_KEY = 'archive_prelims_questions';
 const ARCHIVE_META = 'archive_questions_meta';
-const CACHE_VERSION = '2'; // Increment when data structure changes
+const CACHE_VERSION = '3'; // Increment when data structure changes - v3: Fixed table parsing
 const CACHE_VERSION_KEY = 'archive_cache_version';
 
 export async function getArchiveQuestions() {
@@ -13,7 +13,7 @@ export async function getArchiveQuestions() {
   // Check cache version and clear if outdated
   const currentVersion = await AsyncStorage.getItem(CACHE_VERSION_KEY);
   if (currentVersion !== CACHE_VERSION) {
-    console.log('Cache version mismatch, clearing old cache');
+    console.log(`Cache version mismatch (${currentVersion} !== ${CACHE_VERSION}), clearing old cache`);
     await AsyncStorage.multiRemove([ARCHIVE_MAINS_KEY, ARCHIVE_PRELIMS_KEY, ARCHIVE_META]);
     await AsyncStorage.setItem(CACHE_VERSION_KEY, CACHE_VERSION);
   }
@@ -74,22 +74,34 @@ export async function getArchiveQuestions() {
     Code: item.code,
   }));
 
-  const transformedPrelims = (prelimsResult || []).map(item => ({
-    id: item.id,
-    date: item.date,
-    questionId: item.question_id,
-    Question: item.question,
-    Year: item.year,
-    Chapters: item.chapters,
-    Answer: item.answer,
-    Explanation: item.explanation,
-    Options: item.options,
-    Section: item.section,
-    Table: item.table_name,
-  }));
+  const transformedPrelims = (prelimsResult || []).map(item => {
+    // Parse table_name if it's a string (JSON text or Python-style dict)
+    let tableData = item.table_name;
+    if (typeof tableData === 'string' && tableData.trim()) {
+      try {
+        // Replace Python-style single quotes with double quotes for valid JSON
+        const jsonString = tableData.replace(/'/g, '"');
+        tableData = JSON.parse(jsonString);
+      } catch (e) {
+        console.log('Failed to parse table_name:', e);
+        tableData = null;
+      }
+    }
 
-  console.log('fetchArchiveQuestions - Transformed mains sample:', transformedMains[0]);
-  console.log('fetchArchiveQuestions - Transformed prelims sample:', transformedPrelims[0]);
+    return {
+      id: item.id,
+      date: item.date,
+      questionId: item.question_id,
+      Question: item.question,
+      Year: item.year,
+      Chapters: item.chapters,
+      Answer: item.answer,
+      Explanation: item.explanation,
+      Options: item.options,
+      Section: item.section,
+      Table: tableData,
+    };
+  });
 
   // Save transformed results and update meta with today's lastCheckedDate
   await AsyncStorage.setItem(ARCHIVE_MAINS_KEY, JSON.stringify(transformedMains));

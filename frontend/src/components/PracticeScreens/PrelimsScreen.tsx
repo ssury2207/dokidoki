@@ -20,18 +20,20 @@ import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
 import { setCurrentStreak, setPoints } from '@/store/userProgressSlice';
 import submitData from '@/src/utils/submitPreData';
-import { auth } from '@/src/firebaseConfig';
+import { supabase } from '@/src/supabaseConfig';
 import FullScreenLoader from '../common/FullScreenLoader';
 import { resetSelectedOption } from '@/store/slices/optionSelectorSlice';
 import { checkSubmissions } from '@/src/api/checkTodaysSubmissions';
 
 export default function PrelimsScreen({ navigation }) {
   const [prelimsubmissionData, setPrelimSubmissionData] = useState<{
-    id: string;
+    selected_option: string;
+    verdict: string;
+    timestamp: string;
+    question_snapshot?: any;
   } | null>(null);
-  const [mainssubmissionData, setMainsSubmissionData] = useState<{
-    id: string;
-  } | null>(null);
+  const [mainssubmissionData, setMainsSubmissionData] = useState<any | null>(null);
+  const [uid, setUid] = useState<string | null>(null);
   const theme = useSelector((state: RootState) => state.theme.isLight);
   const [loading, setLoading] = useState(true);
   const [loaderVisible, setLoaderVisible] = useState(false);
@@ -40,7 +42,6 @@ export default function PrelimsScreen({ navigation }) {
   const [verdict, setVerdict] = useState('');
 
   const todays_date = new Date().toLocaleDateString('en-CA');
-  const uid = auth.currentUser?.uid;
 
   const dispatch = useDispatch<AppDispatch>();
   const data = useSelector(selectDailyPrelimsQuestion);
@@ -57,6 +58,16 @@ export default function PrelimsScreen({ navigation }) {
   const selectedOption = useSelector(
     (state: RootState) => state.optionSelector.actionOption
   );
+
+  // Get user ID on mount
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUid(user?.id || null);
+    };
+    fetchUser();
+  }, []);
+
   // guard for submission already exists
   useEffect(() => {
     let cancelled = false;
@@ -92,6 +103,8 @@ export default function PrelimsScreen({ navigation }) {
 
         if (pre_submitted_data) {
           // prior submission exists
+          const submittedVerdict = pre_submitted_data.verdict;
+          setVerdict(submittedVerdict === 'correct' ? 'Correct' : 'InCorrect');
           setButtonActive(false);
           setShowAnswer(true);
         } else {
@@ -121,7 +134,20 @@ export default function PrelimsScreen({ navigation }) {
       cancelled = true;
     };
   }, [uid, todays_date]);
+
+  // Update button active state when option is selected
+  useEffect(() => {
+    if (!showAnswer && selectedOption !== null) {
+      setButtonActive(true);
+    }
+  }, [selectedOption, showAnswer]);
+
   const submitHandler = async () => {
+    if (!uid) {
+      alert('User not logged in');
+      return;
+    }
+
     if (!data) {
       alert('Opps, there seems be an issue at the backend');
       return;
