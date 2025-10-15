@@ -24,6 +24,7 @@ export type Post = {
   username: string;
   created_at: string;
   like_count: number;
+  hidepost: boolean;
 };
 
 type Nav = StackNavigationProp<RootStackParamList, 'OthersAnswersList'>;
@@ -57,10 +58,11 @@ export default function OthersAnswersListScreen() {
       const from = page * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
-      // Fetch posts with pagination
+      // Fetch posts with pagination, excluding hidden posts (hidepost = null or true)
       const { data, error, count } = await supabase
         .from('posts')
-        .select('id, question, username, created_at, like_count', { count: 'exact' })
+        .select('id, question, username, created_at, like_count, hidepost', { count: 'exact' })
+        .eq('hidepost', false) // Only show posts where hidepost is explicitly false
         .order(sort, { ascending: false })
         .range(from, to);
 

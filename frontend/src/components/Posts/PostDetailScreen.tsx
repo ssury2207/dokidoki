@@ -39,6 +39,7 @@ type DetailedPost = {
   year?: string;
   comment_count?: number;
   liked_by?: string[];
+  discussionlocked?: boolean;
 };
 
 type Comment = {
@@ -94,7 +95,7 @@ export default function PostDetailScreen() {
     try {
       const { data, error } = await supabase
         .from("posts")
-        .select("*")
+        .select("*, discussionlocked")
         .eq("id", postId)
         .single();
 
@@ -151,7 +152,7 @@ export default function PostDetailScreen() {
   }, [post, currentUser?.id, postId, likingPost]);
 
   const submitComment = useCallback(async () => {
-    if (!commentText.trim() || !currentUser?.id || submittingComment || !post)
+    if (!commentText.trim() || !currentUser?.id || submittingComment || !post || post.discussionlocked)
       return;
 
     if (commentText.length > MAX_COMMENT_LENGTH) {
@@ -716,76 +717,91 @@ export default function PostDetailScreen() {
               { color: !isLight ? "#000" : "#EEE" },
             ]}
           >
-            Share your review about this answer:
+            {post.discussionlocked ? "Discussion Locked" : "Share your review about this answer:"}
           </Text>
 
-          <View
-            style={[
-              styles.commentInputContainer,
-              { borderColor: !isLight ? "#DDD" : "#666" },
-            ]}
-          >
-            <TextInput
-              style={[
-                styles.commentInput,
-                {
-                  color: !isLight ? "#000" : "#EEE",
-                  textAlignVertical: "top",
-                },
-              ]}
-              placeholder="Write your review about how well this question was answered..."
-              placeholderTextColor={!isLight ? "#999" : "#AAA"}
-              value={commentText}
-              onChangeText={handleCommentTextChange}
-              multiline={true}
-              numberOfLines={4}
-              maxLength={MAX_COMMENT_LENGTH}
-            />
-          </View>
+          {post.discussionlocked ? (
+            <View style={styles.lockedMessageContainer}>
+              <Text
+                style={[
+                  styles.lockedMessage,
+                  { color: !isLight ? "#666" : "#AAA" },
+                ]}
+              >
+                Comments have been disabled for this post.
+              </Text>
+            </View>
+          ) : (
+            <>
+              <View
+                style={[
+                  styles.commentInputContainer,
+                  { borderColor: !isLight ? "#DDD" : "#666" },
+                ]}
+              >
+                <TextInput
+                  style={[
+                    styles.commentInput,
+                    {
+                      color: !isLight ? "#000" : "#EEE",
+                      textAlignVertical: "top",
+                    },
+                  ]}
+                  placeholder="Write your review about how well this question was answered..."
+                  placeholderTextColor={!isLight ? "#999" : "#AAA"}
+                  value={commentText}
+                  onChangeText={handleCommentTextChange}
+                  multiline={true}
+                  numberOfLines={4}
+                  maxLength={MAX_COMMENT_LENGTH}
+                />
+              </View>
 
-          <View style={styles.commentFooter}>
-            <Text
-              style={[
-                styles.characterCounter,
-                {
-                  color:
-                    commentText.length > MAX_COMMENT_LENGTH * 0.9
-                      ? "#FF3B30"
-                      : !isLight
-                      ? "#666"
-                      : "#AAA",
-                },
-              ]}
-            >
-              {commentText.length}/{MAX_COMMENT_LENGTH} characters
-            </Text>
+              <View style={styles.commentFooter}>
+                <Text
+                  style={[
+                    styles.characterCounter,
+                    {
+                      color:
+                        commentText.length > MAX_COMMENT_LENGTH * 0.9
+                          ? "#FF3B30"
+                          : !isLight
+                          ? "#666"
+                          : "#AAA",
+                    },
+                  ]}
+                >
+                  {commentText.length}/{MAX_COMMENT_LENGTH} characters
+                </Text>
 
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                {
-                  backgroundColor:
-                    commentText.trim().length > 0 && !submittingComment
-                      ? "#00ADB5"
-                      : !isLight
-                      ? "#DDD"
-                      : "#555",
-                  opacity:
-                    commentText.trim().length > 0 && !submittingComment
-                      ? 1
-                      : 0.5,
-                },
-              ]}
-              onPress={submitComment}
-              disabled={!commentText.trim() || submittingComment}
-            >
-              {submittingComment ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <Text style={styles.submitButtonText}>Submit Review</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+                <TouchableOpacity
+                  style={[
+                    styles.submitButton,
+                    {
+                      backgroundColor:
+                        commentText.trim().length > 0 && !submittingComment
+                          ? "#00ADB5"
+                          : !isLight
+                          ? "#DDD"
+                          : "#555",
+                      opacity:
+                        commentText.trim().length > 0 && !submittingComment
+                          ? 1
+                          : 0.5,
+                    },
+                  ]}
+                  onPress={submitComment}
+                  disabled={!commentText.trim() || submittingComment}
+                >
+                  {submittingComment ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <Text style={styles.submitButtonText}>Submit Review</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
 
         {/* Comments List */}
@@ -1094,6 +1110,16 @@ const styles = StyleSheet.create({
   noCommentsText: {
     fontSize: 14,
     textAlign: "center",
+  },
+  lockedMessageContainer: {
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    alignItems: "center",
+  },
+  lockedMessage: {
+    fontSize: 14,
+    textAlign: "center",
+    fontStyle: "italic",
   },
   commentItem: {
     borderRadius: 12,
