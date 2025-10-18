@@ -28,6 +28,8 @@ import getDateDiffInDays from "@/src/utils/dateDifference";
 import { reportIssue } from "@/src/utils/MailMe";
 import NormalText from "../atoms/NormalText";
 import OthersAnswersCard from "./Components/OthersAnswersCard";
+import * as Notifications from "expo-notifications";
+import PushPermissionOverlay from "../../pushNotification/PushPermissionOverlay";
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
@@ -42,12 +44,15 @@ type DashboardScreenProps = {
 const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const dispatch = useDispatch<AppDispatch>();
   const theme = useSelector((state: RootState) => state.theme.isLight);
+  const [showPushOverlay, setShowPushOverlay] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         // Get current user from Supabase auth
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
           console.log("❌ [DEBUG] No authenticated user found");
           return;
@@ -55,26 +60,28 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
 
         // Fetch user data from Supabase database
         const { data, error } = await supabase
-          .from('users')
-          .select('username, total_points, current_streak, longest_streak, last_active_date')
-          .eq('id', user.id)
+          .from("users")
+          .select(
+            "username, total_points, current_streak, longest_streak, last_active_date"
+          )
+          .eq("id", user.id)
           .single();
 
         // If user doesn't exist in database (PGRST116 error), create profile
-        if (error && error.code === 'PGRST116') {
+        if (error && error.code === "PGRST116") {
           console.log("⚠️ [DEBUG] User profile NOT found in database");
-          console.log("🔧 [DEBUG] FALLBACK TRIGGERED: Creating profile on first login...");
+          console.log(
+            "🔧 [DEBUG] FALLBACK TRIGGERED: Creating profile on first login..."
+          );
 
           // Extract username from metadata or email
-          const username = user.user_metadata?.username ||
-                          user.email?.split('@')[0] ||
-                          'User';
+          const username =
+            user.user_metadata?.username || user.email?.split("@")[0] || "User";
           const phoneNumber = user.user_metadata?.phone_number || null;
 
           // Create user profile
-          const { error: insertError } = await supabase
-            .from('users')
-            .insert([{
+          const { error: insertError } = await supabase.from("users").insert([
+            {
               id: user.id,
               username: username,
               phone_number: phoneNumber,
@@ -87,7 +94,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
               mains_answer_copies: {},
               total_points: 0,
               points_history: {},
-            }]);
+            },
+          ]);
 
           if (insertError) {
             console.log("❌ [DEBUG] Error creating user profile:", insertError);
@@ -99,7 +107,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           dispatch(setPoints(0));
           dispatch(setCurrentStreak(0));
           dispatch(setLongestStreak());
-          dispatch(setLastActiveDate(''));
+          dispatch(setLastActiveDate(""));
           return;
         }
 
@@ -114,7 +122,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           dispatch(setPoints(data.total_points || 0));
           dispatch(setCurrentStreak(data.current_streak || 0));
           dispatch(setLongestStreak());
-          dispatch(setLastActiveDate(data.last_active_date || ''));
+          dispatch(setLastActiveDate(data.last_active_date || ""));
 
           // Check if streak needs to be reset
           const last_active_date = data.last_active_date;
@@ -127,12 +135,57 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           }
         }
       } catch (error) {
-        console.log("❌ [DEBUG] Error occurred while fetching user data:", error);
+        console.log(
+          "❌ [DEBUG] Error occurred while fetching user data:",
+          error
+        );
       }
     };
 
     fetchUserData();
   }, []); // run only on mount
+
+  useEffect(() => {
+    const checkPushTokenStatus = async () => {
+      try {
+        // Get current user
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Check notification permissions
+        const { status } = await Notifications.getPermissionsAsync();
+
+        if (status === "granted") {
+          // Get device token
+          const tokenResponse = await Notifications.getExpoPushTokenAsync();
+          const currentToken = tokenResponse.data;
+
+          // Check if token exists in database
+          const { data } = await supabase
+            .from("push_tokens")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("token", currentToken);
+
+          // If token doesn't exist, insert it
+          if (!data || data.length === 0) {
+            await supabase
+              .from("push_tokens")
+              .insert([{ user_id: user.id, token: currentToken }]);
+          }
+        } else {
+          // No permissions, show overlay
+          setShowPushOverlay(true);
+        }
+      } catch (error) {
+        console.error("Error checking push token status:", error);
+      }
+    };
+
+    checkPushTokenStatus();
+  }, []);
 
   return (
     <SafeAreaView style={theme ? styles.bodyDark : styles.bodyLight}>
@@ -152,6 +205,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <OthersAnswersCard
           onPress={() => navigation.navigate("OthersAnswersList")}
         />
+        <TouchableOpacity
+          onPress={() => navigation.navigate("PushPermissionOverlay")}
+        >
+          <Text>pushme</Text>
+        </TouchableOpacity>
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with</Text>
           <Image
@@ -168,6 +226,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
       </ScrollView>
+      {showPushOverlay && (
+        <PushPermissionOverlay onClose={() => setShowPushOverlay(false)} />
+      )}
     </SafeAreaView>
   );
 };
