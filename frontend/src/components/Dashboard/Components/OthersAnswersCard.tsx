@@ -1,7 +1,15 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
+import TextLabel from '../../atoms/TextLabel';
+import NormalText from '../../atoms/NormalText';
+import DisclaimerText from '../../atoms/DisclaimerText';
+import SubtleButton from '../../atoms/SubtleButton';
+import Subtitle from '../../atoms/Subtitle';
+import FooterText from '../../atoms/FooterText';
+import CardTitle from '../../atoms/CardTitle';
+import PrimaryButton from '../../atoms/PrimaryButton';
 
 interface OthersAnswersCardProps {
   onPress?: () => void;
@@ -21,24 +29,23 @@ const OthersAnswersCard: React.FC<OthersAnswersCardProps> = ({ onPress }) => {
       ]}
     >
       <View style={styles.sectionFullWidth}>
-        <Text
-          style={[
-            styles.sectionTitle,
-            { color: theme ? '#EEEEEE' : '#000000' },
-          ]}
-        >
-          COMMUNITY ANSWERS
-        </Text>
+        <View style={styles.titleContainer}>
+          <CardTitle text="COMMUNITY POSTS" />
+        </View>
 
-        <TouchableOpacity
-          style={[
-            styles.seeAllButton,
-            { backgroundColor: theme ? '#00ADB5' : '#108174' },
-          ]}
-          onPress={onPress}
-        >
-          <Text style={styles.seeAllButtonText}>VIEW COMMUNITY POSTS</Text>
-        </TouchableOpacity>
+        <View style={styles.contentRow}>
+          <View style={styles.descriptionContainer}>
+            <DisclaimerText text="Learn from others, share your insights, and refine your writing through feedback and collaboration." />
+          </View>
+
+          <View style={styles.buttonContainer}>
+            <PrimaryButton
+              title="Explore"
+              isActive={true}
+              submitHandler={onPress || (() => {})}
+            />
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -50,10 +57,10 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
     width: '100%',
     marginTop: 16,
     marginBottom: 16,
@@ -61,24 +68,17 @@ const styles = StyleSheet.create({
   sectionFullWidth: {
     width: '100%',
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginVertical: 8,
-    textAlign: 'left',
-  },
-  seeAllButton: {
-    backgroundColor: '#00ADB5',
-    padding: 16,
-    justifyContent: 'space-around',
+  contentRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
-    marginTop: 16,
-    width: '100%',
+    justifyContent: 'space-between',
+    gap: 16,
   },
-  seeAllButtonText: {
-    color: '#EEEEEE',
-    fontWeight: 'bold',
+  descriptionContainer: {
+    flex: 1,
+  },
+  buttonContainer: {
+    minWidth: 120,
   },
 });
 

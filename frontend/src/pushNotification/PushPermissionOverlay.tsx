@@ -1,5 +1,4 @@
-import { Modal, View } from "react-native";
-import Title from "../components/atoms/Title";
+import { View, Alert } from "react-native";
 import NormalText from "../components/atoms/NormalText";
 import PrimaryButton from "../components/atoms/PrimaryButton";
 import SecondaryButton from "../components/atoms/SecondaryButton";
@@ -10,106 +9,136 @@ import { StyleSheet } from "react-native";
 import { supabase } from "../supabaseConfig";
 import { useEffect, useState } from "react";
 import * as Notifications from "expo-notifications";
+
 interface PushPermissionOverlayProps {
   onClose?: () => void;
 }
 
+const PROJECT_ID = '9ba5a170-c777-4ade-a551-bb0f536c53b2';
+
 const PushPermissionOverlay = ({ onClose }: PushPermissionOverlayProps) => {
   const navigation = useNavigation();
-  const streak = useSelector(
-    (state: RootState) => state.userProgress.current_streak
-  );
-  const [userID, setUserID] = useState(null);
-
   const theme = useSelector((state: RootState) => state.theme.isLight);
+  const [userID, setUserID] = useState<string | null>(null);
+
   useEffect(() => {
     const getUserID = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      setUserID(user?.id);
+      setUserID(user?.id || null);
     };
     getUserID();
   }, []);
 
-  const getDeviceToken = async () => {
-    try {
-      const { status } = await Notifications.requestPermissionsAsync(); // ✅ Fix typo
-
-      if (status === "granted") {
-        // ✅ Use === instead of ==
-        const tokenResponse = await Notifications.getExpoPushTokenAsync(); // ✅ Fix typo
-        return tokenResponse.data;
-      } else {
-        console.log("Permission denied");
-        return null;
-      }
-    } catch (error) {
-      console.error("Error getting device token:", error);
-      return null;
-    }
-  };
-  const overlayButtonHandler = async () => {
-    if (!userID) {
-      console.log("invalid id");
-      return;
-    }
-
-    const token = await getDeviceToken();
-    if (!token) {
-      console.log("invalid device token");
-      return;
-    }
-
-    const checkTokenExists = async (userID, token) => {
-      const { data } = await supabase
-        .from("push_tokens")
-        .select("*")
-        .eq("user_id", userID)
-        .eq("token", token);
-      return data?.length > 0;
-    };
-    const tokenExistsOnSupabase = await checkTokenExists(userID, token);
-    if (!tokenExistsOnSupabase) {
-      const { error } = await supabase.from("push_tokens").insert([
-        {
-          user_id: userID,
-          token: token,
-        },
-      ]);
-
-      if (error) {
-        console.error("Error saving token:", error);
-      }
-    }
-
+  // Helper to close overlay
+  const closeOverlay = () => {
     if (onClose) {
       onClose();
     } else {
       navigation.goBack();
     }
   };
+
+  // Request permission and get token
+  const getDeviceToken = async (): Promise<string | null> => {
+    try {
+      const { status } = await Notifications.requestPermissionsAsync();
+
+      if (status === "granted") {
+        const tokenResponse = await Notifications.getExpoPushTokenAsync({
+          projectId: PROJECT_ID
+        });
+        return tokenResponse.data;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      return null;
+    }
+  };
+
+  // Main handler when user clicks "Enable Notifications"
+  const handleEnableNotifications = async () => {
+    // Validate user
+    if (!userID) {
+      Alert.alert("Error", "User not authenticated", [
+        { text: "OK", onPress: closeOverlay }
+      ]);
+      return;
+    }
+
+    // Get device token
+    const token = await getDeviceToken();
+
+    if (!token) {
+      // Permission denied or error
+      Alert.alert("Permission Denied", "Notification permission was denied", [
+        { text: "OK", onPress: closeOverlay }
+      ]);
+      return;
+    }
+
+    // Check if token exists in Supabase
+    try {
+      const { data: existingTokens, error: queryError } = await supabase
+        .from("push_tokens")
+        .select("*")
+        .eq("user_id", userID)
+        .eq("token", token);
+
+      if (queryError) {
+        Alert.alert("Error", "Failed to check token in database", [
+          { text: "OK", onPress: closeOverlay }
+        ]);
+        return;
+      }
+
+      if (existingTokens && existingTokens.length > 0) {
+        // Token already exists
+        Alert.alert("", "Notifications are already turned on", [
+          { text: "OK", onPress: closeOverlay }
+        ]);
+      } else {
+        // Token doesn't exist, save it
+        const { error: insertError } = await supabase.from("push_tokens").insert([
+          {
+            user_id: userID,
+            token: token,
+          },
+        ]);
+
+        if (insertError) {
+          Alert.alert("", "Failed to save token to database", [
+            { text: "OK", onPress: closeOverlay }
+          ]);
+        } else {
+          Alert.alert("", "Notifications are enabled", [
+            { text: "OK", onPress: closeOverlay }
+          ]);
+        }
+      }
+    } catch (error) {
+      Alert.alert("Error", "An unexpected error occurred", [
+        { text: "OK", onPress: closeOverlay }
+      ]);
+    }
+  };
+
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.6)",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
+    <View style={styles.overlay}>
       <View
         style={[styles.modal, theme ? styles.modalBGDark : styles.modalBGLight]}
       >
         <NormalText text="Get notified when new questions are available" />
         <PrimaryButton
           isActive={true}
-          submitHandler={overlayButtonHandler}
+          submitHandler={handleEnableNotifications}
           title="Enable Notifications"
         />
         <SecondaryButton
           isActive={true}
-          submitHandler={() => onClose ? onClose() : navigation.goBack()}
+          submitHandler={closeOverlay}
           title="Skip for now"
         />
       </View>
@@ -118,6 +147,16 @@ const PushPermissionOverlay = ({ onClose }: PushPermissionOverlayProps) => {
 };
 
 const styles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   modal: {
     padding: 20,
     borderRadius: 12,
@@ -128,10 +167,6 @@ const styles = StyleSheet.create({
   },
   modalBGDark: {
     backgroundColor: "#222831",
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
   },
 });
 
