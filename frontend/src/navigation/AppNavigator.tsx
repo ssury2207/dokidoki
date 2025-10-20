@@ -16,7 +16,7 @@ import { RootStackParamList } from "@/src/types/navigation";
 import CreatePostScreen from "../components/shareAnswers/CreatePostScreen";
 import OthersAnswersListScreen from "@/src/components/Posts/OthersAnswersListScreen";
 import PostDetailScreen from "@/src/components/Posts/PostDetailScreen";
-
+import PushPermissionOverlay from "../pushNotification/PushPermissionOverlay";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
@@ -94,6 +94,16 @@ export default function AppNavigator() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="PushPermissionOverlay"
+        component={PushPermissionOverlay}
+        options={{
+          presentation: "transparentModal",
+          animation: "fade",
+          headerShown: false,
+        }}
+      />
+
       <Stack.Screen
         name="CreatePostScreen"
         component={CreatePostScreen}

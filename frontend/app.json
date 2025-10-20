@@ -44,6 +44,14 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon-dokidoki.png",
+          "color": "#00ADB5",
+          "sounds": ["./assets/notification.wav"]
+        }
       ]
     ],
     "experiments": {
