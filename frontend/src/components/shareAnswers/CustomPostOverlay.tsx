@@ -1,8 +1,6 @@
-import { View, TextInput, ScrollView } from 'react-native';
-import Title from '../atoms/Title';
+import { View, TextInput, ScrollView, Text } from 'react-native';
 import NormalText from '../atoms/NormalText';
 import PrimaryButton from '../atoms/PrimaryButton';
-import { useNavigation } from '@react-navigation/native';
 import { RootState } from '@/store/store';
 import { useSelector } from 'react-redux';
 import { StyleSheet } from 'react-native';
@@ -17,30 +15,38 @@ import { supabase } from '@/src/supabaseConfig';
 import { Alert } from 'react-native';
 import FullScreenLoader from '../common/FullScreenLoader';
 
-type CreatePostOverlayProps = NativeStackScreenProps<
+type CustomPostOverlayProps = NativeStackScreenProps<
   RootStackParamList,
-  'CreatePostOverlay'
+  'CustomPostOverlay'
 >;
 
-const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
+const CustomPostOverlay = ({ navigation, route }: CustomPostOverlayProps) => {
   const theme = useSelector((state: RootState) => state.theme.isLight);
   const userName = useSelector(
     (state: RootState) => state.userProgress.userName
   );
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [questionDescription, setQuestionDescription] = useState('');
 
   const images = route.params?.images || [];
-  const question = route.params?.question || '';
-  const year = route.params?.year || '';
-  const paper = route.params?.paper || '';
-  const questionId = route.params?.questionId || '';
 
   const overlayButtonHandler = () => {
     navigation.goBack();
   };
 
   const postButtonHandler = async () => {
+    // Validate question description
+    if (!questionDescription.trim()) {
+      Alert.alert('Required', 'Please describe the question you answered');
+      return;
+    }
+
+    if (questionDescription.trim().length < 10) {
+      Alert.alert('Too Short', 'Please provide a more detailed question description (at least 10 characters)');
+      return;
+    }
+
     // Validate images
     if (!images || images.length === 0) {
       Alert.alert('No Images', 'No images found. Please go back and upload images first.');
@@ -68,11 +74,11 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
       const postData = {
         author_id: user.id,
         username: isAnonymous ? 'Anonymous' : userName,
-        question: question,
-        year: year,
-        paper: paper,
-        question_id: questionId,
-        post_type: 'daily_challenge', // Official daily challenge post
+        question: questionDescription.trim(),
+        year: null,
+        paper: null,
+        question_id: null,
+        post_type: 'custom_question', // Custom post type
         is_anonymous: isAnonymous,
         images: images,
         like_count: 0,
@@ -95,36 +101,9 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
         if (error.code === '23505') {
           Alert.alert('Already Posted', 'You have already posted this answer.');
         } else if (error.code === '42703') {
-          // Column not found - graceful fallback
           Alert.alert(
             'Database Update Required',
-            'The app needs a database update. Your post will be created without the post type. Continue?',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                text: 'Continue',
-                onPress: async () => {
-                  // Retry without post_type field
-                  setLoading(true);
-                  const { post_type, ...fallbackData } = postData;
-
-                  const { data: retryData, error: retryError } = await supabase
-                    .from('posts')
-                    .insert([fallbackData])
-                    .select()
-                    .single();
-
-                  setLoading(false);
-
-                  if (retryError || !retryData) {
-                    Alert.alert('Post Failed', 'Unable to create post. Please try again later.');
-                    return;
-                  }
-
-                  navigation.replace('PostDetail', { postId: retryData.id });
-                },
-              },
-            ]
+            'The app needs a database update. Please contact support or try again later.'
           );
         } else if (error.message.includes('permission')) {
           Alert.alert('Permission Denied', 'You do not have permission to create posts.');
@@ -144,7 +123,7 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
 
       setLoading(false);
 
-      // Navigate directly to PostDetail, replacing the current overlay in the stack
+      // Navigate to PostDetail
       navigation.replace('PostDetail', { postId: data.id });
     } catch (error: any) {
       setLoading(false);
@@ -159,13 +138,14 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
   const handleImagePress = (imageUrl: string) => {
     navigation.navigate('FullScreenImageViewer', { imageUrl });
   };
+
   return (
     <View style={styles.overlay}>
       <View
         style={[styles.modal, theme ? styles.modalBGDark : styles.modalBGLight]}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
-          <NormalText text="Share with your peers now!!" />
+          <NormalText text="Share your answer with the community!" />
 
           {images.length > 0 && (
             <FixedImageCarousel
@@ -173,6 +153,27 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
               onImagePress={handleImagePress}
             />
           )}
+
+          <Text style={[
+            styles.label,
+            { color: theme ? '#EEEEEE' : '#50555C' }
+          ]}>
+            Describe the question you answered:
+          </Text>
+          <TextInput
+            style={[
+              styles.inputStyle,
+              theme ? styles.inputColorDark : styles.inputColorLight,
+            ]}
+            placeholder="E.g., Discuss the impact of climate change on agriculture"
+            placeholderTextColor={theme ? '#888' : '#AAA'}
+            value={questionDescription}
+            onChangeText={setQuestionDescription}
+            multiline
+            numberOfLines={3}
+            maxLength={200}
+          />
+          <DisclaimerText text={`${questionDescription.length}/200 characters`} />
 
           <Checkbox
             isChecked={isAnonymous}
@@ -183,7 +184,7 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
 
           <PrimaryButton
             title="Post"
-            isActive={true}
+            isActive={questionDescription.trim().length >= 10}
             submitHandler={postButtonHandler}
           />
           <SecondaryButton
@@ -211,29 +212,33 @@ const styles = StyleSheet.create({
   modalBGDark: {
     backgroundColor: '#222831',
   },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-  },
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 16,
+    marginBottom: 8,
+  },
   inputStyle: {
     borderColor: '#CCCC',
     borderWidth: 1,
     borderRadius: 10,
-    padding: 10,
+    padding: 12,
     marginVertical: 8,
+    minHeight: 80,
+    textAlignVertical: 'top',
   },
   inputColorLight: {
     color: '#50555C',
   },
   inputColorDark: {
-    color: '#CCCC',
+    color: '#EEEEEE',
   },
 });
 
-export default CreatePostOverlay;
+export default CustomPostOverlay;

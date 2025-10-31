@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Image,
-  TouchableOpacity,
   Alert,
 } from "react-native";
 import type { StackNavigationProp } from "@react-navigation/stack";
@@ -30,12 +29,15 @@ import { reportIssue } from "@/src/utils/MailMe";
 import DisclaimerText from "../atoms/DisclaimerText";
 import OthersAnswersCard from "./Components/OthersAnswersCard";
 import NotificationCard from "./Components/NotificationCard";
+import FeedbackCard from "./Components/FeedbackCard";
+import PostYourAnswerCard from "./Components/PostYourAnswerCard";
 import * as Notifications from "expo-notifications";
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
   PractisedQuestions: undefined;
   OthersAnswersList: undefined;
+  CustomAnswerScreen: undefined;
 };
 
 type DashboardScreenProps = {
@@ -231,11 +233,16 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <DashboardHeader />
         <DailyChallengeCard />
         <ProgressCard />
+        <PostYourAnswerCard
+          onPress={() => navigation.navigate("CustomAnswerScreen")}
+        />
         <OthersAnswersCard
           onPress={() => navigation.navigate("OthersAnswersList")}
         />
 
         <NotificationCard onPress={handleStayUpdated} />
+
+        <FeedbackCard onPress={reportIssue} />
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>Made with</Text>
@@ -247,12 +254,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
             by <Text style={styles.footerTeam}>dokidoki</Text> Team
           </Text>
         </View>
-        <TouchableOpacity style={styles.linkContainer} onPress={reportIssue}>
-          <Text style={styles.linkText}>
-            Tap here to report an issue or send feedback
-          </Text>
+        <View style={styles.versionContainer}>
           <DisclaimerText text={"v1.3.0"} />
-        </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -305,17 +309,10 @@ const styles = StyleSheet.create({
     color: "#FF8358",
     fontWeight: "900",
   },
-  linkContainer: {
-    margin: 8,
+  versionContainer: {
     alignItems: "center",
-    marginBottom: 24,
-  },
-  linkText: {
-    color: "#FF6347",
-    borderColor: "#FF6347",
-    borderBottomWidth: 1,
-    fontWeight: "600",
-    fontSize: 8,
+    marginTop: 12,
+    marginBottom: 8,
   },
 });
 

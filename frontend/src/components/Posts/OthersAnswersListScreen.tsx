@@ -25,6 +25,8 @@ export type Post = {
   created_at: string;
   like_count: number;
   hidepost: boolean;
+  post_type?: string;
+  author_id?: string;
 };
 
 type Nav = StackNavigationProp<RootStackParamList, 'OthersAnswersList'>;
@@ -40,8 +42,20 @@ export default function OthersAnswersListScreen() {
   const [loading, setLoading] = useState<boolean>(false);
   const [pageIndex, setPageIndex] = useState<number>(0);
   const [sortBy, setSortBy] = useState<'created_at' | 'like_count'>('created_at');
+  const [filterBy, setFilterBy] = useState<'all' | 'daily_challenge' | 'custom_question' | 'my_posts'>('all');
   const [hasNext, setHasNext] = useState<boolean>(true);
   const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
+  const [filterMenuOpen, setFilterMenuOpen] = useState<boolean>(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Fetch current user ID on mount
+  React.useEffect(() => {
+    const getUserId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getUserId();
+  }, []);
 
   const formatDate = useCallback((createdAt: string) => {
     try {
@@ -52,20 +66,78 @@ export default function OthersAnswersListScreen() {
     }
   }, []);
 
-  const fetchPosts = useCallback(async (page: number, sort: 'created_at' | 'like_count') => {
+  const fetchPosts = useCallback(async (page: number, sort: 'created_at' | 'like_count', filter: 'all' | 'daily_challenge' | 'custom_question' | 'my_posts', userId: string | null) => {
     setLoading(true);
     try {
       const from = page * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
-      // Fetch posts with pagination, excluding hidden posts (hidepost = null or true)
-      const { data, error, count } = await supabase
+      // First, try to fetch with post_type column and author_id
+      let query = supabase
         .from('posts')
-        .select('id, question, username, created_at, like_count, hidepost', { count: 'exact' })
-        .eq('hidepost', false) // Only show posts where hidepost is explicitly false
+        .select('id, question, username, created_at, like_count, hidepost, post_type, author_id', { count: 'exact' })
+        .eq('hidepost', false);
+
+      // Apply filters
+      if (filter === 'my_posts') {
+        // Show only current user's posts (both types)
+        if (userId) {
+          query = query.eq('author_id', userId);
+        } else {
+          // If no userId, return empty (user not logged in)
+          setPosts([]);
+          setHasNext(false);
+          setLoading(false);
+          return;
+        }
+      } else if (filter !== 'all') {
+        // Show specific post_type for all users
+        query = query.eq('post_type', filter);
+      }
+
+      const { data, error, count } = await query
         .order(sort, { ascending: false })
         .range(from, to);
 
+      // Handle column not found error (42703) - graceful fallback
+      if (error && error.code === '42703') {
+        console.log('post_type column does not exist yet. Fetching without it...');
+
+        // Fallback: Fetch without post_type column
+        const fallbackQuery = supabase
+          .from('posts')
+          .select('id, question, username, created_at, like_count, hidepost', { count: 'exact' })
+          .eq('hidepost', false);
+
+        const { data: fallbackData, error: fallbackError, count: fallbackCount } = await fallbackQuery
+          .order(sort, { ascending: false })
+          .range(from, to);
+
+        if (fallbackError) {
+          console.log('Error fetching posts (fallback):', fallbackError);
+          setPosts([]);
+          setHasNext(false);
+          return;
+        }
+
+        // Map data to include default post_type for backward compatibility
+        const mappedData = (fallbackData || []).map(post => ({
+          ...post,
+          post_type: 'daily_challenge', // Default all existing posts to daily_challenge
+        }));
+
+        setPosts(mappedData);
+
+        if (fallbackCount) {
+          const totalPages = Math.ceil(fallbackCount / PAGE_SIZE);
+          setHasNext(page < totalPages - 1);
+        } else {
+          setHasNext(false);
+        }
+        return;
+      }
+
+      // Handle other errors
       if (error) {
         console.log('Error fetching posts:', error);
         setPosts([]);
@@ -83,7 +155,7 @@ export default function OthersAnswersListScreen() {
         setHasNext(false);
       }
     } catch (error) {
-      console.log('Error fetching posts:', error);
+      console.log('Unexpected error fetching posts:', error);
       setPosts([]);
       setHasNext(false);
     } finally {
@@ -95,25 +167,29 @@ export default function OthersAnswersListScreen() {
     if (!hasNext || loading) return;
     const nextPage = pageIndex + 1;
     setPageIndex(nextPage);
-    await fetchPosts(nextPage, sortBy);
-  }, [hasNext, loading, pageIndex, sortBy, fetchPosts]);
+    await fetchPosts(nextPage, sortBy, filterBy, currentUserId);
+  }, [hasNext, loading, pageIndex, sortBy, filterBy, currentUserId, fetchPosts]);
 
   const fetchPrev = useCallback(async () => {
     if (pageIndex <= 0 || loading) return;
     const prevPage = pageIndex - 1;
     setPageIndex(prevPage);
-    await fetchPosts(prevPage, sortBy);
-  }, [pageIndex, loading, sortBy, fetchPosts]);
+    await fetchPosts(prevPage, sortBy, filterBy, currentUserId);
+  }, [pageIndex, loading, sortBy, filterBy, currentUserId, fetchPosts]);
 
-  // Reset and fetch first page when sort changes
+  // Reset and fetch first page when sort or filter changes
   useEffect(() => {
     setPageIndex(0);
-    fetchPosts(0, sortBy);
-  }, [sortBy, fetchPosts]);
+    fetchPosts(0, sortBy, filterBy, currentUserId);
+  }, [sortBy, filterBy, currentUserId, fetchPosts]);
 
   const renderPost = useCallback(
     ({ item }: { item: Post }) => {
       const date = formatDate(item.created_at);
+      const postType = item.post_type || 'daily_challenge'; // Default to daily_challenge for backward compatibility
+      const badgeText = postType === 'custom_question' ? '📝 Custom Question' : '📚 Daily Challenge';
+      const badgeColor = postType === 'custom_question' ? '#FF8358' : '#00ADB5';
+
       return (
         <TouchableOpacity
           style={[
@@ -126,6 +202,11 @@ export default function OthersAnswersListScreen() {
           onPress={() => navigation.navigate('PostDetail', { postId: item.id })}
           activeOpacity={0.8}
         >
+          <View style={styles.badgeContainer}>
+            <View style={[styles.badge, { backgroundColor: badgeColor }]}>
+              <Text style={styles.badgeText}>{badgeText}</Text>
+            </View>
+          </View>
           <Text
             style={[styles.question, { color: !isLight ? '#000' : '#EEE' }]}
             numberOfLines={2}
@@ -185,24 +266,44 @@ export default function OthersAnswersListScreen() {
         { backgroundColor: !isLight ? '#F0F0F0' : '#222831' },
       ]}
     >
-      {/* Header with sort toggle */}
+      {/* Header with filter and sort toggles */}
       <View style={styles.header}>
-        <Text
-          style={[styles.headerLabel, { color: !isLight ? '#000' : '#EEE' }]}
-        >
-          Sort by:
-        </Text>
-        <TouchableOpacity
-          style={[
-            styles.dropdown,
-            { backgroundColor: !isLight ? '#FFF' : '#393E46' },
-          ]}
-          onPress={() => setSortMenuOpen(true)}
-        >
-          <Text style={{ color: !isLight ? '#000' : '#EEE' }}>
-            {sortBy === 'created_at' ? 'Recency' : 'Likes'}
+        <View style={styles.headerRow}>
+          <Text
+            style={[styles.headerLabel, { color: !isLight ? '#000' : '#EEE' }]}
+          >
+            Show:
           </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.dropdown,
+              { backgroundColor: !isLight ? '#FFF' : '#393E46' },
+            ]}
+            onPress={() => setFilterMenuOpen(true)}
+          >
+            <Text style={{ color: !isLight ? '#000' : '#EEE' }}>
+              {filterBy === 'all' ? 'All' : filterBy === 'daily_challenge' ? 'Daily Challenge' : filterBy === 'custom_question' ? 'Custom Question' : 'My Posts'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.headerRow}>
+          <Text
+            style={[styles.headerLabel, { color: !isLight ? '#000' : '#EEE' }]}
+          >
+            Sort:
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.dropdown,
+              { backgroundColor: !isLight ? '#FFF' : '#393E46' },
+            ]}
+            onPress={() => setSortMenuOpen(true)}
+          >
+            <Text style={{ color: !isLight ? '#000' : '#EEE' }}>
+              {sortBy === 'created_at' ? 'Recency' : 'Likes'}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Sort dropdown modal */}
@@ -262,6 +363,108 @@ export default function OthersAnswersListScreen() {
                 ]}
               >
                 Likes
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Filter dropdown modal */}
+      <Modal
+        visible={filterMenuOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setFilterMenuOpen(false)}
+      >
+        <TouchableOpacity
+          style={styles.sortOverlay}
+          activeOpacity={1}
+          onPress={() => setFilterMenuOpen(false)}
+        >
+          <View
+            style={[
+              styles.sortCard,
+              { backgroundColor: isLight ? '#FFFFFF' : '#2C2C2C' },
+            ]}
+            onStartShouldSetResponder={() => true}
+          >
+            <TouchableOpacity
+              style={styles.sortOption}
+              onPress={() => {
+                setFilterMenuOpen(false);
+                if (filterBy !== 'all') setFilterBy('all');
+              }}
+            >
+              <Text
+                style={[
+                  styles.sortOptionText,
+                  {
+                    color: isLight ? '#000' : '#EEE',
+                    fontWeight: filterBy === 'all' ? '700' : '500',
+                  },
+                ]}
+              >
+                All
+              </Text>
+            </TouchableOpacity>
+            <View style={styles.sortDivider} />
+            <TouchableOpacity
+              style={styles.sortOption}
+              onPress={() => {
+                setFilterMenuOpen(false);
+                if (filterBy !== 'daily_challenge') setFilterBy('daily_challenge');
+              }}
+            >
+              <Text
+                style={[
+                  styles.sortOptionText,
+                  {
+                    color: isLight ? '#000' : '#EEE',
+                    fontWeight: filterBy === 'daily_challenge' ? '700' : '500',
+                  },
+                ]}
+              >
+                📚 Daily Challenge
+              </Text>
+            </TouchableOpacity>
+            <View style={styles.sortDivider} />
+            <TouchableOpacity
+              style={styles.sortOption}
+              onPress={() => {
+                setFilterMenuOpen(false);
+                if (filterBy !== 'custom_question') setFilterBy('custom_question');
+              }}
+            >
+              <Text
+                style={[
+                  styles.sortOptionText,
+                  {
+                    color: isLight ? '#000' : '#EEE',
+                    fontWeight: filterBy === 'custom_question' ? '700' : '500',
+                  },
+                ]}
+              >
+                📝 Custom Question
+              </Text>
+            </TouchableOpacity>
+            <View style={styles.sortDivider} />
+            <TouchableOpacity
+              style={styles.sortOption}
+              onPress={() => {
+                setFilterMenuOpen(false);
+                if (filterBy !== 'my_posts') setFilterBy('my_posts');
+              }}
+            >
+              <Text
+                style={[
+                  styles.sortOptionText,
+                  {
+                    color: isLight ? '#000' : '#EEE',
+                    fontWeight: filterBy === 'my_posts' ? '700' : '500',
+                  },
+                ]}
+              >
+                👤 My Posts
               </Text>
             </TouchableOpacity>
           </View>
@@ -329,10 +532,15 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 12,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   headerLabel: {
-    fontSize: 16,
+    fontSize: 14,
     marginRight: 8,
     fontWeight: 'bold',
   },
@@ -357,6 +565,20 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 4,
+  },
+  badgeContainer: {
+    marginBottom: 8,
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
   },
   question: {
     fontSize: 15,

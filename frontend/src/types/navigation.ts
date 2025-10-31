@@ -40,4 +40,12 @@ export type RootStackParamList = {
     paper?: string;
     questionId?: string;
   };
+  CustomAnswerScreen: undefined;
+  CustomVerdictOverlay: {
+    uid: string;
+    uploadCopies: { id: number; uri: string }[];
+  };
+  CustomPostOverlay: {
+    images?: string[];
+  };
 };
