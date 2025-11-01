@@ -1,8 +1,8 @@
 import { View, TextInput, ScrollView, Text } from 'react-native';
 import NormalText from '../atoms/NormalText';
 import PrimaryButton from '../atoms/PrimaryButton';
-import { RootState } from '@/store/store';
-import { useSelector } from 'react-redux';
+import { RootState, AppDispatch } from '@/store/store';
+import { useSelector, useDispatch } from 'react-redux';
 import { StyleSheet } from 'react-native';
 import SecondaryButton from '../atoms/SecondaryButton';
 import FixedImageCarousel from '../common/FixedImageCarousel';
@@ -14,6 +14,9 @@ import { useState } from 'react';
 import { supabase } from '@/src/supabaseConfig';
 import { Alert } from 'react-native';
 import FullScreenLoader from '../common/FullScreenLoader';
+import { uploadImageToCloudinary } from '@/src/api/uploadImageToCloudinary';
+import { setCurrentStreak, setPoints, setLastActiveDate } from '@/store/userProgressSlice';
+import Title from '../atoms/Title';
 
 type CustomPostOverlayProps = NativeStackScreenProps<
   RootStackParamList,
@@ -25,11 +28,18 @@ const CustomPostOverlay = ({ navigation, route }: CustomPostOverlayProps) => {
   const userName = useSelector(
     (state: RootState) => state.userProgress.userName
   );
+  const points = useSelector((state: RootState) => state.userProgress.totalPoints);
+  const curr_streak = useSelector((state: RootState) => state.userProgress.current_streak);
+  const longest_streak = useSelector((state: RootState) => state.userProgress.longest_streak);
+  const last_active_date = useSelector((state: RootState) => state.userProgress.last_active_date);
+
+  const dispatch = useDispatch<AppDispatch>();
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
   const [questionDescription, setQuestionDescription] = useState('');
 
-  const images = route.params?.images || [];
+  const { uid, uploadCopies } = route.params;
+  const today = new Date().toISOString().substring(0, 10);
 
   const overlayButtonHandler = () => {
     navigation.goBack();
@@ -48,7 +58,7 @@ const CustomPostOverlay = ({ navigation, route }: CustomPostOverlayProps) => {
     }
 
     // Validate images
-    if (!images || images.length === 0) {
+    if (!uploadCopies || uploadCopies.length === 0) {
       Alert.alert('No Images', 'No images found. Please go back and upload images first.');
       return;
     }
@@ -56,23 +66,71 @@ const CustomPostOverlay = ({ navigation, route }: CustomPostOverlayProps) => {
     setLoading(true);
 
     try {
-      // Validate user authentication
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
+      // Step 1: Upload images to Cloudinary
+      let downloadURLs: string[] = [];
+      try {
+        downloadURLs = await Promise.all(
+          uploadCopies.map((img: { id: number; uri: string }) => uploadImageToCloudinary(img.uri))
+        );
+      } catch (uploadError: any) {
+        console.error("Image upload error:", uploadError);
         setLoading(false);
-        Alert.alert('Authentication Error', 'You must be logged in to create a post. Please log in again.');
+        Alert.alert("Failed to upload images", "Please check your internet connection and try again.");
         return;
       }
 
-      // Validate username
+      // Step 2: Check if user has already been active today
+      const already_active_today = last_active_date === today;
+
+      // Step 3: Prepare points and streak updates
+      const points_awarded = 5;
+      const updated_points = points + points_awarded;
+      // Only increment streak if NOT already active today
+      const updated_streak = already_active_today ? curr_streak : curr_streak + 1;
+
+      // Step 4: Update user stats in database
+      try {
+        const { error: userUpdateError } = await supabase
+          .from("users")
+          .update({
+            total_points: updated_points,
+            current_streak: updated_streak,
+            longest_streak: Math.max(longest_streak, updated_streak),
+            last_active_date: today,
+            points_history: supabase.rpc("jsonb_set_custom", {
+              data: {},
+              key: today,
+              value: points_awarded,
+            }),
+          })
+          .eq("id", uid);
+
+        if (userUpdateError) {
+          console.error("User stats update error:", userUpdateError);
+          // Still allow post creation even if stats update fails
+        }
+      } catch (dbError: any) {
+        console.error("Database error:", dbError);
+        // Continue anyway
+      }
+
+      // Step 5: Update Redux state
+      if (!already_active_today) {
+        dispatch(setCurrentStreak(updated_streak));
+      }
+      dispatch(setPoints(updated_points));
+      dispatch(setLastActiveDate(today));
+
+      // Step 6: Validate username
       if (!userName) {
         setLoading(false);
         Alert.alert('Error', 'Username not found. Please try logging in again.');
         return;
       }
 
+      // Step 7: Create post
       const postData = {
-        author_id: user.id,
+        author_id: uid,
         username: isAnonymous ? 'Anonymous' : userName,
         question: questionDescription.trim(),
         year: null,
@@ -80,13 +138,12 @@ const CustomPostOverlay = ({ navigation, route }: CustomPostOverlayProps) => {
         question_id: null,
         post_type: 'custom_question', // Custom post type
         is_anonymous: isAnonymous,
-        images: images,
+        images: downloadURLs,
         like_count: 0,
         comment_count: 0,
         liked_by: [],
       };
 
-      // Add post to Supabase
       const { data, error } = await supabase
         .from('posts')
         .insert([postData])
@@ -123,8 +180,19 @@ const CustomPostOverlay = ({ navigation, route }: CustomPostOverlayProps) => {
 
       setLoading(false);
 
-      // Navigate to PostDetail
-      navigation.replace('PostDetail', { postId: data.id });
+      // Show message if already active today
+      if (already_active_today) {
+        Alert.alert("Great job!", "You've already earned your streak for today. This submission will earn you points but won't affect your streak.");
+      }
+
+      // Navigate to PostDetail, replacing all previous screens
+      navigation.reset({
+        index: 1,
+        routes: [
+          { name: 'Dashboard' },
+          { name: 'PostDetail', params: { postId: data.id } }
+        ],
+      });
     } catch (error: any) {
       setLoading(false);
       console.error('Unexpected post creation error:', error);
@@ -145,11 +213,12 @@ const CustomPostOverlay = ({ navigation, route }: CustomPostOverlayProps) => {
         style={[styles.modal, theme ? styles.modalBGDark : styles.modalBGLight]}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
+          <Title title="Create Your Post" />
           <NormalText text="Share your answer with the community!" />
 
-          {images.length > 0 && (
+          {uploadCopies.length > 0 && (
             <FixedImageCarousel
-              images={images}
+              images={uploadCopies.map(img => img.uri)}
               onImagePress={handleImagePress}
             />
           )}

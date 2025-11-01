@@ -46,6 +46,7 @@ export type RootStackParamList = {
     uploadCopies: { id: number; uri: string }[];
   };
   CustomPostOverlay: {
-    images?: string[];
+    uid: string;
+    uploadCopies: { id: number; uri: string }[];
   };
 };

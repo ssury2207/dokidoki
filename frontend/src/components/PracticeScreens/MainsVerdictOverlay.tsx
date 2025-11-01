@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState, AppDispatch } from "@/store/store";
-import { setCurrentStreak, setPoints } from "@/store/userProgressSlice";
+import { setCurrentStreak, setPoints, setLastActiveDate } from "@/store/userProgressSlice";
 import Title from "../atoms/Title";
 import NormalText from "../atoms/NormalText";
 import PrimaryButton from "../atoms/PrimaryButton";
@@ -13,6 +13,7 @@ import SecondaryButton from "../atoms/SecondaryButton";
 import FullScreenLoader from "../common/FullScreenLoader";
 import { uploadImageToCloudinary } from "@/src/api/uploadImageToCloudinary";
 import submitMainsData from "@/src/utils/submitMainsData";
+import { Alert } from "react-native";
 
 type Props = {
   verdict: boolean;
@@ -38,6 +39,9 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
   const longest_streak = useSelector(
     (state: RootState) => state.userProgress.longest_streak
   );
+  const last_active_date = useSelector(
+    (state: RootState) => state.userProgress.last_active_date
+  );
   const overlaySubmitButtonHandler = async () => {
     if (!uid) return;
 
@@ -51,13 +55,15 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
 
       // Step 1: Upload answer copies
       const downloadURLs = await Promise.all(
-        uploadCopies.map((img) => uploadImageToCloudinary(img.uri))
+        uploadCopies.map((img: { id: number; uri: string }) => uploadImageToCloudinary(img.uri))
       );
 
       // Step 2: Prepare points and streak updates
       const points_awarded = 5;
       const updated_points = points + points_awarded;
-      const updated_streak = prelims_solved ? curr_streak : curr_streak + 1;
+      // Check if user was already active today (via prelims OR custom post)
+      const already_active_today = prelims_solved || (last_active_date === today);
+      const updated_streak = already_active_today ? curr_streak : curr_streak + 1;
 
       const isCurrentDay = date === new Date().toISOString().substring(0, 10);
 
@@ -76,10 +82,19 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
       });
 
       // Step 4: Update UI and local state
-      if (!prelims_solved && isCurrentDay) {
+      if (!already_active_today && isCurrentDay) {
         dispatch(setCurrentStreak(updated_streak));
       }
       isCurrentDay && dispatch(setPoints(updated_points));
+      isCurrentDay && dispatch(setLastActiveDate(today));
+
+      // Show notification if user was already active today
+      if (already_active_today && isCurrentDay) {
+        Alert.alert(
+          "Great job!",
+          "You've already earned your streak for today. This submission will earn you points but won't affect your streak."
+        );
+      }
       
       // Navigate to CreatePostOverlay after successful submission
       // Pop only this overlay (MainsVerdictOverlay), keeping MainsScreen in the stack

@@ -20,6 +20,7 @@ import { RootStackParamList } from "@/src/types/navigation";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import CardTitle from "../atoms/CardTitle";
 import DisclaimerText from "../atoms/DisclaimerText";
+import { useFocusEffect } from "@react-navigation/native";
 
 type CustomAnswerScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -43,13 +44,23 @@ const CustomAnswerScreen = ({ navigation }: CustomAnswerScreenProps) => {
     getUserId();
   }, []);
 
+  // Clear upload state when screen comes into focus (after returning from post creation)
+  useFocusEffect(
+    React.useCallback(() => {
+      // Reset the upload state to allow creating a new post
+      setUploadCopies([]);
+    }, [])
+  );
+
   const submitHandler = async () => {
     if (!uid) {
       alert("Please login first");
       return;
     }
 
-    navigation.navigate("CustomVerdictOverlay", {
+    // Directly navigate to CustomPostOverlay (skipping CustomVerdictOverlay)
+    // Images will be uploaded when creating the post
+    navigation.navigate("CustomPostOverlay", {
       uid,
       uploadCopies,
     });
