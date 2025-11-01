@@ -32,6 +32,8 @@ import NotificationCard from "./Components/NotificationCard";
 import FeedbackCard from "./Components/FeedbackCard";
 import PostYourAnswerCard from "./Components/PostYourAnswerCard";
 import * as Notifications from "expo-notifications";
+import appConfig from "../../../app.json";
+
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
@@ -255,7 +257,7 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
           </Text>
         </View>
         <View style={styles.versionContainer}>
-          <DisclaimerText text={"v1.3.0"} />
+          <DisclaimerText text={`v${appConfig.expo.version}`} />
         </View>
       </ScrollView>
     </SafeAreaView>
