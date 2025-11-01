@@ -41,22 +41,30 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
   };
 
   const postButtonHandler = async () => {
-    // Validate user authentication
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      Alert.alert('Error', 'You must be logged in to create a post');
-      return;
-    }
-
-    // Validate username
-    if (!userName) {
-      Alert.alert('Error', 'Username not found. Please try logging in again.');
+    // Validate images
+    if (!images || images.length === 0) {
+      Alert.alert('No Images', 'No images found. Please go back and upload images first.');
       return;
     }
 
     setLoading(true);
 
     try {
+      // Validate user authentication
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        setLoading(false);
+        Alert.alert('Authentication Error', 'You must be logged in to create a post. Please log in again.');
+        return;
+      }
+
+      // Validate username
+      if (!userName) {
+        setLoading(false);
+        Alert.alert('Error', 'Username not found. Please try logging in again.');
+        return;
+      }
+
       const postData = {
         author_id: user.id,
         username: isAnonymous ? 'Anonymous' : userName,
@@ -64,6 +72,7 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
         year: year,
         paper: paper,
         question_id: questionId,
+        post_type: 'daily_challenge', // Official daily challenge post
         is_anonymous: isAnonymous,
         images: images,
         like_count: 0,
@@ -79,39 +88,71 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
         .single();
 
       if (error) {
-        // Handle specific errors gracefully
         setLoading(false);
+        console.error('Post creation error:', error);
 
+        // Handle specific error codes
         if (error.code === '23505') {
-          // Duplicate post error
           Alert.alert('Already Posted', 'You have already posted this answer.');
+        } else if (error.code === '42703') {
+          // Column not found - graceful fallback
+          Alert.alert(
+            'Database Update Required',
+            'The app needs a database update. Your post will be created without the post type. Continue?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Continue',
+                onPress: async () => {
+                  // Retry without post_type field
+                  setLoading(true);
+                  const { post_type, ...fallbackData } = postData;
+
+                  const { data: retryData, error: retryError } = await supabase
+                    .from('posts')
+                    .insert([fallbackData])
+                    .select()
+                    .single();
+
+                  setLoading(false);
+
+                  if (retryError || !retryData) {
+                    Alert.alert('Post Failed', 'Unable to create post. Please try again later.');
+                    return;
+                  }
+
+                  navigation.replace('PostDetail', { postId: retryData.id });
+                },
+              },
+            ]
+          );
         } else if (error.message.includes('permission')) {
           Alert.alert('Permission Denied', 'You do not have permission to create posts.');
+        } else if (error.message.includes('network') || error.message.includes('connection')) {
+          Alert.alert('Connection Error', 'Please check your internet connection and try again.');
         } else {
-          Alert.alert('Post Failed', 'Unable to create post. Please try again.');
+          Alert.alert('Post Failed', `Unable to create post: ${error.message || 'Unknown error'}`);
         }
-        // Silent logging for debugging
-        // console.log('Post creation error:', error);
         return;
       }
 
       if (!data) {
         setLoading(false);
-        Alert.alert('Post Failed', 'Unable to create post. Please try again.');
+        Alert.alert('Post Failed', 'Unable to create post. No data returned. Please try again.');
         return;
       }
 
       setLoading(false);
 
       // Navigate directly to PostDetail, replacing the current overlay in the stack
-      // This prevents the user from going back to a stale CreatePostOverlay
       navigation.replace('PostDetail', { postId: data.id });
     } catch (error: any) {
       setLoading(false);
-      // Generic fallback for unexpected errors
-      Alert.alert('Unexpected Error', 'Something went wrong. Please try again.');
-      // Silent logging for debugging
-      // console.log('Unexpected post creation error:', error);
+      console.error('Unexpected post creation error:', error);
+      Alert.alert(
+        'Unexpected Error',
+        `Something went wrong: ${error?.message || 'Unknown error'}. Please try again.`
+      );
     }
   };
 

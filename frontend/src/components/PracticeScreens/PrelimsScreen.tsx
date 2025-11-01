@@ -18,7 +18,7 @@ import { useSelector } from 'react-redux';
 import { selectDailyPrelimsQuestion } from '@/store/slices/prelimsQuestionSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '@/store/store';
-import { setCurrentStreak, setPoints } from '@/store/userProgressSlice';
+import { setCurrentStreak, setPoints, setLastActiveDate } from '@/store/userProgressSlice';
 import submitData from '@/src/utils/submitPreData';
 import { supabase } from '@/src/supabaseConfig';
 import FullScreenLoader from '../common/FullScreenLoader';
@@ -54,6 +54,9 @@ export default function PrelimsScreen({ navigation }) {
   );
   const longest_streak = useSelector(
     (state: RootState) => state.userProgress.longest_streak
+  );
+  const last_active_date = useSelector(
+    (state: RootState) => state.userProgress.last_active_date
   );
   const selectedOption = useSelector(
     (state: RootState) => state.optionSelector.actionOption
@@ -176,6 +179,9 @@ export default function PrelimsScreen({ navigation }) {
     const prelims_solved = prelimsubmissionData != null; // placeholder
     const mains_solved = mainssubmissionData != null; // placeholder
 
+    // Check if user was already active today (via mains OR custom post)
+    const already_active_today = mains_solved || (last_active_date === todays_date);
+
     // Disable button + show loader while submitting
     setButtonActive(false);
     setLoaderVisible(true);
@@ -195,7 +201,7 @@ export default function PrelimsScreen({ navigation }) {
         verdict: isCorrect,
         total_points: isCorrect ? points + 2 : points,
         points_awarded: isCorrect ? 2 : 0,
-        current_streak: !mains_solved ? curr_streak + 1 : curr_streak,
+        current_streak: !already_active_today ? curr_streak + 1 : curr_streak,
         longest_streak,
         question_date: data.date,
         questionId: data.questionId,
@@ -208,11 +214,18 @@ export default function PrelimsScreen({ navigation }) {
 
       await submitData(payload);
 
-      if (!mains_solved) {
+      if (!already_active_today) {
         dispatch(setCurrentStreak(curr_streak + 1));
       }
 
       dispatch(setPoints(isCorrect ? points + 2 : points));
+      dispatch(setLastActiveDate(todays_date));
+
+      // Show notification if user was already active today
+      if (already_active_today) {
+        alert("Great job! You've already earned your streak for today. This submission will earn you points but won't affect your streak.");
+      }
+
       setShowAnswer(true);
       setButtonActive(false);
       navigation.navigate('Overlay', isCorrect);
