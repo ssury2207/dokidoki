@@ -33,13 +33,14 @@ import FeedbackCard from "./Components/FeedbackCard";
 import PostYourAnswerCard from "./Components/PostYourAnswerCard";
 import * as Notifications from "expo-notifications";
 import appConfig from "../../../app.json";
-
+import PrelimsPYQsQuestionCard from "./Components/PrelimsQuestionCard";
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
   PractisedQuestions: undefined;
   OthersAnswersList: undefined;
   CustomAnswerScreen: undefined;
+  PrelimsPyqScreen: undefined;
 };
 
 type DashboardScreenProps = {
@@ -240,6 +241,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         />
         <OthersAnswersCard
           onPress={() => navigation.navigate("OthersAnswersList")}
+        />
+        <PrelimsPYQsQuestionCard
+          onPress={() => navigation.navigate("PrelimsPyqScreen")}
         />
 
         <NotificationCard onPress={handleStayUpdated} />
