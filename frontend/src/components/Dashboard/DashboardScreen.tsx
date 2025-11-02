@@ -31,11 +31,13 @@ import DisclaimerText from "../atoms/DisclaimerText";
 import OthersAnswersCard from "./Components/OthersAnswersCard";
 import NotificationCard from "./Components/NotificationCard";
 import * as Notifications from "expo-notifications";
+import PrelimsPYQsQuestionCard from "./Components/PrelimsQuestionCard";
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
   PractisedQuestions: undefined;
   OthersAnswersList: undefined;
+  PrelimsPyqScreen: undefined;
 };
 
 type DashboardScreenProps = {
@@ -233,6 +235,9 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <ProgressCard />
         <OthersAnswersCard
           onPress={() => navigation.navigate("OthersAnswersList")}
+        />
+        <PrelimsPYQsQuestionCard
+          onPress={() => navigation.navigate("PrelimsPyqScreen")}
         />
 
         <NotificationCard onPress={handleStayUpdated} />

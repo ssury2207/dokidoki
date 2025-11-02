@@ -27,6 +27,18 @@ export type RootStackParamList = {
     question: any;
   };
   OthersAnswersList: undefined;
+  PrelimsPyqScreen: undefined;
+  PrelimsPyqPractice: {
+    question: {
+      id: string;
+      question_and_year: string;
+      year: number;
+      options: any;
+      table_name: string;
+      answer: string;
+      explanation: string;
+    };
+  };
   PostDetail: {
     postId: string;
   };

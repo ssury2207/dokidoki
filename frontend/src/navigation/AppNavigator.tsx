@@ -17,6 +17,8 @@ import CreatePostScreen from "../components/shareAnswers/CreatePostScreen";
 import OthersAnswersListScreen from "@/src/components/Posts/OthersAnswersListScreen";
 import PostDetailScreen from "@/src/components/Posts/PostDetailScreen";
 import PushPermissionOverlay from "../pushNotification/PushPermissionOverlay";
+import PrelimsPyqScreen from "@/src/components/PrelimsPYQs/PrelimsPYQScreen";
+import PrelimsPyqPractice from "../components/PrelimsPYQs/PrelimsPyqPractice";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
@@ -55,6 +57,8 @@ export default function AppNavigator() {
         name="OthersAnswersList"
         component={OthersAnswersListScreen}
       />
+      <Stack.Screen name="PrelimsPyqScreen" component={PrelimsPyqScreen} />
+      <Stack.Screen name="PrelimsPyqPractice" component={PrelimsPyqPractice} />
       <Stack.Screen
         name="PostDetail"
         component={PostDetailScreen}

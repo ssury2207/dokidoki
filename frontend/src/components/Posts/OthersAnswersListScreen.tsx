@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,15 +7,15 @@ import {
   FlatList,
   Dimensions,
   Modal,
-} from 'react-native';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
-import { useNavigation } from '@react-navigation/native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { supabase } from '@/src/supabaseConfig';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import type { RootStackParamList } from '@/src/types/navigation';
-import FullScreenLoader from '@/src/components/common/FullScreenLoader';
+} from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { supabase } from "@/src/supabaseConfig";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import type { RootStackParamList } from "@/src/types/navigation";
+import FullScreenLoader from "@/src/components/common/FullScreenLoader";
 
 // Types
 export type Post = {
@@ -27,7 +27,7 @@ export type Post = {
   hidepost: boolean;
 };
 
-type Nav = StackNavigationProp<RootStackParamList, 'OthersAnswersList'>;
+type Nav = StackNavigationProp<RootStackParamList, "OthersAnswersList">;
 
 const PAGE_SIZE = 10;
 
@@ -39,57 +39,64 @@ export default function OthersAnswersListScreen() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [pageIndex, setPageIndex] = useState<number>(0);
-  const [sortBy, setSortBy] = useState<'created_at' | 'like_count'>('created_at');
+  const [sortBy, setSortBy] = useState<"created_at" | "like_count">(
+    "created_at"
+  );
   const [hasNext, setHasNext] = useState<boolean>(true);
   const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
 
   const formatDate = useCallback((createdAt: string) => {
     try {
-      if (!createdAt) return '';
+      if (!createdAt) return "";
       return new Date(createdAt).toLocaleString();
     } catch {
-      return '';
+      return "";
     }
   }, []);
 
-  const fetchPosts = useCallback(async (page: number, sort: 'created_at' | 'like_count') => {
-    setLoading(true);
-    try {
-      const from = page * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
+  const fetchPosts = useCallback(
+    async (page: number, sort: "created_at" | "like_count") => {
+      setLoading(true);
+      try {
+        const from = page * PAGE_SIZE;
+        const to = from + PAGE_SIZE - 1;
 
-      // Fetch posts with pagination, excluding hidden posts (hidepost = null or true)
-      const { data, error, count } = await supabase
-        .from('posts')
-        .select('id, question, username, created_at, like_count, hidepost', { count: 'exact' })
-        .eq('hidepost', false) // Only show posts where hidepost is explicitly false
-        .order(sort, { ascending: false })
-        .range(from, to);
+        // Fetch posts with pagination, excluding hidden posts (hidepost = null or true)
+        const { data, error, count } = await supabase
+          .from("posts")
+          .select("id, question, username, created_at, like_count, hidepost", {
+            count: "exact",
+          })
+          .eq("hidepost", false) // Only show posts where hidepost is explicitly false
+          .order(sort, { ascending: false })
+          .range(from, to);
 
-      if (error) {
-        console.log('Error fetching posts:', error);
+        if (error) {
+          console.log("Error fetching posts:", error);
+          setPosts([]);
+          setHasNext(false);
+          return;
+        }
+
+        setPosts(data || []);
+
+        // Check if there are more pages
+        if (count) {
+          const totalPages = Math.ceil(count / PAGE_SIZE);
+          setHasNext(page < totalPages - 1);
+        } else {
+          setHasNext(false);
+        }
+      } catch (error) {
+        console.log("Error fetching posts:", error);
         setPosts([]);
         setHasNext(false);
-        return;
+      } finally {
+        setLoading(false);
       }
-
-      setPosts(data || []);
-
-      // Check if there are more pages
-      if (count) {
-        const totalPages = Math.ceil(count / PAGE_SIZE);
-        setHasNext(page < totalPages - 1);
-      } else {
-        setHasNext(false);
-      }
-    } catch (error) {
-      console.log('Error fetching posts:', error);
-      setPosts([]);
-      setHasNext(false);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const fetchNext = useCallback(async () => {
     if (!hasNext || loading) return;
@@ -119,28 +126,28 @@ export default function OthersAnswersListScreen() {
           style={[
             styles.card,
             {
-              backgroundColor: isLight ? '#393E46' : '#FFFFFF',
-              shadowColor: isLight ? '#FFF' : '#000',
+              backgroundColor: isLight ? "#393E46" : "#FFFFFF",
+              shadowColor: isLight ? "#FFF" : "#000",
             },
           ]}
-          onPress={() => navigation.navigate('PostDetail', { postId: item.id })}
+          onPress={() => navigation.navigate("PostDetail", { postId: item.id })}
           activeOpacity={0.8}
         >
           <Text
-            style={[styles.question, { color: !isLight ? '#000' : '#EEE' }]}
+            style={[styles.question, { color: !isLight ? "#000" : "#EEE" }]}
             numberOfLines={2}
           >
             {item.question}
           </Text>
           <View style={styles.metaRow}>
             <Text
-              style={[styles.metaText, { color: !isLight ? '#555' : '#DDD' }]}
+              style={[styles.metaText, { color: !isLight ? "#555" : "#DDD" }]}
             >
               {item.username}
             </Text>
             <View style={styles.rightMetaRow}>
               <Text
-                style={[styles.metaText, { color: !isLight ? '#555' : '#DDD' }]}
+                style={[styles.metaText, { color: !isLight ? "#555" : "#DDD" }]}
               >
                 {date}
               </Text>
@@ -148,7 +155,7 @@ export default function OthersAnswersListScreen() {
                 <Text
                   style={[
                     styles.likeCountNum,
-                    { color: !isLight ? '#555' : '#666' },
+                    { color: !isLight ? "#555" : "#666" },
                   ]}
                   numberOfLines={1}
                 >
@@ -160,14 +167,14 @@ export default function OthersAnswersListScreen() {
                     {
                       color:
                         item.like_count > 0
-                          ? '#FF3B30'
+                          ? "#FF3B30"
                           : !isLight
-                          ? '#888'
-                          : '#999',
+                          ? "#888"
+                          : "#999",
                     },
                   ]}
                 >
-                  {item.like_count > 0 ? '♥' : '♡'}
+                  {item.like_count > 0 ? "♥" : "♡"}
                 </Text>
               </View>
             </View>
@@ -182,25 +189,25 @@ export default function OthersAnswersListScreen() {
     <View
       style={[
         styles.container,
-        { backgroundColor: !isLight ? '#F0F0F0' : '#222831' },
+        { backgroundColor: !isLight ? "#F0F0F0" : "#222831" },
       ]}
     >
       {/* Header with sort toggle */}
       <View style={styles.header}>
         <Text
-          style={[styles.headerLabel, { color: !isLight ? '#000' : '#EEE' }]}
+          style={[styles.headerLabel, { color: !isLight ? "#000" : "#EEE" }]}
         >
           Sort by:
         </Text>
         <TouchableOpacity
           style={[
             styles.dropdown,
-            { backgroundColor: !isLight ? '#FFF' : '#393E46' },
+            { backgroundColor: !isLight ? "#FFF" : "#393E46" },
           ]}
           onPress={() => setSortMenuOpen(true)}
         >
-          <Text style={{ color: !isLight ? '#000' : '#EEE' }}>
-            {sortBy === 'created_at' ? 'Recency' : 'Likes'}
+          <Text style={{ color: !isLight ? "#000" : "#EEE" }}>
+            {sortBy === "created_at" ? "Recency" : "Likes"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -220,7 +227,7 @@ export default function OthersAnswersListScreen() {
           <View
             style={[
               styles.sortCard,
-              { backgroundColor: isLight ? '#FFFFFF' : '#2C2C2C' },
+              { backgroundColor: isLight ? "#FFFFFF" : "#2C2C2C" },
             ]}
             // stop propagation to avoid closing when tapping inside
             onStartShouldSetResponder={() => true}
@@ -229,15 +236,15 @@ export default function OthersAnswersListScreen() {
               style={styles.sortOption}
               onPress={() => {
                 setSortMenuOpen(false);
-                if (sortBy !== 'created_at') setSortBy('created_at');
+                if (sortBy !== "created_at") setSortBy("created_at");
               }}
             >
               <Text
                 style={[
                   styles.sortOptionText,
                   {
-                    color: isLight ? '#000' : '#EEE',
-                    fontWeight: sortBy === 'created_at' ? '700' : '500',
+                    color: isLight ? "#000" : "#EEE",
+                    fontWeight: sortBy === "created_at" ? "700" : "500",
                   },
                 ]}
               >
@@ -249,15 +256,15 @@ export default function OthersAnswersListScreen() {
               style={styles.sortOption}
               onPress={() => {
                 setSortMenuOpen(false);
-                if (sortBy !== 'like_count') setSortBy('like_count');
+                if (sortBy !== "like_count") setSortBy("like_count");
               }}
             >
               <Text
                 style={[
                   styles.sortOptionText,
                   {
-                    color: isLight ? '#000' : '#EEE',
-                    fontWeight: sortBy === 'like_count' ? '700' : '500',
+                    color: isLight ? "#000" : "#EEE",
+                    fontWeight: sortBy === "like_count" ? "700" : "500",
                   },
                 ]}
               >
@@ -317,7 +324,7 @@ export default function OthersAnswersListScreen() {
   );
 }
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.9;
 
 const styles = StyleSheet.create({
@@ -327,14 +334,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 12,
   },
   headerLabel: {
     fontSize: 16,
     marginRight: 8,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   dropdown: {
     paddingVertical: 8,
@@ -345,7 +352,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   list: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingBottom: 16,
   },
   card: {
@@ -360,23 +367,23 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 12,
   },
   metaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   metaText: {
     fontSize: 12,
   },
   rightMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   likeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginLeft: 12,
   },
   heart: {
@@ -385,47 +392,47 @@ const styles = StyleSheet.create({
   },
   likeCountNum: {
     width: 28,
-    textAlign: 'right',
+    textAlign: "right",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
     marginRight: 4,
   },
   pagination: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 32,
     paddingVertical: 12,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   navButton: {
-    backgroundColor: '#00ADB5',
+    backgroundColor: "#00ADB5",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
   },
   navText: {
-    color: '#FFF',
-    fontWeight: 'bold',
+    color: "#FFF",
+    fontWeight: "bold",
   },
   pageIndicator: {
-    color: '#666',
-    fontWeight: '600',
+    color: "#666",
+    fontWeight: "600",
   },
   // Sort dropdown styles
   sortOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.25)",
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 24,
   },
   sortCard: {
-    width: '100%',
+    width: "100%",
     maxWidth: 360,
     borderRadius: 12,
     paddingVertical: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.15,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 6 },
@@ -440,24 +447,24 @@ const styles = StyleSheet.create({
   },
   sortDivider: {
     height: StyleSheet.hairlineWidth,
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
     opacity: 0.6,
   },
   emptyContainer: {
     flex: 1,
-    width: '100%',
+    width: "100%",
     minHeight: 200,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#888',
+    fontWeight: "700",
+    color: "#888",
     marginBottom: 6,
   },
   emptySubtitle: {
     fontSize: 14,
-    color: '#AAA',
+    color: "#AAA",
   },
 });
