@@ -25,7 +25,7 @@ const DisclaimerText: React.FC<Props> = ({ text }) => {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "regular",
   },
   titleColorLight: {

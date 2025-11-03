@@ -12,18 +12,17 @@ import PrimaryButton from "../atoms/PrimaryButton";
 import SecondaryButton from "../atoms/SecondaryButton";
 import FullScreenLoader from "../common/FullScreenLoader";
 import { uploadImageToCloudinary } from "@/src/api/uploadImageToCloudinary";
-import submitMainsData from "@/src/utils/submitMainsData";
-import { Alert } from "react-native";
+import { supabase } from "@/src/supabaseConfig";
 
-type Props = {
-  verdict: boolean;
+type CustomVerdictOverlayProps = {
+  route: any;
+  navigation: any;
 };
 
-const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
+const CustomVerdictOverlay: React.FC<CustomVerdictOverlayProps> = ({ route }) => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const { uid, uploadCopies, prelims_solved, mains_solved, data, date } =
-    route.params;
+  const { uid, uploadCopies } = route.params;
   const today = new Date().toISOString().substring(0, 10);
 
   const [loaderVisible, setLoaderVisible] = useState(false);
@@ -42,78 +41,98 @@ const MainsVerdictOverlay: React.FC<Props> = ({ route }) => {
   const last_active_date = useSelector(
     (state: RootState) => state.userProgress.last_active_date
   );
+
   const overlaySubmitButtonHandler = async () => {
-    if (!uid) return;
+    if (!uid) {
+      alert("User not authenticated. Please log in again.");
+      navigation.goBack();
+      return;
+    }
+
+    if (!uploadCopies || uploadCopies.length === 0) {
+      alert("No images to upload. Please add photos first.");
+      navigation.goBack();
+      return;
+    }
 
     try {
       setLoaderVisible(true);
 
-      if (mains_solved) {
-        alert("You have already submitted today's mains answer.");
+      // Step 1: Upload answer copies with error handling
+      let downloadURLs: string[] = [];
+      try {
+        downloadURLs = await Promise.all(
+          uploadCopies.map((img: { id: number; uri: string }) => uploadImageToCloudinary(img.uri))
+        );
+      } catch (uploadError: any) {
+        console.error("Image upload error:", uploadError);
+        setLoaderVisible(false);
+        alert("Failed to upload images. Please check your internet connection and try again.");
+        navigation.goBack();
         return;
       }
 
-      // Step 1: Upload answer copies
-      const downloadURLs = await Promise.all(
-        uploadCopies.map((img: { id: number; uri: string }) => uploadImageToCloudinary(img.uri))
-      );
+      // Step 2: Check if user has already been active today
+      const already_active_today = last_active_date === today;
 
-      // Step 2: Prepare points and streak updates
+      // Step 3: Prepare points and streak updates
       const points_awarded = 5;
       const updated_points = points + points_awarded;
-      // Check if user was already active today (via prelims OR custom post)
-      const already_active_today = prelims_solved || (last_active_date === today);
+      // Only increment streak if NOT already active today
       const updated_streak = already_active_today ? curr_streak : curr_streak + 1;
 
-      const isCurrentDay = date === new Date().toISOString().substring(0, 10);
+      // Step 3: Update user stats in database with error handling
+      try {
+        const { error: userUpdateError } = await supabase
+          .from("users")
+          .update({
+            total_points: updated_points,
+            current_streak: updated_streak,
+            longest_streak: Math.max(longest_streak, updated_streak),
+            last_active_date: today,
+            points_history: supabase.rpc("jsonb_set_custom", {
+              data: {},
+              key: today,
+              value: points_awarded,
+            }),
+          })
+          .eq("id", uid);
 
-      // Step 3: Submit mains data
-      await submitMainsData({
-        uid,
-        todays_date: today,
-        total_points: isCurrentDay ? updated_points : points,
-        points_awarded,
-        current_streak: isCurrentDay ? updated_streak : curr_streak,
-        longest_streak,
-        question_date: data.date,
-        questionId: data.questionId,
-        Question: data.Question,
-        submission_uri: downloadURLs,
-      });
+        if (userUpdateError) {
+          console.error("User stats update error:", userUpdateError);
+          // Still allow navigation even if stats update fails
+          alert("Submission successful, but stats may not have updated. Please refresh.");
+        }
+      } catch (dbError: any) {
+        console.error("Database error:", dbError);
+        // Continue anyway
+        alert("Submission successful, but stats may not have updated. Please refresh.");
+      }
 
-      // Step 4: Update UI and local state
-      if (!already_active_today && isCurrentDay) {
+      // Step 4: Update Redux state
+      if (!already_active_today) {
         dispatch(setCurrentStreak(updated_streak));
       }
-      isCurrentDay && dispatch(setPoints(updated_points));
-      isCurrentDay && dispatch(setLastActiveDate(today));
+      dispatch(setPoints(updated_points));
+      dispatch(setLastActiveDate(today));
 
-      // Show notification if user was already active today
-      if (already_active_today && isCurrentDay) {
-        Alert.alert(
-          "Great job!",
-          "You've already earned your streak for today. This submission will earn you points but won't affect your streak."
-        );
+      setLoaderVisible(false);
+
+      // Show message if already active today
+      if (already_active_today) {
+        alert("Great job! You've already earned your streak for today. This submission will earn you points but won't affect your streak.");
       }
-      
-      // Navigate to CreatePostOverlay after successful submission
-      // Pop only this overlay (MainsVerdictOverlay), keeping MainsScreen in the stack
-      navigation.goBack();
 
-      // Then navigate to CreatePostOverlay from MainsScreen
-      navigation.navigate("CreatePostOverlay", {
-        images: downloadURLs, // Pass the uploaded image URLs
-        question: data.Question,
-        year: data.Year?.toString(),
-        paper: data.Paper,
-        questionId: data.id || data.questionId, // Add questionId for post tracking
+      // Step 5: Navigate to CustomPostOverlay
+      navigation.goBack();
+      navigation.navigate("CustomPostOverlay", {
+        images: downloadURLs,
       });
     } catch (error: any) {
-      alert(error?.message || "Mains submission failed.");
-      console.error("Mains submission error:", error);
-      navigation.goBack();
-    } finally {
+      console.error("Unexpected custom answer submission error:", error);
       setLoaderVisible(false);
+      alert("An unexpected error occurred. Please try again.");
+      navigation.goBack();
     }
   };
 
@@ -176,4 +195,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MainsVerdictOverlay;
+export default CustomVerdictOverlay;

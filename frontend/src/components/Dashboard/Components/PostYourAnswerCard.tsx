@@ -2,20 +2,15 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/store';
-import TextLabel from '../../atoms/TextLabel';
-import NormalText from '../../atoms/NormalText';
-import DisclaimerText from '../../atoms/DisclaimerText';
-import SubtleButton from '../../atoms/SubtleButton';
-import Subtitle from '../../atoms/Subtitle';
-import FooterText from '../../atoms/FooterText';
 import CardTitle from '../../atoms/CardTitle';
+import DisclaimerText from '../../atoms/DisclaimerText';
 import PrimaryButton from '../../atoms/PrimaryButton';
 
-interface OthersAnswersCardProps {
+interface PostYourAnswerCardProps {
   onPress?: () => void;
 }
 
-const OthersAnswersCard: React.FC<OthersAnswersCardProps> = ({ onPress }) => {
+const PostYourAnswerCard: React.FC<PostYourAnswerCardProps> = ({ onPress }) => {
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
   return (
@@ -29,16 +24,16 @@ const OthersAnswersCard: React.FC<OthersAnswersCardProps> = ({ onPress }) => {
       ]}
     >
       <View style={styles.sectionFullWidth}>
-        <CardTitle text="COMMUNITY POSTS" />
+        <CardTitle text="POST YOUR ANSWER" />
 
         <View style={styles.contentRow}>
           <View style={styles.descriptionContainer}>
-            <DisclaimerText text="Learn from others, share your insights, and refine your writing through feedback" />
+            <DisclaimerText text="✈️ Post your answer to any question and get peer reviews" />
           </View>
 
           <View style={styles.buttonContainer}>
             <PrimaryButton
-              title="View"
+              title="Post"
               isActive={true}
               submitHandler={onPress || (() => {})}
             />
@@ -80,4 +75,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OthersAnswersCard;
+export default PostYourAnswerCard;

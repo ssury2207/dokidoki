@@ -17,6 +17,11 @@ import CreatePostScreen from "../components/shareAnswers/CreatePostScreen";
 import OthersAnswersListScreen from "@/src/components/Posts/OthersAnswersListScreen";
 import PostDetailScreen from "@/src/components/Posts/PostDetailScreen";
 import PushPermissionOverlay from "../pushNotification/PushPermissionOverlay";
+import CustomAnswerScreen from "../components/PracticeScreens/CustomAnswerScreen";
+import CustomVerdictOverlay from "../components/PracticeScreens/CustomVerdictOverlay";
+import CustomPostOverlay from "../components/shareAnswers/CustomPostOverlay";
+import PrelimsPyqScreen from "@/src/components/PrelimsPYQs/PrelimsPYQScreen";
+import PrelimsPyqPractice from "../components/PrelimsPYQs/PrelimsPyqPractice";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
@@ -47,6 +52,7 @@ export default function AppNavigator() {
         initialParams={{ caseType: null }}
       />
       <Stack.Screen name="MainsScreen" component={MainsScreen} />
+      <Stack.Screen name="CustomAnswerScreen" component={CustomAnswerScreen} />
       <Stack.Screen
         name="PractisedQuestions"
         component={PractisedQuestionsScreen}
@@ -55,6 +61,8 @@ export default function AppNavigator() {
         name="OthersAnswersList"
         component={OthersAnswersListScreen}
       />
+      <Stack.Screen name="PrelimsPyqScreen" component={PrelimsPyqScreen} />
+      <Stack.Screen name="PrelimsPyqPractice" component={PrelimsPyqPractice} />
       <Stack.Screen
         name="PostDetail"
         component={PostDetailScreen}
@@ -88,6 +96,24 @@ export default function AppNavigator() {
       <Stack.Screen
         name="CreatePostOverlay"
         component={CreatePostOverlay}
+        options={{
+          presentation: "transparentModal",
+          animation: "fade",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="CustomVerdictOverlay"
+        component={CustomVerdictOverlay}
+        options={{
+          presentation: "transparentModal",
+          animation: "fade",
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="CustomPostOverlay"
+        component={CustomPostOverlay}
         options={{
           presentation: "transparentModal",
           animation: "fade",

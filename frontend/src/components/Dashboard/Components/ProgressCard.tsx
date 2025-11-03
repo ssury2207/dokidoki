@@ -60,7 +60,7 @@ const ProgressCard = () => {
                 })
               }
             >
-              <Text style={styles.seeAllButtonText}>SEE ALL</Text>
+              <Text style={styles.seeAllButtonText}>See All</Text>
             </TouchableOpacity>
           </View>
         </ShimmerPlaceholder>
@@ -97,14 +97,18 @@ const styles = StyleSheet.create({
   },
   seeAllButton: {
     backgroundColor: '#00ADB5',
-    padding: 16,
-    justifyContent: 'space-around',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
+    minWidth: 80,
   },
   seeAllButtonText: {
-    color: '#EEEEEE',
-    fontWeight: 'bold',
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+    textAlign: 'center',
   },
   rowCenter: {
     width: '100%',

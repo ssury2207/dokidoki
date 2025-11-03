@@ -118,9 +118,9 @@ export default function EmailConfirmationScreen({ navigation, route }: Props) {
               <Text style={styles.stepNumberText}>2</Text>
             </View>
             <View style={styles.stepContent}>
-              <Text style={styles.stepTitle}>Click the verification link</Text>
+              <Text style={styles.stepTitle}>Click the verification button</Text>
               <Text style={styles.stepDescription}>
-                Click the "Confirm Email" button in the email we sent you.
+                Click the "Verify My Email" button in the email we sent you.
               </Text>
             </View>
           </View>
