@@ -11,11 +11,21 @@
     "preview": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk"
-      }
+        "buildType": "apk",
+        "env": {
+          "GOOGLE_SERVICES_JSON": "$(< $HOME/.eas/secrets/GOOGLE_SERVICES_JSON)"
+        }
+      },
+      "prebuildCommand": "echo \"$GOOGLE_SERVICES_JSON\" > android/app/google-services.json"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "android": {
+        "env": {
+          "GOOGLE_SERVICES_JSON": "$(< $HOME/.eas/secrets/GOOGLE_SERVICES_JSON)"
+        }
+      },
+      "prebuildCommand": "echo \"$GOOGLE_SERVICES_JSON\" > android/app/google-services.json"
     }
   },
   "submit": {
