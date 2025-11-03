@@ -1,0 +1,10 @@
+# Ignore large files and folders that aren't needed for EAS builds
+node_modules/
+.expo/
+.git/
+dist/
+web-build/
+android/
+ios/
+*.log
+.DS_Store
