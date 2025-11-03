@@ -26,7 +26,7 @@ const CardTitle: React.FC<Props> = ({ text }) => {
 const styles = StyleSheet.create({
   title: {
     fontSize: 14,
-    fontWeight: 'regular',
+    fontWeight: 'bold',
     textAlign: 'left',
   },
   titleColorLight: {

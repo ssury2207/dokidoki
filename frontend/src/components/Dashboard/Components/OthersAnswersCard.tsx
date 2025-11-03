@@ -29,18 +29,16 @@ const OthersAnswersCard: React.FC<OthersAnswersCardProps> = ({ onPress }) => {
       ]}
     >
       <View style={styles.sectionFullWidth}>
-        <View style={styles.titleContainer}>
-          <CardTitle text="COMMUNITY POSTS" />
-        </View>
+        <CardTitle text="COMMUNITY POSTS" />
 
         <View style={styles.contentRow}>
           <View style={styles.descriptionContainer}>
-            <DisclaimerText text="Learn from others, share your insights, and refine your writing through feedback and collaboration." />
+            <DisclaimerText text="Learn from others, share your insights, and refine your writing through feedback" />
           </View>
 
           <View style={styles.buttonContainer}>
             <PrimaryButton
-              title="Explore"
+              title="View"
               isActive={true}
               submitHandler={onPress || (() => {})}
             />
@@ -78,7 +76,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonContainer: {
-    minWidth: 120,
+    minWidth: 80,
   },
 });
 
