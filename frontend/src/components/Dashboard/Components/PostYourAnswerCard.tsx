@@ -24,18 +24,16 @@ const PostYourAnswerCard: React.FC<PostYourAnswerCardProps> = ({ onPress }) => {
       ]}
     >
       <View style={styles.sectionFullWidth}>
-        <View style={styles.titleContainer}>
-          <CardTitle text="POST YOUR ANSWER" />
-        </View>
+        <CardTitle text="POST YOUR ANSWER" />
 
         <View style={styles.contentRow}>
           <View style={styles.descriptionContainer}>
-            <DisclaimerText text="Have you written any answer today? Post your answer written to any question of your choice and get it reviewed by your peers." />
+            <DisclaimerText text="✈️ Post your answer to any question and get peer reviews" />
           </View>
 
           <View style={styles.buttonContainer}>
             <PrimaryButton
-              title="Post Now"
+              title="Post"
               isActive={true}
               submitHandler={onPress || (() => {})}
             />
@@ -63,9 +61,6 @@ const styles = StyleSheet.create({
   sectionFullWidth: {
     width: '100%',
   },
-  titleContainer: {
-    marginBottom: 8,
-  },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -76,7 +71,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonContainer: {
-    minWidth: 120,
+    minWidth: 80,
   },
 });
 

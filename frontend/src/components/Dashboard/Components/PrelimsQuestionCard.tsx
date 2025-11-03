@@ -35,7 +35,7 @@ const PrelimsPYQsQuestionCard: React.FC<PrelimsPYQsQuestionCardProps> = ({
 
           <View style={styles.buttonContainer}>
             <PrimaryButton
-              title="Practice"
+              title="View"
               isActive={true}
               submitHandler={onPress || (() => {})}
             />
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonContainer: {
-    minWidth: 120,
+    minWidth: 80,
   },
 });
 
