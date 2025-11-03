@@ -14,7 +14,7 @@
     },
     "android": {
       "package": "com.dokidoki.dev.dokidoki",
-      "versionCode": 7,
+      "versionCode": 8,
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon-dokidoki.png",
         "backgroundColor": "#ffffff"
