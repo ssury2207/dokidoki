@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "@/src/supabaseConfig";
 import type { StackNavigationProp } from "@react-navigation/stack";
@@ -181,6 +181,14 @@ export default function OthersAnswersListScreen() {
     setPageIndex(0);
     fetchPosts(0, sortBy, filterBy, currentUserId);
   }, [sortBy, filterBy, currentUserId, fetchPosts]);
+
+  // Refresh data when screen comes into focus (e.g., when navigating back from PostDetail)
+  useFocusEffect(
+    useCallback(() => {
+      // Refresh the current page to reflect any changes (like updated like counts)
+      fetchPosts(pageIndex, sortBy, filterBy, currentUserId);
+    }, [pageIndex, sortBy, filterBy, currentUserId, fetchPosts])
+  );
 
   const renderPost = useCallback(
     ({ item }: { item: Post }) => {
