@@ -31,6 +31,19 @@ const DashboardHeader = () => {
         text: 'OK',
         onPress: async () => {
           try {
+            // Clear user-specific AsyncStorage data
+            await AsyncStorage.multiRemove([
+              'PENDING_USER_KEY',
+              'archive_mains_questions',
+              'archive_prelims_questions',
+              'archive_questions_meta',
+              'archive_cache_version'
+            ]);
+            // Note: APP_THEME is kept as it's a device preference
+
+            // Reset Redux store (keeps theme only)
+            dispatch({ type: 'RESET_STORE' });
+
             const { error } = await supabase.auth.signOut();
             if (error) {
               console.error('Logout error:', error);
