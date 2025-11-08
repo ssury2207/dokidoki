@@ -40,7 +40,9 @@ export default function PrelimsPyqScreen() {
   const [totalPage, setTotalPage] = useState(1);
   const [page, setPage] = useState(1);
   const [section, setSection] = useState<string[]>([]);
-  const [selectedSection, setSelectedSection] = useState<string>("All");
+  const [selectedSection, setSelectedSection] = useState<string>(
+    "Allsdfkuasdfaldslfkjalskdfjlkajslkdfjlkajslkdfjlakjsld"
+  );
   const [showSectionModal, setShowSectionModal] = useState<boolean>(false);
 
   const limit = 10;
@@ -198,8 +200,14 @@ export default function PrelimsPyqScreen() {
         <View style={styles.filterContainer}>
           <View style={styles.filterItem}>
             <TextLabel text="Section: " />
-            <TouchableOpacity onPress={() => setShowSectionModal(true)}>
-              <Subtitle subtitle={selectedSection} />
+            <TouchableOpacity
+              style={[
+                styles.dropdown,
+                { backgroundColor: !isLight ? "#FFF" : "#393E46" },
+              ]}
+              onPress={() => setShowSectionModal(true)}
+            >
+              <DisclaimerText text={selectedSection} />
             </TouchableOpacity>
           </View>
         </View>
@@ -239,6 +247,7 @@ export default function PrelimsPyqScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 24,
   },
   containerLight: {
     backgroundColor: "#F5F5F5",
@@ -248,7 +257,6 @@ const styles = StyleSheet.create({
   },
   contentWrapper: {
     flex: 1,
-    paddingHorizontal: 24,
   },
   filterContainer: {
     width: "100%",
@@ -256,6 +264,11 @@ const styles = StyleSheet.create({
   filterItem: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  dropdown: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
   },
   listWrapper: {
     flex: 1,
