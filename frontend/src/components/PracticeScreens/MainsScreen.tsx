@@ -14,6 +14,7 @@ import PrimaryButton from "../atoms/PrimaryButton";
 import TitleAndSubtitleCard from "../common/TitleAndSubtitleCard";
 import UserStats from "../common/UserStats";
 import Card from "../atoms/Card";
+import FixedImageCarousel from "../common/FixedImageCarousel";
 import { SafeAreaView } from "react-native-safe-area-context";
 import NormalText from "../atoms/NormalText";
 import { fetchTodaysQuestion } from "@/src/api/dailyMainsQuestion";
@@ -28,6 +29,7 @@ import ShareButton from "../common/ShareButton";
 import DisclaimerText from "../atoms/DisclaimerText";
 import Subtitle from "../atoms/Subtitle";
 import TextLabel from "../atoms/TextLabel";
+import { getCloudinaryThumbnail } from "@/src/utils/imageUtils";
 import { useFocusEffect } from "@react-navigation/native";
 type MainsScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -235,24 +237,17 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
             navigation={navigation}
             isQuestionAvailable={data != null}
           />
-          {isAnswerCopiesDateExists &&
-            todaysAnswerCopies.map((url, idx) => (
-              <View key={idx} style={styles.fileItem}>
-                <Text style={styles.fileText}>{idx}.jpg</Text>
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("FullScreenImageViewer", {
-                      imageUrl: url,
-                    })
-                  }
-                >
-                  <Image
-                    source={{ uri: url }}
-                    style={{ height: 50, width: 50 }}
-                  />
-                </TouchableOpacity>
-              </View>
-            ))}
+          {isAnswerCopiesDateExists && todaysAnswerCopies.length > 0 && (
+            <FixedImageCarousel
+              images={todaysAnswerCopies}
+              onImagePress={(imageUrl, imageIndex) =>
+                navigation.navigate("FullScreenImageViewer", {
+                  images: todaysAnswerCopies,
+                  initialIndex: imageIndex,
+                })
+              }
+            />
+          )}
           {isAnswerCopiesDateExists ? (
             <NormalText text={`Thank you for writing an answer today`} />
           ) : (

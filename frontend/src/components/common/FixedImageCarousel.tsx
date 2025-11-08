@@ -9,10 +9,12 @@ import {
 } from "react-native";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { getCloudinaryThumbnail } from "@/src/utils/imageUtils";
+import ShimmerPlaceholder from "./ShimmerComponent";
 
 interface FixedImageCarouselProps {
   images: (string | any)[];
-  onImagePress: (imageUrl: string) => void;
+  onImagePress: (imageUrl: string, imageIndex: number) => void;
 }
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -25,6 +27,7 @@ const FixedImageCarousel: React.FC<FixedImageCarouselProps> = ({
   const theme = useSelector((state: RootState) => state.theme.isLight);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
   const handleScroll = (event: any) => {
     const contentOffset = event.nativeEvent.contentOffset;
@@ -43,9 +46,9 @@ const FixedImageCarousel: React.FC<FixedImageCarouselProps> = ({
 
   const getImageSource = (image: string | any) => {
     if (typeof image === 'string') {
-      return { uri: image };
+      return { uri: getCloudinaryThumbnail(image) };
     }
-    return image;
+    return image; // Local images (non-URLs) don't need optimization
   };
 
   const getImageUrl = (image: string | any) => {
@@ -53,6 +56,10 @@ const FixedImageCarousel: React.FC<FixedImageCarouselProps> = ({
       return image;
     }
     return Image.resolveAssetSource(image).uri;
+  };
+
+  const handleImageLoad = (index: number) => {
+    setLoadedImages((prev) => new Set(prev).add(index));
   };
 
   return (
@@ -69,13 +76,20 @@ const FixedImageCarousel: React.FC<FixedImageCarouselProps> = ({
           <TouchableOpacity
             key={index}
             style={styles.imageContainer}
-            onPress={() => onImagePress(getImageUrl(image))}
+            onPress={() => onImagePress(getImageUrl(image), index)}
           >
-            <Image 
-              source={getImageSource(image)} 
-              style={styles.image} 
-              resizeMode="contain"
-            />
+            <ShimmerPlaceholder
+              visible={loadedImages.has(index)}
+              borderRadius={8}
+              containerStyle={styles.image}
+            >
+              <Image
+                source={getImageSource(image)}
+                style={styles.image}
+                resizeMode="contain"
+                onLoad={() => handleImageLoad(index)}
+              />
+            </ShimmerPlaceholder>
           </TouchableOpacity>
         ))}
       </ScrollView>
