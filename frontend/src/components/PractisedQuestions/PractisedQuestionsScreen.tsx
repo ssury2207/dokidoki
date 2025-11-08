@@ -1,15 +1,17 @@
-import { StyleSheet, View } from 'react-native';
-import React from 'react';
-import QuestionCard from './Components/QuestionCard';
-import { FlatList } from 'react-native';
-import { RootState } from '@/store/store';
-import { useSelector } from 'react-redux';
-import PrimaryButton from '../atoms/PrimaryButton';
-import TextLabel from '../atoms/TextLabel';
-import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@/src/types/navigation';
-
+import { StyleSheet, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import QuestionCard from "./Components/QuestionCard";
+import { FlatList } from "react-native";
+import { RootState } from "@/store/store";
+import { useSelector } from "react-redux";
+import PrimaryButton from "../atoms/PrimaryButton";
+import TextLabel from "../atoms/TextLabel";
+import TitleAndSubtitleCard from "../common/TitleAndSubtitleCard";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "@/src/types/navigation";
+import { supabase } from "@/src/supabaseConfig";
+import FullScreenLoader from "../common/FullScreenLoader";
+import DisclaimerText from "../atoms/DisclaimerText";
 type renderItemProps = {
   id?: string;
   questionId?: string;
@@ -21,25 +23,69 @@ type renderItemProps = {
   questionData?: [] | null;
 };
 
-type Props = NativeStackScreenProps<
-  RootStackParamList,
-  'PractisedQuestions'
->;
+type Props = NativeStackScreenProps<RootStackParamList, "PractisedQuestions">;
 
 export default function PractisedQuestionsScreen({ route, navigation }: Props) {
   const params = route.params ?? {};
-  const data = (params as any).data ?? [];
-  const questionType = (params as any).questionType ?? 'mains';
-
+  const [data, setData] = useState<[]>([]);
+  const [loaderVisible, setLoaderVisible] = useState(false);
+  const questionType = (params as any).questionType ?? "mains";
+  const today = new Date().toISOString().substring(0, 10);
+  const [totalPage, setTotalPage] = useState(1);
   const theme = useSelector((state: RootState) => state.theme.isLight);
+  const limit = 10;
+  const [page, setPage] = useState(1);
+  useEffect(() => {
+    const getData = async () => {
+      setLoaderVisible(true);
+
+      try {
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+        const isPrelims = questionType === "prelims";
+        let query = supabase
+          .from(
+            isPrelims == true
+              ? "daily_prelims_questions"
+              : "daily_mains_questions"
+          )
+          .select("*", { count: "exact" })
+          .neq("date", today)
+          .order("date", { ascending: false })
+          .range(from, to);
+        const { data, error, count } = await query;
+        if (error) {
+          alert("There seems to be an issue on Backend, in fetching question");
+        }
+        if (count) setTotalPage(Math.ceil(count / limit));
+        setData(data);
+      } catch (error) {
+        setLoaderVisible(false);
+        alert(error);
+      } finally {
+        setLoaderVisible(false);
+      }
+    };
+    getData();
+  }, [page]);
+  const handlePreviousButton = () => {
+    if (page > 1) {
+      setPage(page - 1);
+    }
+  };
+  const handleNextButton = () => {
+    if (page < totalPage) {
+      setPage(page + 1);
+    }
+  };
   const renderItem = ({ item }: { item: renderItemProps }) => (
     <QuestionCard
-      question={item.Question}
-      year={item.Year ?? 0}
-      paper={item.Paper ?? null}
-      marks={item.Marks ?? null}
+      question={item.question}
+      year={item.year ?? 0}
+      paper={item.paper ?? null}
+      marks={item.marks ?? null}
       date={item.date}
-      questionData={data}
+      questionData={item}
       questionType={questionType}
     />
   );
@@ -49,12 +95,14 @@ export default function PractisedQuestionsScreen({ route, navigation }: Props) {
       <FlatList
         data={data}
         renderItem={renderItem}
-        keyExtractor={(item, index) => item.questionId || item.id || item.date || `question-${index}`}
+        keyExtractor={(item, index) =>
+          item.questionId || item.id || item.date || `question-${index}`
+        }
         ListHeaderComponent={
           <TitleAndSubtitleCard
-            title={'MISSED QUESTIONS'}
+            title={"MISSED QUESTIONS"}
             subtite={
-              'Catch up on questions you skipped in your daily challenges'
+              "Catch up on questions you skipped in your daily challenges"
             }
           />
         }
@@ -62,7 +110,7 @@ export default function PractisedQuestionsScreen({ route, navigation }: Props) {
           <View style={styles.noQuestionCard}>
             <TextLabel text="No Questions Here" />
             <PrimaryButton
-              submitHandler={() => navigation.navigate('Dashboard')}
+              submitHandler={() => navigation.navigate("Dashboard")}
               isActive={true}
               title="Dashboard"
             />
@@ -70,6 +118,25 @@ export default function PractisedQuestionsScreen({ route, navigation }: Props) {
         }
         contentContainerStyle={{ paddingBottom: 16 }}
       />
+      <View style={styles.paginationContainer}>
+        <View style={styles.paginationButton}>
+          <PrimaryButton
+            title="Prev"
+            submitHandler={handlePreviousButton}
+            isActive={page !== 1}
+          />
+        </View>
+        <DisclaimerText text={`${page} / ${totalPage}`} />
+        <View style={styles.paginationButton}>
+          <PrimaryButton
+            title="Next"
+            submitHandler={handleNextButton}
+            isActive={page !== totalPage}
+          />
+        </View>
+      </View>
+
+      <FullScreenLoader visible={loaderVisible} message="Loading..." />
     </View>
   );
 }
@@ -82,14 +149,24 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   bodyBGDark: {
-    backgroundColor: '#222831',
+    backgroundColor: "#222831",
   },
   bodyBGLight: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
   noQuestionCard: {
     flex: 1,
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    justifyContent: "space-around",
+    alignItems: "center",
+  },
+  paginationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    paddingVertical: 8,
+  },
+  paginationButton: {
+    flex: 1,
+    margin: 4,
   },
 });

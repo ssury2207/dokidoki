@@ -1,49 +1,52 @@
-import React from 'react';
-import { StyleSheet, ScrollView } from 'react-native';
-import TitleAndSubtitleCard from '../common/TitleAndSubtitleCard';
-import UserStats from '../common/UserStats';
-import Card from '../atoms/Card';
-import TextLabel from '../atoms/TextLabel';
-import PrimaryButton from '../atoms/PrimaryButton';
-import FooterText from '../atoms/FooterText';
-import PracticeButton from '../common/PracticeButton';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootState, AppDispatch } from '@/store/store';
-import { useSelector } from 'react-redux';
-import {
-  selectArchivedPrelimsQuestions,
-  selectArchivedQuestions,
-} from '@/store/slices/archivedQuestionsSlice';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import type { RootStackParamList } from '@/src/types/navigation';
+import React from "react";
+import { StyleSheet, ScrollView } from "react-native";
+import TitleAndSubtitleCard from "../common/TitleAndSubtitleCard";
+import UserStats from "../common/UserStats";
+import Card from "../atoms/Card";
+import TextLabel from "../atoms/TextLabel";
+import PrimaryButton from "../atoms/PrimaryButton";
+import FooterText from "../atoms/FooterText";
+import PracticeButton from "../common/PracticeButton";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootState, AppDispatch } from "@/store/store";
+import { useSelector } from "react-redux";
+import { SafeAreaView } from "react-native-safe-area-context";
+import type { RootStackParamList } from "@/src/types/navigation";
 
-type Props = NativeStackScreenProps<RootStackParamList, 'PracticeSelect'>;
+type Props = NativeStackScreenProps<RootStackParamList, "PracticeSelect">;
 
 export default function PracticeSelectScreen({ navigation, route }: Props) {
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
   const { caseType } = route.params;
-  const data = useSelector(selectArchivedQuestions);
-  const prelimsData = useSelector(selectArchivedPrelimsQuestions);
 
   const mainsButtonHandler = () => {
     caseType
-      ? navigation.navigate({ name: 'PractisedQuestions', params: { data, questionType: 'mains' } })
-      : navigation.navigate({ name: 'MainsScreen', params: {} });
+      ? navigation.navigate({
+          name: "PractisedQuestions",
+          params: { questionType: "mains" },
+        })
+      : navigation.navigate({ name: "MainsScreen", params: {} });
   };
   const prelimsButtonHandler = () => {
     caseType
       ? navigation.navigate({
-          name: 'PractisedQuestions',
-          params: { data: prelimsData, questionType: 'pre' },
+          name: "PractisedQuestions",
+          params: { questionType: "prelims" },
         })
-      : navigation.navigate({ name: 'PrelimsScreen', params: undefined });
+      : navigation.navigate({ name: "PrelimsScreen", params: undefined });
   };
 
   const reviseOrPracticeButtonHandler = () => {
     caseType
-      ? navigation.navigate({ name: 'PracticeSelect', params: { caseType: null } })
-      : navigation.navigate({ name: 'PracticeSelect', params: { caseType: true } });
+      ? navigation.navigate({
+          name: "PracticeSelect",
+          params: { caseType: null },
+        })
+      : navigation.navigate({
+          name: "PracticeSelect",
+          params: { caseType: true },
+        });
   };
   return (
     <SafeAreaView
@@ -57,15 +60,15 @@ export default function PracticeSelectScreen({ navigation, route }: Props) {
         style={[
           styles.scroll,
           theme
-            ? { backgroundColor: '#222831' }
-            : { backgroundColor: '#F5F5F5' },
+            ? { backgroundColor: "#222831" }
+            : { backgroundColor: "#F5F5F5" },
         ]}
       >
         <TitleAndSubtitleCard
-          title={caseType ? 'MISSED QUESTIONS' : 'STAY ON TRACK'}
+          title={caseType ? "MISSED QUESTIONS" : "STAY ON TRACK"}
           subtite={
             caseType
-              ? 'Catch up on questions you skipped in your daily challenges'
+              ? "Catch up on questions you skipped in your daily challenges"
               : "Answer today's question to keep your streak and earn points."
           }
         />
@@ -74,7 +77,7 @@ export default function PracticeSelectScreen({ navigation, route }: Props) {
 
         <Card>
           <TextLabel
-            text={caseType ? 'Previous Questions' : 'Todays Question'}
+            text={caseType ? "Previous Questions" : "Todays Question"}
           />
           <PracticeButton
             buttonHandler={prelimsButtonHandler}
@@ -92,20 +95,20 @@ export default function PracticeSelectScreen({ navigation, route }: Props) {
           <TextLabel
             text={
               caseType
-                ? 'Want to attempt Daily Challenge?'
-                : 'Want to review a past question?'
+                ? "Want to attempt Daily Challenge?"
+                : "Want to review a past question?"
             }
           />
           <PrimaryButton
             submitHandler={reviseOrPracticeButtonHandler}
-            title={caseType ? 'Start Challenge' : 'Revise a Missed Question'}
+            title={caseType ? "Start Challenge" : "Revise a Missed Question"}
             isActive={true}
           />
           <FooterText
             text={
               caseType
-                ? 'Revisit missed questions and strengthen your confidence'
-                : 'Attempt any question to maintain your current streak.'
+                ? "Revisit missed questions and strengthen your confidence"
+                : "Attempt any question to maintain your current streak."
             }
           />
         </Card>
@@ -119,10 +122,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bodyBGDark: {
-    backgroundColor: '#222831',
+    backgroundColor: "#222831",
   },
   bodyBGLight: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
   scroll: {
     paddingBottom: 40,
@@ -130,7 +133,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontWeight: "bold",
+    color: "#333",
   },
 });
