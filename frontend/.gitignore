@@ -9,9 +9,14 @@ dist/
 web-build/
 expo-env.d.ts
 
-# Native
-android/
-ios/
+# Native build outputs
+android/build/
+android/app/build/
+android/.gradle/
+android/app/.cxx/
+android/local.properties
+ios/build/
+ios/Pods/
 .kotlin/
 *.orig.*
 *.jks
@@ -19,7 +24,7 @@ ios/
 *.p12
 *.key
 *.mobileprovision
-google-services.json
+google-services*.json
 
 # Metro
 .metro-health-check*
@@ -33,8 +38,22 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# Environment files
+.env
+.env.*
+!.env.example
 .env*.local
+
+# Firebase keys
+firebase-key.json
+firebase-key-dev.json
+firebase-key-prod.json
+
+# Google Services
+google-services*.json
+
+# EAS
+.eas/
 
 # typescript
 *.tsbuildinfo

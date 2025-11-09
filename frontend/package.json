@@ -3,11 +3,20 @@
   "main": "index.tsx",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "APP_ENV=development expo start",
+    "start:dev": "APP_ENV=development expo start",
+    "start:prod": "APP_ENV=production expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo run:android",
+    "android:dev": "APP_ENV=development expo run:android",
+    "android:prod": "APP_ENV=production expo run:android",
     "ios": "expo run:ios",
+    "ios:dev": "APP_ENV=development expo run:ios",
+    "ios:prod": "APP_ENV=production expo run:ios",
     "web": "expo start --web",
+    "build:dev": "APP_ENV=development eas build --profile development --platform android",
+    "build:staging": "APP_ENV=development eas build --profile staging --platform android",
+    "build:prod": "APP_ENV=production eas build --profile production --platform android",
     "lint": "expo lint"
   },
   "dependencies": {
@@ -60,6 +69,7 @@
     "@types/react-redux": "^7.1.34",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
+    "react-native-dotenv": "^3.4.11",
     "typescript": "~5.8.3"
   },
   "private": true

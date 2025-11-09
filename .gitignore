@@ -1,12 +1,29 @@
-# Environment variables
+# Environment files
 .env
+.env.*
+!.env.example
 .env.local
 .env.*.local
 frontend/.env
+frontend/.env.*
+!frontend/.env.example
 backend/.env
+backend/.env.*
+!backend/.env.example
 
-# Firebase keys (legacy)
+# Firebase keys
 **/firebase-key.json
+**/firebase-key-dev.json
+**/firebase-key-prod.json
+
+# Google Services
+**/google-services.json
+**/google-services-dev.json
+**/google-services-prod.json
+
+# EAS
+.eas/
+**/.eas/
 
 # Dependencies
 node_modules/
@@ -37,3 +54,7 @@ Thumbs.db
 
 # Misc
 .cache/
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
