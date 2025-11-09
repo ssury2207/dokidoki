@@ -19,8 +19,8 @@ module.exports = {
     },
     android: {
       package: IS_DEV
-        ? 'com.dokidoki.dokidoki.dev'
-        : 'com.dokidoki.dokidoki',
+        ? 'com.dokidoki.dev.dokidoki.dev'
+        : 'com.dokidoki.dev.dokidoki',
       versionCode: 9,
       adaptiveIcon: {
         foregroundImage: './assets/icon-dokidoki.png',
@@ -36,7 +36,7 @@ module.exports = {
         }
       ],
       permissions: ['NOTIFICATIONS'],
-      googleServicesFile: './google-services.json'
+      // Note: googleServicesFile is managed by Android build.gradle based on build variant
     },
     web: {
       bundler: 'metro',
