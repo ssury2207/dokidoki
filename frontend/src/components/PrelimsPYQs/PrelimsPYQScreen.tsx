@@ -40,9 +40,7 @@ export default function PrelimsPyqScreen() {
   const [totalPage, setTotalPage] = useState(1);
   const [page, setPage] = useState(1);
   const [section, setSection] = useState<string[]>([]);
-  const [selectedSection, setSelectedSection] = useState<string>(
-    "Allsdfkuasdfaldslfkjalskdfjlkajslkdfjlkajslkdfjlakjsld"
-  );
+  const [selectedSection, setSelectedSection] = useState<string>("All");
   const [showSectionModal, setShowSectionModal] = useState<boolean>(false);
 
   const limit = 10;
