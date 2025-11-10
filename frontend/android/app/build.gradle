@@ -87,38 +87,31 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.dokidoki.dev.dokidoki'
+    namespace 'com.dokidoki.dev.dokidoki.dev'
     defaultConfig {
-        applicationId 'com.dokidoki.dev.dokidoki'
+        applicationId 'com.dokidoki.dev.dokidoki.dev'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 9
         versionName "1.5.0"
     }
-
-    flavorDimensions "environment"
-
-    productFlavors {
-        development {
-            dimension "environment"
-            applicationIdSuffix ".dev"
-            versionNameSuffix "-dev"
-            resValue "string", "app_name", "DokiDoki Dev"
-        }
-
-        production {
-            dimension "environment"
-            // Keep same package as Play Store for updates
-            resValue "string", "app_name", "DokiDoki"
-        }
-    }
-
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'
+        }
+    }
+    flavorDimensions "env"
+    productFlavors {
+        development {
+            dimension "env"
+            applicationIdSuffix ".dev"
+            versionNameSuffix "-dev"
+        }
+        production {
+            dimension "env"
         }
     }
     buildTypes {
@@ -165,45 +158,6 @@ android {
     }
 }
 
-// Task to copy the appropriate google-services.json file based on build variant
-task selectGoogleServices {
-    doLast {
-        def flavor = ""
-        gradle.startParameter.taskNames.each { task ->
-            if (task.contains("Development")) {
-                flavor = "development"
-            } else if (task.contains("Production")) {
-                flavor = "production"
-            }
-        }
-
-        def googleServicesFile
-        if (flavor == "development") {
-            googleServicesFile = file('google-services-dev.json')
-        } else {
-            googleServicesFile = file('google-services.json')
-        }
-
-        if (googleServicesFile.exists()) {
-            copy {
-                from googleServicesFile
-                into '.'
-                rename { 'google-services.json' }
-            }
-            println "✅ Using ${googleServicesFile.name} for ${flavor} build"
-        } else {
-            println "⚠️  Warning: ${googleServicesFile.name} not found!"
-        }
-    }
-}
-
-// Run before processDebugGoogleServices and processReleaseGoogleServices
-tasks.whenTaskAdded { task ->
-    if (task.name.contains('process') && task.name.contains('GoogleServices')) {
-        task.dependsOn selectGoogleServices
-    }
-}
-
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
@@ -231,14 +185,4 @@ dependencies {
     } else {
         implementation jscFlavor
     }
-
-    // Firebase BoM (Bill of Materials)
-    implementation platform('com.google.firebase:firebase-bom:34.5.0')
-    
-    // Add Firebase products you want to use
-    implementation 'com.google.firebase:firebase-analytics'
-    implementation 'com.google.firebase:firebase-auth'
-
 }
-
-apply plugin: 'com.google.gms.google-services'

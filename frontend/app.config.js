@@ -1,4 +1,17 @@
-const IS_DEV = process.env.APP_ENV === 'development';
+const dotenv = require('dotenv');
+const path = require('path');
+
+// Determine which environment to load
+const APP_ENV = process.env.APP_ENV || 'development';
+const envFile = APP_ENV === 'production' ? '.env.production' : '.env.development';
+
+// Load the appropriate .env file
+dotenv.config({ path: path.resolve(__dirname, envFile) });
+
+console.log(`📋 app.config.js: Loading ${envFile}`);
+console.log(`📋 APP_ENV: ${APP_ENV}`);
+
+const IS_DEV = APP_ENV === 'development';
 
 module.exports = {
   expo: {
@@ -36,7 +49,9 @@ module.exports = {
         }
       ],
       permissions: ['NOTIFICATIONS'],
-      // Note: googleServicesFile is managed by Android build.gradle based on build variant
+      googleServicesFile: IS_DEV
+        ? './google-services-dev.json'
+        : './google-services.json'
     },
     web: {
       bundler: 'metro',

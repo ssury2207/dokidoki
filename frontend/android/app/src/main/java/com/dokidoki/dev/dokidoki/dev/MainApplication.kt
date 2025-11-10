@@ -1,4 +1,4 @@
-package com.dokidoki.dev.dokidoki
+package com.dokidoki.dev.dokidoki.dev
 
 import android.app.Application
 import android.content.res.Configuration

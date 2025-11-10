@@ -12,5 +12,10 @@ local.properties
 *.hprof
 .cxx/
 
+# Keystores (including debug keystore)
+*.keystore
+*.jks
+debug.keystore
+
 # Bundle artifacts
 *.jsbundle
