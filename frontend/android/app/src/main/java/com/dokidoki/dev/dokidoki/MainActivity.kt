@@ -1,4 +1,4 @@
-package com.dokidoki.dev.dokidoki.dev
+package com.dokidoki.dev.dokidoki
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.dokidoki.dev.dokidoki.dev'
+    namespace 'com.dokidoki.dev.dokidoki'
     defaultConfig {
-        applicationId 'com.dokidoki.dev.dokidoki.dev'
+        applicationId 'com.dokidoki.dev.dokidoki'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 9
