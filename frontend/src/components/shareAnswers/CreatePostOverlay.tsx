@@ -156,8 +156,11 @@ const CreatePostOverlay = ({ navigation, route }: CreatePostOverlayProps) => {
     }
   };
 
-  const handleImagePress = (imageUrl: string) => {
-    navigation.navigate('FullScreenImageViewer', { imageUrl });
+  const handleImagePress = (imageUrl: string, imageIndex: number) => {
+    navigation.navigate('FullScreenImageViewer', {
+      images: images,
+      initialIndex: imageIndex,
+    });
   };
   return (
     <View style={styles.overlay}>

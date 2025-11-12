@@ -3,11 +3,24 @@
   "main": "index.tsx",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "APP_ENV=development expo start --dev-client --clear",
+    "start:dev": "APP_ENV=development expo start --dev-client --clear",
+    "start:prod": "APP_ENV=production expo start --dev-client --clear",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo run:android",
+    "android": "APP_ENV=development expo run:android --variant developmentDebug --no-build-cache",
+    "android:dev": "APP_ENV=development expo run:android --variant developmentDebug --no-build-cache",
+    "android:dev:launch": "adb shell am start -n com.dokidoki.dev.dokidoki.dev/com.dokidoki.dev.dokidoki.MainActivity",
+    "android:dev:release": "dotenv -e .env.development -- bash -c 'cd android && ./gradlew assembleDevelopmentRelease && cd .. && adb install -r android/app/build/outputs/apk/development/release/app-development-release.apk'",
+    "android:prod": "dotenv -e .env.production -- bash -c 'cd android && ./gradlew installProductionDebug && cd ..'",
+    "android:prod:launch": "adb shell am start -n com.dokidoki.dev.dokidoki/com.dokidoki.dev.dokidoki.MainActivity",
+    "android:prod:release": "dotenv -e .env.production -- bash -c 'cd android && ./gradlew assembleProductionRelease && cd .. && adb install -r android/app/build/outputs/apk/production/release/app-production-release.apk'",
     "ios": "expo run:ios",
+    "ios:dev": "APP_ENV=development expo run:ios",
+    "ios:prod": "APP_ENV=production expo run:ios",
     "web": "expo start --web",
+    "build:dev": "APP_ENV=development eas build --profile development --platform android",
+    "build:staging": "APP_ENV=development eas build --profile staging --platform android",
+    "build:prod": "APP_ENV=production eas build --profile production --platform android",
     "lint": "expo lint"
   },
   "dependencies": {
@@ -58,8 +71,10 @@
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
     "@types/react-redux": "^7.1.34",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
+    "react-native-dotenv": "^3.4.11",
     "typescript": "~5.8.3"
   },
   "private": true

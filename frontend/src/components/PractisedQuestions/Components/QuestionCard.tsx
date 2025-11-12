@@ -1,10 +1,10 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store/store';
-import { useNavigation } from 'expo-router';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/src/types/navigation';
+import React from "react";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useNavigation } from "expo-router";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "@/src/types/navigation";
 
 type QuestionCardProps = {
   question: string;
@@ -13,7 +13,7 @@ type QuestionCardProps = {
   marks: number | null;
   date: string;
   questionType: string;
-  questionData: null | [];
+  questionData: any; // Full question object for prelims
 };
 
 export default function QuestionCard(props: QuestionCardProps) {
@@ -24,20 +24,12 @@ export default function QuestionCard(props: QuestionCardProps) {
   const date = props.date;
   const questionData = props.questionData;
   const buttonHandler = () => {
-    if (questionType === 'pre') {
-      const matchedQuestion = questionData?.find((q) => q.date === date);
-
-      if (!matchedQuestion) {
-        alert('No question found for this date');
-        return;
-      }
-
-      navigation.navigate('PrelimsArchived', {
-        question: matchedQuestion,
+    if (questionType === "prelims") {
+      navigation.navigate("PrelimsArchived", {
+        question: questionData,
       });
     } else {
-      // alert(`Mains navigation`);
-      navigation.navigate('MainsScreen', { date });
+      navigation.navigate("MainsScreen", { date });
     }
   };
 
@@ -91,36 +83,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginVertical: 8,
   },
-  bgLight: { backgroundColor: '#FFF' },
-  bgDark: { backgroundColor: '#393E46' },
-  borderLight: { borderColor: '#B3B4B7' },
-  borderDark: { borderColor: '#108174' },
+  bgLight: { backgroundColor: "#FFF" },
+  bgDark: { backgroundColor: "#393E46" },
+  borderLight: { borderColor: "#B3B4B7" },
+  borderDark: { borderColor: "#108174" },
 
   titleLight: {
-    color: '#50555C',
+    color: "#50555C",
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: "400",
   },
   titleDark: {
-    color: '#FFF',
+    color: "#FFF",
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: "400",
   },
 
   metaLight: {
-    color: '#393E46',
+    color: "#393E46",
     fontSize: 14,
-    fontWeight: '300',
+    fontWeight: "300",
   },
   metaDark: {
-    color: '#CCCCCC',
+    color: "#CCCCCC",
     fontSize: 14,
-    fontWeight: '300',
+    fontWeight: "300",
   },
 
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 8,
   },
 });

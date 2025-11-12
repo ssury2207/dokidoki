@@ -2,7 +2,7 @@
   "expo": {
     "name": "dokidoki",
     "slug": "dokidoki",
-    "version": "1.4.0",
+    "version": "1.4.5",
     "orientation": "portrait",
     "icon": "./assets/icon-dokidoki.png",
     "scheme": "frontend",

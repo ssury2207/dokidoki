@@ -14,14 +14,16 @@ import { fetchArchivedPrelimsSubmission } from '@/src/api/fetchArchivedPrelimsSu
 import { supabase } from '@/src/supabaseConfig';
 
 type QuestionItem = {
-  Question: string;
-  Year: string;
-  Table: any;
-  Options: string[];
+  question: string;
+  year: string;
+  table_name?: any;
+  options: string[];
   date: string;
-  questionId: string;
-  Answer: string;
-  Explanation: string;
+  question_id: string;
+  answer: string;
+  explanation: string;
+  chapters?: string[];
+  section?: string;
 };
 
 type ParamList = {
@@ -33,6 +35,18 @@ type ParamList = {
 export default function PrelimsArchivedScreen() {
   const route = useRoute<RouteProp<ParamList, 'PrelimsArchived'>>();
   const { question } = route.params;
+
+  // Parse table_name same as PYQs
+  let tableData = question.table_name;
+  if (typeof tableData === 'string' && tableData.trim()) {
+    try {
+      const jsonString = tableData.replace(/'/g, '"');
+      tableData = JSON.parse(jsonString);
+    } catch (e) {
+      console.log('Failed to parse table_name:', e);
+      tableData = null;
+    }
+  }
 
   const theme = useSelector((state: RootState) => state.theme.isLight);
 
@@ -111,7 +125,7 @@ export default function PrelimsArchivedScreen() {
         : initialSelection;
 
     const expectedOptionIDX =
-      question.Answer.toLowerCase().charCodeAt(0) - 'a'.charCodeAt(0);
+      question.answer.toLowerCase().charCodeAt(0) - 'a'.charCodeAt(0);
     const isCorrect = selectedIndex === expectedOptionIDX;
 
     setVerdict(isCorrect ? 'Correct' : 'Incorrect');
@@ -145,12 +159,12 @@ export default function PrelimsArchivedScreen() {
         verdict: isCorrect ? 'correct' : 'incorrect',
         timestamp: new Date().toISOString(),
         question_snapshot: {
-          question_id: question.questionId,
-          Question: question.Question,
-          Answer: question.Answer,
-          Options: question.Options,
-          Table: question.Table ?? [],
-          Explanation: question.Explanation,
+          question_id: question.question_id,
+          question: question.question,
+          answer: question.answer,
+          options: question.options,
+          table_name: question.table_name ?? null,
+          explanation: question.explanation,
         },
       };
 
@@ -209,7 +223,7 @@ export default function PrelimsArchivedScreen() {
         <UserStats />
         <Card>
           <PrelimsArchivedQuestionSection
-            data={question}
+            data={{...question, table_name: tableData}}
             isLocked={showAnswer}
             initialSelection={initialSelection}
             onSelectOption={(idx) => setInitialSelection(idx)}
@@ -221,9 +235,9 @@ export default function PrelimsArchivedScreen() {
           />
           {question && showAnswer && selectedOption != null && (
             <ExpectedArchievedPrelimsAnswer
-              actualOption={question.Options[selectedOption]}
-              expectedOption={question.Answer}
-              explainatation={question.Explanation}
+              actualOption={question.options[selectedOption]}
+              expectedOption={question.answer}
+              explainatation={question.explanation}
               verdict={verdict}
             />
           )}

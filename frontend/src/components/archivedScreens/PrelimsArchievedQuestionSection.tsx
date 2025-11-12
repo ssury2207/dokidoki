@@ -38,16 +38,16 @@ const PrelimsArchivedQuestionSection = ({
     <View style={styles.cardContainer}>
       <View style={styles.row}>
         <NormalText text="Year :" />
-        <NormalText text={data.Year} />
+        <NormalText text={data.year} />
       </View>
 
       <View style={styles.questionContainer}>
-        <NormalText text={data.Question} />
+        <NormalText text={data.question} />
       </View>
       <View style={styles.questionContainer}>
-        <Table table={data.Table} />
+        <Table table={data.table_name} />
       </View>
-      {data.Options?.map((item: string, index: number) => (
+      {data.options?.map((item: string, index: number) => (
         <TouchableOpacity
           key={index}
           disabled={isLocked}
@@ -67,7 +67,7 @@ const PrelimsArchivedQuestionSection = ({
           <AnswerItem text={item} />
         </TouchableOpacity>
       ))}
-      <ShareButton question={data.Question} />
+      <ShareButton question={data.question} />
     </View>
   );
 };
