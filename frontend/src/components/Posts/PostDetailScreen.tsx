@@ -22,6 +22,9 @@ import { supabase } from "@/src/supabaseConfig";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { RootStackParamList } from "@/src/types/navigation";
 import FullScreenLoader from "@/src/components/common/FullScreenLoader";
+import { getCloudinaryThumbnail } from "@/src/utils/imageUtils";
+import ShimmerPlaceholder from "@/src/components/common/ShimmerComponent";
+import PostDetailsEvaluationCard from "./PostDetailsEvaluationCard";
 
 type PostDetailRouteProp = RouteProp<RootStackParamList, "PostDetail">;
 type Nav = StackNavigationProp<RootStackParamList, "PostDetail">;
@@ -77,8 +80,11 @@ export default function PostDetailScreen() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState<boolean>(false);
   const [likingComments, setLikingComments] = useState<Set<string>>(new Set());
-  const [sortBy, setSortBy] = useState<"created_at" | "like_count">("created_at");
+  const [sortBy, setSortBy] = useState<"created_at" | "like_count">(
+    "created_at"
+  );
   const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
   const MAX_COMMENT_LENGTH = 500;
 
@@ -127,7 +133,9 @@ export default function PostDetailScreen() {
       const { error } = await supabase
         .from("posts")
         .update({
-          like_count: isLiked ? Math.max(0, post.like_count - 1) : post.like_count + 1,
+          like_count: isLiked
+            ? Math.max(0, post.like_count - 1)
+            : post.like_count + 1,
           liked_by: newLikedBy,
         })
         .eq("id", postId);
@@ -138,7 +146,9 @@ export default function PostDetailScreen() {
         prev
           ? {
               ...prev,
-              like_count: isLiked ? Math.max(0, prev.like_count - 1) : prev.like_count + 1,
+              like_count: isLiked
+                ? Math.max(0, prev.like_count - 1)
+                : prev.like_count + 1,
               liked_by: newLikedBy,
             }
           : null
@@ -152,7 +162,13 @@ export default function PostDetailScreen() {
   }, [post, currentUser?.id, postId, likingPost]);
 
   const submitComment = useCallback(async () => {
-    if (!commentText.trim() || !currentUser?.id || submittingComment || !post || post.discussionlocked)
+    if (
+      !commentText.trim() ||
+      !currentUser?.id ||
+      submittingComment ||
+      !post ||
+      post.discussionlocked
+    )
       return;
 
     if (commentText.length > MAX_COMMENT_LENGTH) {
@@ -169,9 +185,7 @@ export default function PostDetailScreen() {
         post_id: postId,
         author_id: currentUser.id,
         author_username:
-          userProgress.userName ||
-          currentUser.email?.split("@")[0] ||
-          "User",
+          userProgress.userName || currentUser.email?.split("@")[0] || "User",
         content: commentText.trim(),
         like_count: 0,
         dislike_count: 0,
@@ -255,14 +269,19 @@ export default function PostDetailScreen() {
         const currentComment = comments.find((c) => c.id === commentId);
         if (!currentComment) return;
 
-        const wasDisliked = currentComment.disliked_by?.includes(currentUser.id) || false;
+        const wasDisliked =
+          currentComment.disliked_by?.includes(currentUser.id) || false;
         const newLikedBy = currentlyLiked
-          ? currentComment.liked_by?.filter((uid) => uid !== currentUser.id) || []
+          ? currentComment.liked_by?.filter((uid) => uid !== currentUser.id) ||
+            []
           : [...(currentComment.liked_by || []), currentUser.id];
 
-        const newDislikedBy = !currentlyLiked && wasDisliked
-          ? currentComment.disliked_by?.filter((uid) => uid !== currentUser.id) || []
-          : currentComment.disliked_by || [];
+        const newDislikedBy =
+          !currentlyLiked && wasDisliked
+            ? currentComment.disliked_by?.filter(
+                (uid) => uid !== currentUser.id
+              ) || []
+            : currentComment.disliked_by || [];
 
         const { error } = await supabase
           .from("comments")
@@ -270,9 +289,10 @@ export default function PostDetailScreen() {
             like_count: currentlyLiked
               ? Math.max(0, currentComment.like_count - 1)
               : currentComment.like_count + 1,
-            dislike_count: !currentlyLiked && wasDisliked
-              ? Math.max(0, currentComment.dislike_count - 1)
-              : currentComment.dislike_count,
+            dislike_count:
+              !currentlyLiked && wasDisliked
+                ? Math.max(0, currentComment.dislike_count - 1)
+                : currentComment.dislike_count,
             liked_by: newLikedBy,
             disliked_by: newDislikedBy,
           })
@@ -288,9 +308,10 @@ export default function PostDetailScreen() {
                   like_count: currentlyLiked
                     ? Math.max(0, comment.like_count - 1)
                     : comment.like_count + 1,
-                  dislike_count: !currentlyLiked && wasDisliked
-                    ? Math.max(0, comment.dislike_count - 1)
-                    : comment.dislike_count,
+                  dislike_count:
+                    !currentlyLiked && wasDisliked
+                      ? Math.max(0, comment.dislike_count - 1)
+                      : comment.dislike_count,
                   liked_by: newLikedBy,
                   disliked_by: newDislikedBy,
                 }
@@ -320,14 +341,20 @@ export default function PostDetailScreen() {
         const currentComment = comments.find((c) => c.id === commentId);
         if (!currentComment) return;
 
-        const wasLiked = currentComment.liked_by?.includes(currentUser.id) || false;
+        const wasLiked =
+          currentComment.liked_by?.includes(currentUser.id) || false;
         const newDislikedBy = currentlyDisliked
-          ? currentComment.disliked_by?.filter((uid) => uid !== currentUser.id) || []
+          ? currentComment.disliked_by?.filter(
+              (uid) => uid !== currentUser.id
+            ) || []
           : [...(currentComment.disliked_by || []), currentUser.id];
 
-        const newLikedBy = !currentlyDisliked && wasLiked
-          ? currentComment.liked_by?.filter((uid) => uid !== currentUser.id) || []
-          : currentComment.liked_by || [];
+        const newLikedBy =
+          !currentlyDisliked && wasLiked
+            ? currentComment.liked_by?.filter(
+                (uid) => uid !== currentUser.id
+              ) || []
+            : currentComment.liked_by || [];
 
         const { error } = await supabase
           .from("comments")
@@ -335,9 +362,10 @@ export default function PostDetailScreen() {
             dislike_count: currentlyDisliked
               ? Math.max(0, currentComment.dislike_count - 1)
               : currentComment.dislike_count + 1,
-            like_count: !currentlyDisliked && wasLiked
-              ? Math.max(0, currentComment.like_count - 1)
-              : currentComment.like_count,
+            like_count:
+              !currentlyDisliked && wasLiked
+                ? Math.max(0, currentComment.like_count - 1)
+                : currentComment.like_count,
             disliked_by: newDislikedBy,
             liked_by: newLikedBy,
           })
@@ -353,9 +381,10 @@ export default function PostDetailScreen() {
                   dislike_count: currentlyDisliked
                     ? Math.max(0, comment.dislike_count - 1)
                     : comment.dislike_count + 1,
-                  like_count: !currentlyDisliked && wasLiked
-                    ? Math.max(0, comment.like_count - 1)
-                    : comment.like_count,
+                  like_count:
+                    !currentlyDisliked && wasLiked
+                      ? Math.max(0, comment.like_count - 1)
+                      : comment.like_count,
                   disliked_by: newDislikedBy,
                   liked_by: newLikedBy,
                 }
@@ -623,15 +652,27 @@ export default function PostDetailScreen() {
                   <TouchableOpacity
                     key={index}
                     onPress={() =>
-                      navigation.navigate("FullScreenImageViewer", { imageUrl })
+                      navigation.navigate("FullScreenImageViewer", {
+                        images: post.images,
+                        initialIndex: index,
+                      })
                     }
                     style={styles.imageContainer}
                   >
-                    <Image
-                      source={{ uri: imageUrl }}
-                      style={styles.answerImage}
-                      resizeMode="cover"
-                    />
+                    <ShimmerPlaceholder
+                      visible={loadedImages.has(index)}
+                      borderRadius={12}
+                      containerStyle={styles.answerImage}
+                    >
+                      <Image
+                        source={{ uri: getCloudinaryThumbnail(imageUrl) }}
+                        style={styles.answerImage}
+                        resizeMode="cover"
+                        onLoad={() =>
+                          setLoadedImages((prev) => new Set(prev).add(index))
+                        }
+                      />
+                    </ShimmerPlaceholder>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -703,7 +744,12 @@ export default function PostDetailScreen() {
             </TouchableOpacity>
           </View>
         </View>
-
+        {/* Evaluation */}
+        <PostDetailsEvaluationCard
+          postID={post.id}
+          authorID={post.author_id}
+          currentUserID={currentUser?.id || ""}
+        />
         {/* Comment Section */}
         <View
           style={[
@@ -717,7 +763,9 @@ export default function PostDetailScreen() {
               { color: !isLight ? "#000" : "#EEE" },
             ]}
           >
-            {post.discussionlocked ? "Discussion Locked" : "Share your review about this answer:"}
+            {post.discussionlocked
+              ? "Discussion Locked"
+              : "Share your review about this answer:"}
           </Text>
 
           {post.discussionlocked ? (

@@ -203,8 +203,12 @@ const CustomPostOverlay = ({ navigation, route }: CustomPostOverlayProps) => {
     }
   };
 
-  const handleImagePress = (imageUrl: string) => {
-    navigation.navigate('FullScreenImageViewer', { imageUrl });
+  const handleImagePress = (imageUrl: string, imageIndex: number) => {
+    const imageUris = uploadCopies.map(img => img.uri);
+    navigation.navigate('FullScreenImageViewer', {
+      images: imageUris,
+      initialIndex: imageIndex,
+    });
   };
 
   return (

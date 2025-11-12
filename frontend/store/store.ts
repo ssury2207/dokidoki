@@ -1,18 +1,28 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import userProgressReducer from './userProgressSlice';
 import prelimsQuestionSlice from './slices/prelimsQuestionSlice';
 import themeSlice from './slices/themeSlice';
-import archivedQuestionsReducer from './slices/archivedQuestionsSlice';
 import optionSelectorSlice from './slices/optionSelectorSlice';
-export const store = configureStore({
-  reducer: {
-    userProgress: userProgressReducer,
-    prelimsQuestion: prelimsQuestionSlice,
-    theme: themeSlice,
-    archivedQuestions: archivedQuestionsReducer,
-    optionSelector: optionSelectorSlice,
-  },
+
+const appReducer = combineReducers({
+  userProgress: userProgressReducer,
+  prelimsQuestion: prelimsQuestionSlice,
+  theme: themeSlice,
+  optionSelector: optionSelectorSlice,
 });
 
-export type RootState = ReturnType<typeof store.getState>;
+const rootReducer = (state: any, action: any) => {
+  if (action.type === 'RESET_STORE') {
+    // Keep only theme state
+    const { theme } = state;
+    state = { theme };
+  }
+  return appReducer(state, action);
+};
+
+export const store = configureStore({
+  reducer: rootReducer,
+});
+
+export type RootState = ReturnType<typeof appReducer>;
 export type AppDispatch = typeof store.dispatch;

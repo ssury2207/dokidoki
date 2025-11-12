@@ -16,6 +16,7 @@ import { supabase } from "@/src/supabaseConfig";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import type { RootStackParamList } from "@/src/types/navigation";
 import FullScreenLoader from "@/src/components/common/FullScreenLoader";
+import EvaluationScoreWidget from "./components/EvaluationScoreWidget";
 
 // Types
 export type Post = {
@@ -193,7 +194,7 @@ export default function OthersAnswersListScreen() {
   const renderPost = useCallback(
     ({ item }: { item: Post }) => {
       const date = formatDate(item.created_at);
-      const postType = item.post_type || 'daily_challenge'; // Default to daily_challenge for backward compatibility
+      const postType = item.post_type || 'daily_challenge';
       const badgeText = postType === 'custom_question' ? '📝 Custom Question' : '📚 Daily Challenge';
       const badgeColor = postType === 'custom_question' ? '#FF8358' : '#00ADB5';
 
@@ -260,6 +261,7 @@ export default function OthersAnswersListScreen() {
               </View>
             </View>
           </View>
+          <EvaluationScoreWidget postID={item.id} theme={!isLight} />
         </TouchableOpacity>
       );
     },
