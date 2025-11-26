@@ -25,6 +25,7 @@ import FullScreenLoader from "@/src/components/common/FullScreenLoader";
 import { getCloudinaryThumbnail } from "@/src/utils/imageUtils";
 import ShimmerPlaceholder from "@/src/components/common/ShimmerComponent";
 import PostDetailsEvaluationCard from "./PostDetailsEvaluationCard";
+import TextLabel from "../atoms/TextLabel";
 
 type PostDetailRouteProp = RouteProp<RootStackParamList, "PostDetail">;
 type Nav = StackNavigationProp<RootStackParamList, "PostDetail">;
@@ -43,6 +44,7 @@ type DetailedPost = {
   comment_count?: number;
   liked_by?: string[];
   discussionlocked?: boolean;
+  time_taken: number;
 };
 
 type Comment = {
@@ -112,6 +114,7 @@ export default function PostDetailScreen() {
       }
 
       setPost(data as DetailedPost);
+      // console.log(data);
     } catch (error) {
       console.error("Error fetching post:", error);
       Alert.alert("Error", "Failed to load post");
@@ -677,6 +680,11 @@ export default function PostDetailScreen() {
                 ))}
               </ScrollView>
             </View>
+          )}
+          {post.time_taken ? (
+            <TextLabel text={`Time Taken:- ${post.time_taken} min`} />
+          ) : (
+            <></>
           )}
 
           {/* Meta Info */}
