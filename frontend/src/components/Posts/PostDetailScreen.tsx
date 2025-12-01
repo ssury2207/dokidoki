@@ -88,7 +88,7 @@ export default function PostDetailScreen() {
   const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
 
-  const MAX_COMMENT_LENGTH = 500;
+  const MAX_COMMENT_LENGTH = 2000;
 
   const formatDate = useCallback((createdAt: string) => {
     try {
