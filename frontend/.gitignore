@@ -15,6 +15,7 @@ android/app/build/
 android/.gradle/
 android/app/.cxx/
 android/local.properties
+android/gradle.properties
 ios/build/
 ios/Pods/
 .kotlin/

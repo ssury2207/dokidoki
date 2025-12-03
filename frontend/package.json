@@ -21,6 +21,8 @@
     "build:dev": "APP_ENV=development eas build --profile development --platform android",
     "build:staging": "APP_ENV=development eas build --profile staging --platform android",
     "build:prod": "APP_ENV=production eas build --profile production --platform android",
+    "bundle:dev": "dotenv -e .env.development -- bash -c 'export APP_ENV=development && cd android && ./gradlew bundleDevelopmentRelease'",
+    "bundle:prod": "dotenv -e .env.production -- bash -c 'export APP_ENV=production && cd android && ./gradlew bundleProductionRelease'",
     "lint": "expo lint"
   },
   "dependencies": {
