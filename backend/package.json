@@ -4,7 +4,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "send-notifications": "node sendPushNotifications.js"
+    "start": "NODE_ENV=development node index.js",
+    "start:dev": "NODE_ENV=development node index.js",
+    "start:prod": "NODE_ENV=production node index.js",
+    "dev": "NODE_ENV=development node index.js",
+    "send-notifications": "NODE_ENV=development node sendPushNotifications.js",
+    "send-notifications:dev": "NODE_ENV=development node sendPushNotifications.js",
+    "send-notifications:prod": "NODE_ENV=production node sendPushNotifications.js",
+    "assign-questions": "NODE_ENV=development node assignDailyQuestion.js",
+    "assign-questions:dev": "NODE_ENV=development node assignDailyQuestion.js",
+    "assign-questions:prod": "NODE_ENV=production node assignDailyQuestion.js"
   },
   "keywords": [],
   "author": "",

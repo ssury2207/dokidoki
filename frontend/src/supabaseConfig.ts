@@ -9,6 +9,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env file.');
 }
 
+// Log environment (helps debugging)
+console.log(`🔧 Running in ${process.env.EXPO_PUBLIC_APP_ENV || 'unknown'} mode`);
+console.log(`🔗 Connecting to: ${supabaseUrl}`);
+
 // Create Supabase client with AsyncStorage for session persistence
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

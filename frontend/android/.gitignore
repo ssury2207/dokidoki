@@ -1,0 +1,21 @@
+# OSX
+#
+.DS_Store
+
+# Android/IntelliJ
+#
+build/
+.idea
+.gradle
+local.properties
+*.iml
+*.hprof
+.cxx/
+
+# Keystores (including debug keystore)
+*.keystore
+*.jks
+debug.keystore
+
+# Bundle artifacts
+*.jsbundle

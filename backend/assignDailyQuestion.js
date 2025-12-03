@@ -3,8 +3,20 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
-// Load environment variables
-dotenv.config();
+// Load environment-specific variables
+const nodeEnv = process.env.NODE_ENV || 'development';
+dotenv.config({
+  path: `.env.${nodeEnv}`
+});
+
+console.log(`🔧 Assign questions running in ${nodeEnv} mode`);
+console.log(`🔗 Connecting to: ${process.env.SUPABASE_URL}`);
+
+// Validate environment variables
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error(`❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.${nodeEnv} file`);
+  process.exit(1);
+}
 
 // Initialize Supabase client with service role key
 const supabase = createClient(

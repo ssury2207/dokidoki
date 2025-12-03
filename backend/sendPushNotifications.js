@@ -1,14 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
-// Load environment variables
-dotenv.config();
+// Load environment-specific variables
+const nodeEnv = process.env.NODE_ENV || 'development';
+dotenv.config({
+  path: `.env.${nodeEnv}`
+});
+
+console.log(`🔧 Send notifications running in ${nodeEnv} mode`);
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env file');
+  console.error(`❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.${nodeEnv} file`);
   process.exit(1);
 }
 
