@@ -88,10 +88,10 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
     if (currentUserID === authorID) {
       setEvaluateButton(false);
       if (evaluationCount === 0) {
-        setDisclaimer("Waiting for evaluation...");
+        setDisclaimer("Community Evaluation: No reviews yet");
       } else {
         setDisclaimer(
-          `You received ${evaluationCount} evaluations from the community`
+          `Community Evaluation: ${evaluationCount} ${evaluationCount === 1 ? 'review' : 'reviews'} received`
         );
       }
     } else {
@@ -109,6 +109,11 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
       setEvaluateButton(!hasUserEvaluated);
     }
   }, [evaluationCount, hasUserEvaluated, currentUserID, authorID]);
+
+  const handleAIEvaluation = () => {
+    // Dummy function for now - will be implemented later
+    alert("AI Evaluation feature coming soon!");
+  };
 
   return (
     <View
@@ -129,6 +134,19 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
         authorID={authorID}
         evaluatorID={currentUserID}
       />
+
+      {/* AI Evaluation Button - Only visible for post author */}
+      {currentUserID === authorID && (
+        <>
+          <PrimaryButton
+            isActive={true}
+            title="Get AI Evaluation"
+            submitHandler={handleAIEvaluation}
+          />
+          <View style={styles.sectionDivider} />
+        </>
+      )}
+
       <TextLabel text={`${disclaimer}`} />
       {evaluationCount > 0 && evaluationStats ? (
         <EvaluationBreakdown
@@ -170,6 +188,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    marginVertical: 16,
   },
 });
 

@@ -103,6 +103,12 @@ const CustomAnswerScreen = ({ navigation }: CustomAnswerScreenProps) => {
             isQuestionAvailable={true}
           />
 
+          <View style={styles.aiEvaluationInfoBox}>
+            <Text style={[styles.aiEvaluationInfoText, { color: theme ? "#00ADB5" : "#00ADB5" }]}>
+              Post your answer to unlock AI-powered evaluation!
+            </Text>
+          </View>
+
           <PrimaryButton
             isActive={uploadCopies.length > 0}
             submitHandler={submitHandler}
@@ -134,6 +140,20 @@ const styles = StyleSheet.create({
   },
   instructionTextContainer: {
     marginTop: 12,
+  },
+  aiEvaluationInfoBox: {
+    backgroundColor: "rgba(0, 173, 181, 0.1)",
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: "rgba(0, 173, 181, 0.3)",
+  },
+  aiEvaluationInfoText: {
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 20,
   },
 });
 

@@ -255,12 +255,20 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
           )}
 
           {data != null ? <ShareButton question={data.Question} /> : <></>}
+
           {!isAnswerCopiesDateExists ? (
-            <PrimaryButton
-              isActive={uploadCopies.length > 0}
-              submitHandler={submitHandler}
-              title="Submit"
-            />
+            <>
+              <View style={styles.aiEvaluationInfoBox}>
+                <Text style={[styles.aiEvaluationInfoText, { color: theme ? "#00ADB5" : "#00ADB5" }]}>
+                  Post your answer to unlock AI-powered evaluation!
+                </Text>
+              </View>
+              <PrimaryButton
+                isActive={uploadCopies.length > 0}
+                submitHandler={submitHandler}
+                title="Submit"
+              />
+            </>
           ) : (
             <>
               {userPostId ? (
@@ -276,6 +284,11 @@ const MainsScreen = ({ navigation, route }: MainsScreenProps) => {
                 </>
               ) : (
                 <>
+                  <View style={styles.aiEvaluationInfoBox}>
+                    <Text style={[styles.aiEvaluationInfoText, { color: theme ? "#00ADB5" : "#00ADB5" }]}>
+                      Post your answer to unlock AI-powered evaluation!
+                    </Text>
+                  </View>
                   <PrimaryButton
                     isActive={true}
                     submitHandler={() =>
@@ -329,6 +342,20 @@ const styles = StyleSheet.create({
     color: "#37B9C5",
     fontWeight: "700",
     fontStyle: "italic",
+  },
+  aiEvaluationInfoBox: {
+    backgroundColor: "rgba(0, 173, 181, 0.1)",
+    borderRadius: 8,
+    padding: 12,
+    marginVertical: 12,
+    borderWidth: 1,
+    borderColor: "rgba(0, 173, 181, 0.3)",
+  },
+  aiEvaluationInfoText: {
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 20,
   },
 });
 
