@@ -8,6 +8,13 @@ import EvaluationBreakdown from "./components/EvaluationBreakdown";
 import EvaluationScoreWidget from "./components/EvaluationScoreWidget";
 import TextLabel from "../atoms/TextLabel";
 import { supabase } from "@/src/supabaseConfig";
+import { useNavigation } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import type { RootStackParamList } from "@/src/types/navigation";
+import AIEvaluationLoader from "../common/AIEvaluationLoader";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+type Nav = StackNavigationProp<RootStackParamList>;
 
 interface PostDetailsEvaluationCardProps {
   postID: string;
@@ -20,6 +27,7 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
   authorID,
   currentUserID,
 }) => {
+  const navigation = useNavigation<Nav>();
   const theme = useSelector((state: RootState) => state.theme.isLight);
   const [evaluationCount, setEvaluationCount] = useState(0);
   const [hasUserEvaluated, setHasUserEvaluated] = useState(false);
@@ -34,6 +42,10 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
     param5_avg: number;
     average_score: number;
   } | null>(null);
+
+  // AI Evaluation states
+  const [hasAIEvaluation, setHasAIEvaluation] = useState(false);
+  const [isGeneratingAIEvaluation, setIsGeneratingAIEvaluation] = useState(false);
 
   const getEvaluationStats = async () => {
     try {
@@ -77,12 +89,30 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
     }
   };
 
+  // Check if AI evaluation exists for this post
+  const checkAIEvaluation = async () => {
+    try {
+      // For now, we'll use AsyncStorage to track AI evaluations
+      // In production, this should be stored in the database
+      const aiEvaluationKey = `ai_evaluation_${postID}`;
+      const hasEvaluation = await AsyncStorage.getItem(aiEvaluationKey);
+      setHasAIEvaluation(hasEvaluation === "true");
+    } catch (error) {
+      console.log("Error checking AI evaluation:", error);
+      setHasAIEvaluation(false);
+    }
+  };
+
   useEffect(() => {
     getEvaluationStats();
     if (currentUserID !== authorID) {
       checkSubmissionExists();
     }
-  }, [postID]);
+    // Check if AI evaluation exists (only for author)
+    if (currentUserID === authorID) {
+      checkAIEvaluation();
+    }
+  }, [postID, currentUserID, authorID]);
 
   useEffect(() => {
     if (currentUserID === authorID) {
@@ -110,9 +140,37 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
     }
   }, [evaluationCount, hasUserEvaluated, currentUserID, authorID]);
 
-  const handleAIEvaluation = () => {
-    // Dummy function for now - will be implemented later
-    alert("AI Evaluation feature coming soon!");
+  const handleAIEvaluation = async () => {
+    if (hasAIEvaluation) {
+      // If evaluation already exists, navigate to the report
+      navigation.navigate("AIEvaluationReport", {
+        postId: postID,
+      });
+    } else {
+      // Generate new AI evaluation
+      setIsGeneratingAIEvaluation(true);
+
+      try {
+        // Simulate AI evaluation generation (2-3 seconds)
+        // In production, this will call your AI API
+        await new Promise((resolve) => setTimeout(resolve, 3000));
+
+        // Mark that AI evaluation has been generated
+        const aiEvaluationKey = `ai_evaluation_${postID}`;
+        await AsyncStorage.setItem(aiEvaluationKey, "true");
+        setHasAIEvaluation(true);
+
+        // Navigate to the report screen
+        navigation.navigate("AIEvaluationReport", {
+          postId: postID,
+        });
+      } catch (error) {
+        console.log("Error generating AI evaluation:", error);
+        alert("Failed to generate AI evaluation. Please try again.");
+      } finally {
+        setIsGeneratingAIEvaluation(false);
+      }
+    }
   };
 
   return (
@@ -122,6 +180,9 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
         { backgroundColor: !theme ? "#FFFFFF" : "#393E46" },
       ]}
     >
+      {/* AI Evaluation Loader */}
+      <AIEvaluationLoader visible={isGeneratingAIEvaluation} />
+
       <EvaluationModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -140,7 +201,7 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
         <>
           <PrimaryButton
             isActive={true}
-            title="Get AI Evaluation"
+            title={hasAIEvaluation ? "View AI Evaluation" : "Get AI Evaluation"}
             submitHandler={handleAIEvaluation}
           />
           <View style={styles.sectionDivider} />
