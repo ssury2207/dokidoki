@@ -1,4 +1,4 @@
-import { getCloudinaryThumbnail } from "@/src/utils/imageUtils";
+import { getCloudinaryThumbnail } from '@/src/utils/imageUtils';
 
 async function urlToBase64(url: string): Promise<string> {
   const response = await fetch(url);
@@ -7,7 +7,7 @@ async function urlToBase64(url: string): Promise<string> {
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
-      const base64Data = base64.split(",")[1];
+      const base64Data = base64.split(',')[1];
       resolve(base64Data);
     };
     reader.onerror = reject;
@@ -19,23 +19,23 @@ export async function evaluateAnswerByAI(imageUrls: string[]) {
   try {
     // 1. Validate input
     if (!imageUrls || imageUrls.length === 0) {
-      throw new Error("No images provided");
+      throw new Error('No images provided');
     }
 
     // 2. Get API key
     const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-    console.log("API Key exists:", !!apiKey);
+    console.log('API Key exists:', !!apiKey);
     if (!apiKey) {
-      throw new Error("Gemini API key not configured");
+      throw new Error('Gemini API key not configured');
     }
 
     // 3. Use compressed images to reduce payload size
-    console.log("Converting images to base64...", imageUrls.length, "images");
+    console.log('Converting images to base64...', imageUrls.length, 'images');
     const compressedUrls = imageUrls.map((url) => getCloudinaryThumbnail(url));
-    console.log("Using compressed images:", compressedUrls);
+    console.log('Using compressed images:', compressedUrls);
     const imagePromises = compressedUrls.map((url) => urlToBase64(url));
     const base64Images = await Promise.all(imagePromises);
-    console.log("Base64 conversion complete");
+    console.log('Base64 conversion complete');
     // 4. User prompt
     const userPrompt = `Analyze this UPSC Mains answer from the image.
 First, extract and read the question written at the top of the answer sheet. Evaluate whether the answer meets the demand of the question based on:
@@ -109,12 +109,12 @@ Write feedback like you're talking to a friend - clear, honest, helpful.`;
       { text: userPrompt },
       ...base64Images.map((base64Data) => ({
         inline_data: {
-          mime_type: "image/jpeg",
+          mime_type: 'image/jpeg',
           data: base64Data,
         },
       })),
     ];
-    console.log("Calling Gemini API...");
+    console.log('Calling Gemini API...');
 
     const requestBody = {
       system_instruction: {
@@ -124,63 +124,102 @@ Write feedback like you're talking to a friend - clear, honest, helpful.`;
       },
       contents: [
         {
-          role: "user",
+          role: 'user',
           parts: parts,
         },
       ],
       generationConfig: {
         temperature: 0.7,
-        maxOutputTokens: 8192,
-        responseMimeType: "application/json",
+        maxOutputTokens: 4096,
+        responseMimeType: 'application/json',
       },
     };
 
-    console.log("Request body size (KB):", JSON.stringify(requestBody).length / 1024);
+    console.log(
+      'Request body size (KB):',
+      JSON.stringify(requestBody).length / 1024
+    );
 
     // 7. Call Gemini API
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
       {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestBody),
       }
     );
 
-    console.log("API Response status:", response.status);
+    console.log('API Response status:', response.status);
 
     // 8. Check response status
     if (!response.ok) {
-      const errorData = await response.json();
-      console.log("API Error:", errorData);
-      throw new Error(errorData.error?.message || "Gemini API request failed");
+      let errorMessage = 'Gemini API request failed';
+      try {
+        const errorData = await response.json();
+        console.log('API Error:', errorData);
+        errorMessage = errorData.error?.message || errorMessage;
+      } catch (parseError) {
+        console.log('Could not parse error response');
+      }
+      throw new Error(errorMessage);
     }
 
     // 9. Parse response
     const data = await response.json();
-    let aiResponse = data.candidates[0].content.parts[0].text;
-    console.log(data);
+    console.log('API Response:', data);
 
-    // 10. Clean markdown code blocks if present
+    // 10. Validate response structure
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error(
+        'No response generated. Content may have been blocked by safety filters.'
+      );
+    }
+
+    if (
+      !data.candidates[0].content ||
+      !data.candidates[0].content.parts ||
+      data.candidates[0].content.parts.length === 0
+    ) {
+      throw new Error('Invalid response structure from API');
+    }
+
+    let aiResponse = data.candidates[0].content.parts[0].text;
+    console.log(aiResponse);
+
+    if (!aiResponse) {
+      throw new Error('Empty response from API');
+    }
+
+    // 11. Clean markdown code blocks if present
     aiResponse = aiResponse
-      .replace(/```json\n?/g, "")
-      .replace(/```\n?/g, "")
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
       .trim();
 
-    // 11. Parse JSON from AI
-    const evaluation = JSON.parse(aiResponse);
+    // 12. Parse JSON from AI
+    let evaluation;
+    try {
+      evaluation = JSON.parse(aiResponse);
+    } catch (parseError: any) {
+      console.error('JSON Parse Error:', parseError);
+      console.error('Partial response received:', aiResponse.substring(0, 500));
+      throw new Error(
+        'Response was incomplete or malformed. The AI may have generated too much content. Try with fewer images or simpler content.'
+      );
+    }
 
-    // 12. Return success
+    // 13. Return success
     return {
       success: true,
       data: evaluation,
       error: null,
     };
   } catch (error: any) {
-    console.error("AI Evaluation Error:", error);
-    console.error("Error details:", {
+    console.error('AI Evaluation Error:', error);
+    console.error('Error details:', {
       message: error.message,
       name: error.name,
       stack: error.stack,
@@ -188,7 +227,7 @@ Write feedback like you're talking to a friend - clear, honest, helpful.`;
     return {
       success: false,
       data: null,
-      error: error.message || "Unknown error occurred",
+      error: error.message || 'Unknown error occurred',
     };
   }
 }
