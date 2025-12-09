@@ -26,6 +26,8 @@ import { getCloudinaryThumbnail } from "@/src/utils/imageUtils";
 import ShimmerPlaceholder from "@/src/components/common/ShimmerComponent";
 import PostDetailsEvaluationCard from "./PostDetailsEvaluationCard";
 import TextLabel from "../atoms/TextLabel";
+import PrimaryButton from "../atoms/PrimaryButton";
+import { evaluateAnswerByAI } from "../Evalutations/EvaluateMyAnswerAI";
 
 type PostDetailRouteProp = RouteProp<RootStackParamList, "PostDetail">;
 type Nav = StackNavigationProp<RootStackParamList, "PostDetail">;
@@ -87,6 +89,7 @@ export default function PostDetailScreen() {
   );
   const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
+  const [evaluatingAI, setEvaluatingAI] = useState<boolean>(false);
 
   const MAX_COMMENT_LENGTH = 2000;
 
@@ -551,6 +554,32 @@ export default function PostDetailScreen() {
     ]
   );
 
+  const handleAIEvaluation = useCallback(async () => {
+    if (!post || !post.images || post.images.length === 0) {
+      Alert.alert("Error", "No images found to evaluate");
+      return;
+    }
+
+    if (evaluatingAI) return;
+
+    setEvaluatingAI(true);
+    try {
+      const result = await evaluateAnswerByAI(post.images);
+
+      if (result.success && result.data) {
+        console.log("AI Evaluation Result:", result.data);
+        Alert.alert("Success", "AI evaluation completed! Result logged to console.");
+      } else {
+        Alert.alert("Error", result.error || "Failed to evaluate answer");
+      }
+    } catch (error) {
+      console.error("Error during AI evaluation:", error);
+      Alert.alert("Error", "An unexpected error occurred");
+    } finally {
+      setEvaluatingAI(false);
+    }
+  }, [post, evaluatingAI]);
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -752,6 +781,12 @@ export default function PostDetailScreen() {
             </TouchableOpacity>
           </View>
         </View>
+        {/* AI BASED EVALUATION */}
+        <PrimaryButton
+          title={evaluatingAI ? "EVALUATING..." : "GET AI BASED EVALUATION"}
+          isActive={!evaluatingAI}
+          submitHandler={handleAIEvaluation}
+        />
         {/* Evaluation */}
         <PostDetailsEvaluationCard
           postID={post.id}
