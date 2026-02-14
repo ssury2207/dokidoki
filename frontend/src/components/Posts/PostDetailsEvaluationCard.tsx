@@ -45,7 +45,8 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
 
   // AI Evaluation states
   const [hasAIEvaluation, setHasAIEvaluation] = useState(false);
-  const [isGeneratingAIEvaluation, setIsGeneratingAIEvaluation] = useState(false);
+  const [isGeneratingAIEvaluation, setIsGeneratingAIEvaluation] =
+    useState(false);
 
   const getEvaluationStats = async () => {
     try {
@@ -121,7 +122,9 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
         setDisclaimer("Community Evaluation: No reviews yet");
       } else {
         setDisclaimer(
-          `Community Evaluation: ${evaluationCount} ${evaluationCount === 1 ? 'review' : 'reviews'} received`
+          `Community Evaluation: ${evaluationCount} ${
+            evaluationCount === 1 ? "review" : "reviews"
+          } received`
         );
       }
     } else {
@@ -232,10 +235,7 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
       ) : (
         <></>
       )}
-      <EvaluationScoreWidget
-        postID={postID}
-        theme={theme}
-      />
+      <EvaluationScoreWidget postID={postID} theme={theme} />
     </View>
   );
 };

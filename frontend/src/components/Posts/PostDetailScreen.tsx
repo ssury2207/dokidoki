@@ -568,7 +568,10 @@ export default function PostDetailScreen() {
 
       if (result.success && result.data) {
         console.log("AI Evaluation Result:", result.data);
-        Alert.alert("Success", "AI evaluation completed! Result logged to console.");
+        Alert.alert(
+          "Success",
+          "AI evaluation completed! Result logged to console."
+        );
       } else {
         Alert.alert("Error", result.error || "Failed to evaluate answer");
       }
@@ -781,12 +784,6 @@ export default function PostDetailScreen() {
             </TouchableOpacity>
           </View>
         </View>
-        {/* AI BASED EVALUATION */}
-        <PrimaryButton
-          title={evaluatingAI ? "EVALUATING..." : "GET AI BASED EVALUATION"}
-          isActive={!evaluatingAI}
-          submitHandler={handleAIEvaluation}
-        />
         {/* Evaluation */}
         <PostDetailsEvaluationCard
           postID={post.id}

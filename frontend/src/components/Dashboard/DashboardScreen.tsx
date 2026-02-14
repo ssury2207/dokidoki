@@ -27,6 +27,7 @@ import PostYourAnswerCard from "./Components/PostYourAnswerCard";
 import * as Notifications from "expo-notifications";
 import appConfig from "../../../app.json";
 import PrelimsPYQsQuestionCard from "./Components/PrelimsQuestionCard";
+import PrimaryButton from "../atoms/PrimaryButton";
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
@@ -214,6 +215,19 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
     }
   };
 
+  const handleAIEvaluationButton = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("aievaluator", {
+        body: {
+          prompt: "",
+        },
+      });
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <SafeAreaView style={theme ? styles.bodyDark : styles.bodyLight}>
       <ScrollView
@@ -229,6 +243,11 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
         <DashboardHeader />
         <DailyChallengeCard />
         <ProgressCard />
+        <PrimaryButton
+          submitHandler={handleAIEvaluationButton}
+          isActive={true}
+          title="Hello"
+        />
         <PostYourAnswerCard
           onPress={() => navigation.navigate("CustomAnswerScreen")}
         />
