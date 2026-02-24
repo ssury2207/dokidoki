@@ -26,8 +26,9 @@ import { getCloudinaryThumbnail } from "@/src/utils/imageUtils";
 import ShimmerPlaceholder from "@/src/components/common/ShimmerComponent";
 import PostDetailsEvaluationCard from "./PostDetailsEvaluationCard";
 import TextLabel from "../atoms/TextLabel";
-import PrimaryButton from "../atoms/PrimaryButton";
-import { evaluateAnswerByAI } from "../Evalutations/EvaluateMyAnswerAI";
+import AIEvaluationButton from "./components/AIEvaluation/components/AIEvaluationButton";
+import useAIEvaluationCheck from "./components/AIEvaluation/hooks/useAIEvaluationCheck";
+import useAIEvaluationReport from "./components/AIEvaluation/hooks/useAIEvaluationReport";
 
 type PostDetailRouteProp = RouteProp<RootStackParamList, "PostDetail">;
 type Nav = StackNavigationProp<RootStackParamList, "PostDetail">;
@@ -89,8 +90,19 @@ export default function PostDetailScreen() {
   );
   const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
-  const [evaluatingAI, setEvaluatingAI] = useState<boolean>(false);
+  const {
+    hasAIEvaluation,
+    loading: aiEvalLoading,
+    error: aiEvalError,
+    refetch: refreshAIEval,
+  } = useAIEvaluationCheck(postId);
 
+  const {
+    evaluationReport,
+    loading: generateReportLoader,
+    error: reportError, // Also renamed to avoid conflicts
+    refetch: generateAIReport,
+  } = useAIEvaluationReport(postId, post?.images || [], post?.question || null);
   const MAX_COMMENT_LENGTH = 2000;
 
   const formatDate = useCallback((createdAt: string) => {
@@ -554,35 +566,6 @@ export default function PostDetailScreen() {
     ]
   );
 
-  const handleAIEvaluation = useCallback(async () => {
-    if (!post || !post.images || post.images.length === 0) {
-      Alert.alert("Error", "No images found to evaluate");
-      return;
-    }
-
-    if (evaluatingAI) return;
-
-    setEvaluatingAI(true);
-    try {
-      const result = await evaluateAnswerByAI(post.images);
-
-      if (result.success && result.data) {
-        console.log("AI Evaluation Result:", result.data);
-        Alert.alert(
-          "Success",
-          "AI evaluation completed! Result logged to console."
-        );
-      } else {
-        Alert.alert("Error", result.error || "Failed to evaluate answer");
-      }
-    } catch (error) {
-      console.error("Error during AI evaluation:", error);
-      Alert.alert("Error", "An unexpected error occurred");
-    } finally {
-      setEvaluatingAI(false);
-    }
-  }, [post, evaluatingAI]);
-
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -783,6 +766,15 @@ export default function PostDetailScreen() {
               )}
             </TouchableOpacity>
           </View>
+          {/* AI BASED EVALUTION */}
+          <AIEvaluationButton
+            postId={post.id}
+            hasEvaluation={hasAIEvaluation} // Use hook value
+            loading={aiEvalLoading} // Use hook value
+            error={aiEvalError} // Use hook value
+            onRefresh={refreshAIEval} // Use hook value
+            onGenerate={generateAIReport}
+          />
         </View>
         {/* Evaluation */}
         <PostDetailsEvaluationCard

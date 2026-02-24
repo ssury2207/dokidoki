@@ -215,19 +215,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
     }
   };
 
-  const handleAIEvaluationButton = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke("aievaluator", {
-        body: {
-          prompt: "",
-        },
-      });
-      console.log(data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   return (
     <SafeAreaView style={theme ? styles.bodyDark : styles.bodyLight}>
       <ScrollView
@@ -242,18 +229,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
       >
         <DashboardHeader />
         <DailyChallengeCard />
-        <ProgressCard />
-        <PrimaryButton
-          submitHandler={handleAIEvaluationButton}
-          isActive={true}
-          title="Hello"
-        />
         <PostYourAnswerCard
           onPress={() => navigation.navigate("CustomAnswerScreen")}
         />
         <OthersAnswersCard
           onPress={() => navigation.navigate("OthersAnswersList")}
         />
+        <ProgressCard />
         <PrelimsPYQsQuestionCard
           onPress={() => navigation.navigate("PrelimsPyqScreen")}
         />
