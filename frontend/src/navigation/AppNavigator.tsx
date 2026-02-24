@@ -16,7 +16,7 @@ import { RootStackParamList } from "@/src/types/navigation";
 import CreatePostScreen from "../components/shareAnswers/CreatePostScreen";
 import OthersAnswersListScreen from "@/src/components/Posts/OthersAnswersListScreen";
 import PostDetailScreen from "@/src/components/Posts/PostDetailScreen";
-import AIEvaluationReportScreen from "@/src/components/Posts/AIEvaluationReportScreen";
+import AIEvaluationReportScreen from "@/src/components/Posts/components/AIEvaluation/screens/AIEvaluationReportScreen";
 import PushPermissionOverlay from "../pushNotification/PushPermissionOverlay";
 import CustomAnswerScreen from "../components/PracticeScreens/CustomAnswerScreen";
 import CustomVerdictOverlay from "../components/PracticeScreens/CustomVerdictOverlay";
@@ -76,7 +76,7 @@ export default function AppNavigator() {
         component={AIEvaluationReportScreen}
         options={{
           presentation: "card",
-          headerShown: false,
+          title: "AI Evaluation Report",
         }}
       />
       <Stack.Screen name="PrelimsScreen" component={PrelimsScreen} />

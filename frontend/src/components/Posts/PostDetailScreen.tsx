@@ -29,7 +29,8 @@ import TextLabel from "../atoms/TextLabel";
 import AIEvaluationButton from "./components/AIEvaluation/components/AIEvaluationButton";
 import useAIEvaluationCheck from "./components/AIEvaluation/hooks/useAIEvaluationCheck";
 import useAIEvaluationReport from "./components/AIEvaluation/hooks/useAIEvaluationReport";
-
+import AIEvaluationLoader from "./components/AIEvaluation/components/AIEvaluationLoader";
+import PrimaryButton from "../atoms/PrimaryButton";
 type PostDetailRouteProp = RouteProp<RootStackParamList, "PostDetail">;
 type Nav = StackNavigationProp<RootStackParamList, "PostDetail">;
 
@@ -582,6 +583,13 @@ export default function PostDetailScreen() {
     }
   }, [sortBy]);
 
+  // Navigate to report screen after evaluation completes (success or error)
+  useEffect(() => {
+    if (!generateReportLoader && (evaluationReport || reportError)) {
+      navigation.navigate("AIEvaluationReport", { postId });
+    }
+  }, [generateReportLoader, evaluationReport, reportError, postId, navigation]);
+
   if (loading) {
     const message =
       loadingComments && post ? "Sorting reviews..." : "Loading post...";
@@ -606,6 +614,7 @@ export default function PostDetailScreen() {
         },
       ]}
     >
+      <AIEvaluationLoader visible={generateReportLoader} />
       <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
@@ -770,7 +779,7 @@ export default function PostDetailScreen() {
           <AIEvaluationButton
             postId={post.id}
             hasEvaluation={hasAIEvaluation} // Use hook value
-            loading={aiEvalLoading} // Use hook value
+            loading={aiEvalLoading || generateReportLoader} // Use hook value
             error={aiEvalError} // Use hook value
             onRefresh={refreshAIEval} // Use hook value
             onGenerate={generateAIReport}

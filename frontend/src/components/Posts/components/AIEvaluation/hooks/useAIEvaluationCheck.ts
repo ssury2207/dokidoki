@@ -7,6 +7,7 @@ export default function useAIEvaluationCheck(postId: string) {
   const [error, setError] = useState<string | null>(null);
   const checkEvaluation = useCallback(async () => {
     setLoading(true);
+    console.log("actual edge function");
     try {
       const { data, error: dbError } = await supabase
         .from("ai_evaluations")
@@ -16,10 +17,12 @@ export default function useAIEvaluationCheck(postId: string) {
       if (dbError) {
         setError(dbError.message);
         setHasEvaluation(false);
+        console.log(dbError);
         return;
       }
       if (data) {
         setHasEvaluation(true);
+        console.log(data);
       } else setHasEvaluation(false);
     } catch (error) {
       setHasEvaluation(false);
