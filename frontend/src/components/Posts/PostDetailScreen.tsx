@@ -30,7 +30,6 @@ import AIEvaluationButton from "./components/AIEvaluation/components/AIEvaluatio
 import useAIEvaluationCheck from "./components/AIEvaluation/hooks/useAIEvaluationCheck";
 import useAIEvaluationReport from "./components/AIEvaluation/hooks/useAIEvaluationReport";
 import AIEvaluationLoader from "./components/AIEvaluation/components/AIEvaluationLoader";
-import PrimaryButton from "../atoms/PrimaryButton";
 type PostDetailRouteProp = RouteProp<RootStackParamList, "PostDetail">;
 type Nav = StackNavigationProp<RootStackParamList, "PostDetail">;
 
@@ -776,14 +775,18 @@ export default function PostDetailScreen() {
             </TouchableOpacity>
           </View>
           {/* AI BASED EVALUTION */}
-          <AIEvaluationButton
-            postId={post.id}
-            hasEvaluation={hasAIEvaluation} // Use hook value
-            loading={aiEvalLoading || generateReportLoader} // Use hook value
-            error={aiEvalError} // Use hook value
-            onRefresh={refreshAIEval} // Use hook value
-            onGenerate={generateAIReport}
-          />
+          {post.author_id === currentUser?.id ? (
+            <AIEvaluationButton
+              postId={post.id}
+              hasEvaluation={hasAIEvaluation} // Use hook value
+              loading={aiEvalLoading || generateReportLoader} // Use hook value
+              error={aiEvalError} // Use hook value
+              onRefresh={refreshAIEval} // Use hook value
+              onGenerate={generateAIReport}
+            />
+          ) : (
+            <></>
+          )}
         </View>
         {/* Evaluation */}
         <PostDetailsEvaluationCard
