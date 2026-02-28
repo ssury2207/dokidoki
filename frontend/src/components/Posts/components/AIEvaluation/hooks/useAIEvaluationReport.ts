@@ -31,42 +31,38 @@ export default function useAIEvaluationReport(
         }
       );
 
-      // Case 1: Validation Error
-      if (data?.success === false || data?.data?.validation_passed === false) {
+      // Case 1: Validation Error (check this FIRST)
+      if (data && data.success === false && data.validation_failed === true) {
         setError({
           type: "validation",
-          message: data?.error || data?.data?.error || "Validation failed",
+          message: data.error || "Validation failed",
         });
         setEvaluationReport(null);
-        console.log("Validation Error:", data?.error);
         return;
       }
 
-      // Case 2: Technical Error (Edge Function Error)
+      // Case 2: Success case
+      if (data && data.success === true && data.data) {
+        setEvaluationReport(data.data);
+        return;
+      }
+
+      // Case 3: Technical Error (Edge Function Error)
       if (evaluationError) {
         setError({
           type: "technical",
           message: "Service unavailable. Please try again later.",
         });
         setEvaluationReport(null);
-        console.log("Technical Error:", evaluationError);
         return;
       }
 
-      // Case 3: Check if we have valid data
-      if (!data || !data.data) {
-        setError({
-          type: "technical",
-          message: "Invalid response from server. Please try again.",
-        });
-        setEvaluationReport(null);
-        console.log("Invalid response:", data);
-        return;
-      }
-
-      // Success case
-      setEvaluationReport(data.data);
-      console.log("Success:", data.data);
+      // Case 4: Invalid response structure
+      setError({
+        type: "technical",
+        message: "Invalid response from server. Please try again.",
+      });
+      setEvaluationReport(null);
     } catch (error: any) {
       // Case 4: Catch Block Error
       setEvaluationReport(null);
@@ -74,7 +70,6 @@ export default function useAIEvaluationReport(
         type: "technical",
         message: error?.message || "An error occurred. Please try again.",
       });
-      console.log("Catch error:", error);
     } finally {
       setLoading(false);
     }
