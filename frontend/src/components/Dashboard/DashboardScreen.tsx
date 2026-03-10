@@ -27,6 +27,7 @@ import PostYourAnswerCard from "./Components/PostYourAnswerCard";
 import * as Notifications from "expo-notifications";
 import appConfig from "../../../app.json";
 import PrelimsPYQsQuestionCard from "./Components/PrelimsQuestionCard";
+import PrimaryButton from "../atoms/PrimaryButton";
 type RootStackParamList = {
   Dashboard: undefined;
   PracticeSelect: undefined;
@@ -228,13 +229,13 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
       >
         <DashboardHeader />
         <DailyChallengeCard />
-        <ProgressCard />
         <PostYourAnswerCard
           onPress={() => navigation.navigate("CustomAnswerScreen")}
         />
         <OthersAnswersCard
           onPress={() => navigation.navigate("OthersAnswersList")}
         />
+        <ProgressCard />
         <PrelimsPYQsQuestionCard
           onPress={() => navigation.navigate("PrelimsPyqScreen")}
         />

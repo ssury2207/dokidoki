@@ -92,8 +92,8 @@ android {
         applicationId 'com.dokidoki.dev.dokidoki'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 17
-        versionName "1.5.0"
+        versionCode 19
+        versionName "2.0.0"
     }
     signingConfigs {
         debug {
@@ -103,10 +103,12 @@ android {
             keyPassword 'android'
         }
         release {
-            storeFile file(DOKIDOKI_KEYSTORE_FILE)
-            storePassword DOKIDOKI_KEYSTORE_PASSWORD
-            keyAlias DOKIDOKI_KEY_ALIAS
-            keyPassword DOKIDOKI_KEY_PASSWORD
+            if (project.hasProperty('DOKIDOKI_KEYSTORE_FILE')) {
+                storeFile file(DOKIDOKI_KEYSTORE_FILE)
+                storePassword DOKIDOKI_KEYSTORE_PASSWORD
+                keyAlias DOKIDOKI_KEY_ALIAS
+                keyPassword DOKIDOKI_KEY_PASSWORD
+            }
         }
     }
     flavorDimensions "env"

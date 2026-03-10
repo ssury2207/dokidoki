@@ -42,6 +42,10 @@ export type RootStackParamList = {
   PostDetail: {
     postId: string;
   };
+  AIEvaluationReport: {
+    postId: string;
+    evaluationData?: any;
+  };
   CreatePostScreen: {
     images?: string[];
   };

@@ -8,6 +8,11 @@ import EvaluationBreakdown from "./components/EvaluationBreakdown";
 import EvaluationScoreWidget from "./components/EvaluationScoreWidget";
 import TextLabel from "../atoms/TextLabel";
 import { supabase } from "@/src/supabaseConfig";
+import { useNavigation } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import type { RootStackParamList } from "@/src/types/navigation";
+
+type Nav = StackNavigationProp<RootStackParamList>;
 
 interface PostDetailsEvaluationCardProps {
   postID: string;
@@ -20,6 +25,7 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
   authorID,
   currentUserID,
 }) => {
+  const navigation = useNavigation<Nav>();
   const theme = useSelector((state: RootState) => state.theme.isLight);
   const [evaluationCount, setEvaluationCount] = useState(0);
   const [hasUserEvaluated, setHasUserEvaluated] = useState(false);
@@ -82,16 +88,18 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
     if (currentUserID !== authorID) {
       checkSubmissionExists();
     }
-  }, [postID]);
+  }, [postID, currentUserID, authorID]);
 
   useEffect(() => {
     if (currentUserID === authorID) {
       setEvaluateButton(false);
       if (evaluationCount === 0) {
-        setDisclaimer("Waiting for evaluation...");
+        setDisclaimer("Community Evaluation: No reviews yet");
       } else {
         setDisclaimer(
-          `You received ${evaluationCount} evaluations from the community`
+          `Community Evaluation: ${evaluationCount} ${
+            evaluationCount === 1 ? "review" : "reviews"
+          } received`
         );
       }
     } else {
@@ -129,6 +137,7 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
         authorID={authorID}
         evaluatorID={currentUserID}
       />
+
       <TextLabel text={`${disclaimer}`} />
       {evaluationCount > 0 && evaluationStats ? (
         <EvaluationBreakdown
@@ -153,10 +162,7 @@ const PostDetailsEvaluationCard: React.FC<PostDetailsEvaluationCardProps> = ({
       ) : (
         <></>
       )}
-      <EvaluationScoreWidget
-        postID={postID}
-        theme={theme}
-      />
+      <EvaluationScoreWidget postID={postID} theme={theme} />
     </View>
   );
 };

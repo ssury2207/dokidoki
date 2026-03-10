@@ -3,7 +3,8 @@ const path = require('path');
 
 // Determine which environment to load
 const APP_ENV = process.env.APP_ENV || 'development';
-const envFile = APP_ENV === 'production' ? '.env.production' : '.env.development';
+const envFile =
+  APP_ENV === 'production' ? '.env.production' : '.env.development';
 
 // Load the appropriate .env file
 dotenv.config({ path: path.resolve(__dirname, envFile) });
@@ -26,37 +27,35 @@ module.exports = {
     entryPoint: './index.tsx',
     ios: {
       supportsTablet: true,
-      bundleIdentifier: IS_DEV
-        ? 'com.dokidoki.dev'
-        : 'com.dokidoki.prod'
+      bundleIdentifier: IS_DEV ? 'com.dokidoki.dev' : 'com.dokidoki.prod',
     },
     android: {
       package: IS_DEV
         ? 'com.dokidoki.dev.dokidoki.dev'
         : 'com.dokidoki.dev.dokidoki',
-      versionCode: 9,
+      versionCode: 18,
       adaptiveIcon: {
         foregroundImage: './assets/icon-dokidoki.png',
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
       },
       edgeToEdgeEnabled: true,
       intentFilters: [
         {
           action: 'android.intent.action.VIEW',
           data: {
-            scheme: 'mailto'
-          }
-        }
+            scheme: 'mailto',
+          },
+        },
       ],
       permissions: ['NOTIFICATIONS'],
       googleServicesFile: IS_DEV
         ? './google-services-dev.json'
-        : './google-services.json'
+        : './google-services.json',
     },
     web: {
       bundler: 'metro',
       output: 'static',
-      favicon: './assets/icon-dokidoki.png'
+      favicon: './assets/icon-dokidoki.png',
     },
     plugins: [
       'expo-router',
@@ -66,25 +65,25 @@ module.exports = {
           image: './assets/icon-dokidoki.png',
           imageWidth: 200,
           resizeMode: 'contain',
-          backgroundColor: '#ffffff'
-        }
+          backgroundColor: '#ffffff',
+        },
       ],
       [
         'expo-notifications',
         {
           icon: './assets/icon-dokidoki.png',
-          color: '#00ADB5'
-        }
-      ]
+          color: '#00ADB5',
+        },
+      ],
     ],
     experiments: {
-      typedRoutes: true
+      typedRoutes: true,
     },
     extra: {
       router: {},
       eas: {
-        projectId: '9ba5a170-c777-4ade-a551-bb0f536c53b2'
-      }
-    }
-  }
+        projectId: '9ba5a170-c777-4ade-a551-bb0f536c53b2',
+      },
+    },
+  },
 };

@@ -26,7 +26,10 @@ import { getCloudinaryThumbnail } from "@/src/utils/imageUtils";
 import ShimmerPlaceholder from "@/src/components/common/ShimmerComponent";
 import PostDetailsEvaluationCard from "./PostDetailsEvaluationCard";
 import TextLabel from "../atoms/TextLabel";
-
+import AIEvaluationButton from "./components/AIEvaluation/components/AIEvaluationButton";
+import useAIEvaluationCheck from "./components/AIEvaluation/hooks/useAIEvaluationCheck";
+import useAIEvaluationReport from "./components/AIEvaluation/hooks/useAIEvaluationReport";
+import AIEvaluationLoader from "./components/AIEvaluation/components/AIEvaluationLoader";
 type PostDetailRouteProp = RouteProp<RootStackParamList, "PostDetail">;
 type Nav = StackNavigationProp<RootStackParamList, "PostDetail">;
 
@@ -87,7 +90,19 @@ export default function PostDetailScreen() {
   );
   const [sortMenuOpen, setSortMenuOpen] = useState<boolean>(false);
   const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set());
+  const {
+    hasAIEvaluation,
+    loading: aiEvalLoading,
+    error: aiEvalError,
+    refetch: refreshAIEval,
+  } = useAIEvaluationCheck(postId);
 
+  const {
+    evaluationReport,
+    loading: generateReportLoader,
+    error: reportError, // Also renamed to avoid conflicts
+    refetch: generateAIReport,
+  } = useAIEvaluationReport(postId, post?.images || [], post?.question || null);
   const MAX_COMMENT_LENGTH = 2000;
 
   const formatDate = useCallback((createdAt: string) => {
@@ -567,6 +582,13 @@ export default function PostDetailScreen() {
     }
   }, [sortBy]);
 
+  // Navigate to report screen after evaluation completes (success or error)
+  useEffect(() => {
+    if (!generateReportLoader && (evaluationReport || reportError)) {
+      navigation.navigate("AIEvaluationReport", { postId });
+    }
+  }, [generateReportLoader, evaluationReport, reportError, postId, navigation]);
+
   if (loading) {
     const message =
       loadingComments && post ? "Sorting reviews..." : "Loading post...";
@@ -591,6 +613,7 @@ export default function PostDetailScreen() {
         },
       ]}
     >
+      <AIEvaluationLoader visible={generateReportLoader} />
       <ScrollView
         style={styles.scrollContainer}
         contentContainerStyle={styles.scrollContent}
@@ -751,6 +774,19 @@ export default function PostDetailScreen() {
               )}
             </TouchableOpacity>
           </View>
+          {/* AI BASED EVALUTION */}
+          {post.author_id === currentUser?.id ? (
+            <AIEvaluationButton
+              postId={post.id}
+              hasEvaluation={hasAIEvaluation} // Use hook value
+              loading={aiEvalLoading || generateReportLoader} // Use hook value
+              error={aiEvalError} // Use hook value
+              onRefresh={refreshAIEval} // Use hook value
+              onGenerate={generateAIReport}
+            />
+          ) : (
+            <></>
+          )}
         </View>
         {/* Evaluation */}
         <PostDetailsEvaluationCard
